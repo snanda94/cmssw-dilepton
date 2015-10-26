@@ -1,0 +1,20 @@
+cmsrel CMSSW_5_3_20
+cd CMSSW_5_3_20/src/
+cmsenv
+git cms-merge-topic -u CMS-HIN-dilepton:Onia_2013run_5_3_20
+
+
+# this is needed because there were centrality issues
+rm -rf PhysicsTools/TagAndProbe
+rm -rf MuonAnalysis/TagAndProbe
+rm -rf MuonAnalysis/MuonAssociators #I can't remember if I need to do this but below you grab a new on
+git cms-cvs-history import V04-04-13 PhysicsTools/TagAndProbe
+git clone https://github.com/gpetruc/MuonAnalysis-TagAndProbe.git MuonAnalysis/TagAndProbe
+cd MuonAnalysis/TagAndProbe/
+git checkout Legacy2011_53X
+cd ../../
+git clone https://github.com/cms-analysis/MuonAnalysis-MuonAssociators.git MuonAnalysis/MuonAssociators
+cd MuonAnalysis/MuonAssociators
+git checkout MuonAnalysis-MuonAssociators-V02-03-01
+cd ../../
+scramv1 b -j8
