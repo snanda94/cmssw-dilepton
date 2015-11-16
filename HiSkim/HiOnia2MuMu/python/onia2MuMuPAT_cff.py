@@ -8,12 +8,11 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True):
         wantSummary = cms.untracked.bool(True),
         # fileMode = cms.untracked.string('MERGE'),
     )
-    process.load("FWCore.MessageService.MessageLogger_cfi")
-    process.MessageLogger.cerr.FwkReport.reportEvery = 100
      
     # Drop the DQM stuff on input
     process.source = cms.Source("PoolSource",
-        inputCommands = cms.untracked.vstring("keep *", "drop *_MEtoEDMConverter_*_*"),
+        inputCommands = cms.untracked.vstring("keep *", 
+                                              "drop *_MEtoEDMConverter_*_*"),
         fileNames = cms.untracked.vstring()
     )
 
@@ -29,7 +28,7 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True):
 
     # Make PAT Muons
     process.load("MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff")
-    from MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff import addMCinfo, changeRecoMuonInput, useL1MatchingWindowForSinglets, changeTriggerProcessName, switchOffAmbiguityResolution
+    from MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff import addMCinfo, useL1MatchingWindowForSinglets, changeTriggerProcessName, switchOffAmbiguityResolution
     # with some customization
     if MC:
         addMCinfo(process)

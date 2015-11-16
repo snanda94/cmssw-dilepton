@@ -1,5 +1,7 @@
 # for the list of used tags please see:
 # https://twiki.cern.ch/twiki/bin/view/CMS/Onia2MuMuSamples
+from os import environ
+RELEASE = [int(i) for i in environ['CMSSW_VERSION'].split("_")[1:4]]
 
 import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
@@ -8,23 +10,19 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 process = cms.Process("Onia2MuMuPAT")
 
 # Conditions
-isPbPb = True;          
+isPbPb = False;          
 isMC = False;
 keepGeneralTracks = False;
-keepEventPlane = False;
+keepEventPlane = True;
 muonSelection = "GlbTrk" # Single muon selection: Glb, GlbTrk, Trk are availale
 
 # setup 'analysis'  options
 options = VarParsing.VarParsing ('analysis')
 
-# setup any defaults you want
-options.outputFile = "Jpsi_TEST.root"
+# Input and Output File Names
+options.outputFile = "Jpsi_PP_DATA_RECO_B0T_75X.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
-options.inputFiles = 'file:/home/llr/cms/chapon/data_CMS/promptskims2015/CMSSW_7_5_4/test/step2_reRECO_740_9_1_e5r.root'
-#step2_reRECO_740_100_1_lRV.root'
-#/afs/cern.ch/user/t/tuos/work/public/reco2AOD/round2April28/DIMUON/step2_RAW2DIGI_L1Reco_DIMUONskim_AOD.root'#step2_reRECO_740_100_1_lRV.root'
-#options.maxEvents = 10 # -1 means all events
-
+options.inputFiles ='file:/store/group/phys_heavyions/velicanu/store/t0streamer/Data/Express/000/261/396/RECO/bubba_RAW2DIGI_L1Reco_RECO.root'
 options.maxEvents = -1 # -1 means all events
 
 # get and parse the command line arguments
@@ -39,57 +37,76 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.ReconstructionHeavyIons_cff')
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 
-
-# Event plane (Not working currently)
-#process.load("RecoHI.HiEvtPlaneAlgos.HiEvtPlane_cfi")
-#process.ProdEvtPlane = cms.Path(process.hiEvtPlane)
-
-# tag for running on 2011 data in 7xy
+# Global Tag:
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 if isMC:
-  process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc_HIon', '')
-else:
-  process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run1_data', '')
-
-
-if isPbPb:
-  process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi") 
-  process.centralityBin.Centrality = cms.InputTag("hiCentrality")
-  if isMC:
-    process.centralityBin.centralityVariable = cms.string("HFtowersHydjetDrum5")
-    process.centralityBin.nonDefaultGlauberModel = cms.string("HydjetDrum5")  
-    process.GlobalTag.toGet.extend([cms.PSet(
-          record  = cms.string("HeavyIonRcd"),
-          tag     = cms.string("CentralityTable_HFtowers200_HydjetDrum5_v750x02_mc"),
-          connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
-          label   = cms.untracked.string("HFtowersHydjetDrum5")
-          )])
+  if isPbPb:
+    process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc_HIon', '')
   else:
-    process.centralityBin.centralityVariable = cms.string("HFtowers")
-    process.centralityBin.nonDefaultGlauberModel = cms.string("")    
-    process.GlobalTag.toGet.extend([cms.PSet(
-          record  = cms.string("HeavyIonRcd"),
-          tag     = cms.string("CentralityTable_HFtowers200_Glauber2010A_eff99_run1v750x01_offline"),
-          connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
-          label   = cms.untracked.string("HFtowers")
-          )])
+    process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+else:  
+  process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
+process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
 
-# HLT dimuon trigger
+#Centrality Tags for CMSSW 7_5_X:               
+# Only use if the centrality info is not present or need to apply new calibration
+# process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi")
+# process.newCentralityBin = process.centralityBin.clone()
+
+# Event Plane (works on CMSSW_7_5_4):
+keepEventPlane = True if (RELEASE[0]==7 and RELEASE[1]==5 and RELEASE[2]>3) else False
+if isPbPb:
+  process.load("RecoHI.HiEvtPlaneAlgos.HiEvtPlane_cfi")
+  process.load("RecoHI.HiEvtPlaneAlgos.hiEvtPlaneFlat_cfi")  
+  if isMC:
+    process.GlobalTag.toGet.extend([
+        cms.PSet(record = cms.string("HeavyIonRPRcd"),
+                 tag = cms.string("HeavyIonRPRcd_Hydjet_74x_v03_mc"),
+                 connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS")
+                 )
+        ])
+  else:
+    process.GlobalTag.toGet.extend([
+        cms.PSet(record = cms.string("HeavyIonRPRcd"),
+                 tag = cms.string("HeavyIonRPRcd_PbPb2011_74X_v01_offline"),
+                 connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS")
+                 )
+        ])
+
+
+'''
+# BSC or HF coincidence (masked unprescaled L1 bits)
+process.load('L1Trigger.Skimmer.l1Filter_cfi')
+process.bscOrHfCoinc = process.l1Filter.clone(
+    algorithms = cms.vstring('*','L1_HcalHfCoincPmORBscMinBiasThresh1_BptxAND_instance1', 'L1_NotBsc2_BscMinBiasOR', 'L1_HcalHfCoincidencePm')
+    )
+'''
+# HLT Dimuon Triggers
 import HLTrigger.HLTfilters.hltHighLevel_cfi
 process.hltOniaHI = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
+# HLT PP MENU: /users/HiMuonTrigDev/pp5TeV/NovDev/V4
 process.hltOniaHI.HLTPaths = [
-    "*",
-    "HLT_HIL1DoubleMu0_v*",
-    "HLT_HIL1DoubleMu0_2HF_v*",
-    "HLT_HIL1DoubleMu0_2HF0_v*",
-                             ]
+  "HLT_HIL1DoubleMu0_v1",
+  "HLT_HIL1DoubleMu10_v1",
+  "HLT_HIL2DoubleMu0_NHitQ_v1",
+  "HLT_HIL3DoubleMu0_OS_m2p5to4p5_v1",
+  "HLT_HIL3DoubleMu0_OS_m7to14_v1"
+  ]
 process.hltOniaHI.throw = False
 process.hltOniaHI.andOr = True
-process.hltOniaHI.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT")
+process.hltOniaHI.TriggerResultsTag = cms.InputTag("TriggerResults","",HLTProName)
 
 from HiSkim.HiOnia2MuMu.onia2MuMuPAT_cff import *
-onia2MuMuPAT(process, GlobalTag=process.GlobalTag.globaltag, MC=isMC, HLT="HLT", Filter=False)
+onia2MuMuPAT(process, GlobalTag=process.GlobalTag.globaltag, MC=isMC, HLT=HLTProName, Filter=True)
+
+### Temporal fix for the PAT Trigger prescale warnings.
+process.patTriggerFull = cms.EDProducer( "PATTriggerProducer",
+                                         l1GtReadoutRecordInputTag = cms.InputTag("gtDigis","","RECO"),
+                                         onlyStandAlone = cms.bool( True ),
+                                         processName    = cms.string( HLTProName )                    
+                                         )
+###
 
 ##### Onia2MuMuPAT input collections/options
 process.onia2MuMuPatGlbGlb.dimuonSelection          = cms.string("mass > 0")
@@ -110,6 +127,12 @@ else: # ispp
     process.genMuons.src = "genParticles"
     process.onia2MuMuPatGlbGlb.genParticles = "genParticles"
 
+##### Remove few paths for MC
+if isMC:
+  process.patMuonSequence.remove(process.hltOniaHI)
+if not isMC:
+  process.patMuonSequence.remove(process.hltOniaHI)
+
 ##### Dimuon pair selection
 commonP1 = "|| (innerTrack.isNonnull && genParticleRef(0).isNonnull)"
 commonP2 = " && abs(innerTrack.dxy)<4 && abs(innerTrack.dz)<35"
@@ -129,35 +152,38 @@ elif muonSelection == "Trk":
   lowP = "isTrackerMuon";
   process.onia2MuMuPatGlbGlb.lowerPuritySelection = cms.string("("+lowP+commonP1+")"+commonP2)
 else:
-  print "Using default settings in HiSkim/HiOnia2MuMu/python/onia2MuMuPAT_cff.py file!"
+  print "ERROR: Incorrect muon selection " + muonSelection + " . Valid options are: Glb, Trk, GlbTrk"
 
 ##### If single track collection has to be kept
 if keepGeneralTracks:
   process.outOnia2MuMu.outputCommands.append("keep *_hiGeneralTracks_*_*")
+  process.outOnia2MuMu.outputCommands.append("keep *_standAloneMuons_*_*")
 
 ##### If event plane collection has to be kept
 if keepEventPlane:
-  process.outOnia2MuMu.outputCommands.extend(('keep *_hiEvtPlane_*_*','keep *_hiEvtPlaneFlat_*_*'))
-
+  process.outOnia2MuMu.outputCommands.append("keep *_hiEvtPlane_*_*")
+  process.outOnia2MuMu.outputCommands.append("keep *_hiEvtPlaneFlat_*_*")
 
 
 process.source.fileNames      = cms.untracked.vstring(options.inputFiles)
 process.maxEvents             = cms.untracked.PSet( input = cms.untracked.int32(options.maxEvents) )
 
 
+
 process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                 #-- Collections
-                                srcMuon             = cms.InputTag("patMuonsWithTrigger"),
-                                srcMuonNoTrig       = cms.InputTag("patMuonsWithoutTrigger"),
-                                src                 = cms.InputTag("onia2MuMuPatGlbGlb"),
-                                srcTracks           = cms.InputTag("hiGeneralTracks"),
-                                EvtPlane            = cms.InputTag("hiEvtPlane","recoLevel"),
-                                EvtPlaneFlat        = cms.InputTag("hiEvtPlaneFlat",""),
+                                # l1GtReadoutRecordInputTag = cms.InputTag("gtDigis","","RECO"), # Only use if prescale warnings are shown
+                                srcMuon             = cms.InputTag("patMuonsWithTrigger"),     # Name of PAT Muon Collection
+                                srcMuonNoTrig       = cms.InputTag("patMuonsWithoutTrigger"),  # Name of PAT Muon Without Trigger Collection
+                                src                 = cms.InputTag("onia2MuMuPatGlbGlb"),      # Name of Onia Skim Collection
+                                srcTracks           = cms.InputTag("hiGeneralTracks"),         # Name of General Tracks Collection
+                                EvtPlane            = cms.InputTag("hiEvtPlane",""),           # Name of Event Plane Collection. For RECO use: hiEventPlane,recoLevel
+                                EvtPlaneFlat        = cms.InputTag("hiEvtPlaneFlat",""),       # Name of Flat Event Plane Collection. 
 
-                                triggerResultsLabel = cms.InputTag("TriggerResults","","HLT"),
+                                triggerResultsLabel = cms.InputTag("TriggerResults","","HLT"), # Label of Trigger Results
 
                                 #-- Reco Details
-                                useBeamSpot = cms.bool(False),
+                                useBeamSpot = cms.bool(False),  
                                 useRapidity = cms.bool(True),
                                 
                                 #--
@@ -167,13 +193,14 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                 etaBinRanges     = cms.vdouble(0.0, 2.5),
                                 centralityRanges = cms.vdouble(20,40,100),
 
-                                onlyTheBest     = cms.bool(False),		
-                                applyCuts       = cms.bool(True),
-                                storeEfficiency = cms.bool(False),
+                                onlyTheBest        = cms.bool(False),		
+                                applyCuts          = cms.bool(True),
+                                selTightGlobalMuon = cms.bool(False),
+                                storeEfficiency    = cms.bool(False),
                       
-                                removeSignalEvents = cms.untracked.bool(False),
-                                removeTrueMuons    = cms.untracked.bool(False),
-                                storeSameSign      = cms.untracked.bool(True),
+                                removeSignalEvents = cms.untracked.bool(False),  # Remove/Keep signal events
+                                removeTrueMuons    = cms.untracked.bool(False),  # Remove/Keep gen Muons
+                                storeSameSign      = cms.untracked.bool(True),   # Store/Drop same sign dimuons
                                 
                                 #-- Gen Details
                                 oniaPDG = cms.int32(443),
@@ -182,8 +209,8 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                 isPA = cms.untracked.bool(False),
                                 isMC = cms.untracked.bool(isMC),
                                 isPromptMC = cms.untracked.bool(False),
-                                useEvtPlane = cms.untracked.bool(keepEventPlane),
-                                useGeTracks = cms.untracked.bool(keepGeneralTracks),
+                                useEvtPlane = cms.untracked.bool(useEventPlane),
+                                useGeTracks = cms.untracked.bool(useGeneralTracks),
                                 runVersionChange = cms.untracked.uint32(182133),
 
                                 #-- Histogram configuration
@@ -197,24 +224,42 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                 histFileName      = cms.string(options.outputFile),		
                                 dataSetName       = cms.string(options.secondaryOutputFile),
                                 
-                                #--
-                                # NumberOfTriggers = cms.uint32(8),
-                                dblTriggerPathNames = cms.vstring("HLT_HIL1DoubleMu0_HighQ_v2",
-                                                                  "HLT_HIL2DoubleMu3_v2",
-                                                                  "HLT_HIL3DoubleMuOpen_v2",
-                                                                  "HLT_HIL3DoubleMuOpen_Mgt2_OS_NoCowboy_v2"),
-                                dblTriggerFilterNames = cms.vstring("hltHIDoubleMuLevel1PathL1HighQFiltered",
-                                                                    "hltHIL2DoubleMu3L2Filtered",
-                                                                    "hltHIDimuonL3FilteredOpen",
-                                                                    "hltHIDimuonL3FilteredMg2OSnoCowboy"),
-                                sglTriggerPathNames = cms.vstring("HLT_HIL2Mu3_NHitQ_v2",
-                                                                  "HLT_HIL2Mu7_v2",
-                                                                  "HLT_HIL2Mu15_v2",
-                                                                  "HLT_HIL3Mu3_v2"),
-                                sglTriggerFilterNames = cms.vstring("hltHIL2Mu3NHitL2Filtered",
-                                                                    "hltHIL2Mu7L2Filtered",
+                                # HLT PP MENU: /users/HiMuonTrigDev/pp5TeV/NovDev/V4
+                                
+                                dblTriggerPathNames = cms.vstring("HLT_HIL1DoubleMu0_v1",
+                                                                  "HLT_HIL1DoubleMu10_v1",
+                                                                  "HLT_HIL2DoubleMu0_NHitQ_v1",
+                                                                  "HLT_HIL3DoubleMu0_OS_m2p5to4p5_v1",
+                                                                  "HLT_HIL3DoubleMu0_OS_m7to14_v1"),
+                                
+                                dblTriggerFilterNames = cms.vstring("hltHIDoubleMu0L1Filtered",
+                                                                    "hltHIDoubleMu10MinBiasL1Filtered",
+                                                                    "hltHIL2DoubleMu0NHitQFiltered",
+                                                                    "hltHIDimuonOpenOSm2p5to4p5L3Filter",
+                                                                    "hltHIDimuonOpenOSm7to14L3Filter"),
+                                
+                                sglTriggerPathNames = cms.vstring("HLT_HIL2Mu3_NHitQ10_v1",
+                                                                  "HLT_HIL3Mu3_NHitQ15_v1",
+                                                                  "HLT_HIL2Mu5_NHitQ10_v1",
+                                                                  "HLT_HIL3Mu5_NHitQ15_v1",
+                                                                  "HLT_HIL2Mu7_NHitQ10_v1",
+                                                                  "HLT_HIL3Mu7_NHitQ15_v1",
+                                                                  "HLT_HIL2Mu15_v1",
+                                                                  "HLT_HIL3Mu15_v1",
+                                                                  "HLT_HIL2Mu20_v1",
+                                                                  "HLT_HIL3Mu20_v1"),
+                                
+                                sglTriggerFilterNames = cms.vstring("hltHIL2Mu3N10HitQL2Filtered",
+                                                                    "hltHISingleMu3NHit15L3Filtered",
+                                                                    "hltHIL2Mu5N10HitQL2Filtered",
+                                                                    "hltHISingleMu5NHit15L3Filtered",
+                                                                    "hltHISingleMu5NHit15L3Filtered",
+                                                                    "hltHISingleMu7NHit15L3Filtered",
                                                                     "hltHIL2Mu15L2Filtered",
-                                                                    "hltHISingleMu3L3Filtered")
+                                                                    "hltHISingleMu15L3Filtered",
+                                                                    "hltHIL2Mu20L2Filtered",
+                                                                    "hltHIL3SingleMu20L3Filtered")
+
                                 )
 
 if isPbPb:
@@ -227,6 +272,7 @@ if isPbPb:
   else:
     process.hionia.CentralityBinSrc = cms.InputTag("centralityBin","HFtowers")
   
+  process.p = cms.EndPath(process.hiEvtPlane*process.hiEvtPlaneFlat*process.hionia)
 else:    
   process.hionia.primaryVertexTag = cms.InputTag("offlinePrimaryVertices")
   process.hionia.genParticles     = cms.InputTag("genParticles")
@@ -234,49 +280,152 @@ else:
   process.hionia.CentralitySrc    = cms.InputTag("")
   process.hionia.CentralityBinSrc = cms.InputTag("")
 
+  process.p = cms.EndPath(process.hionia)
 
-##### Remove few paths for MC
-if isMC:
-  if isPbPb:
-    process.Onia2MuMuPAT = cms.Path(
-       process.genMuons *
-       process.patMuonsWithTriggerSequence *
-       process.patMuonSequence *
-       process.onia2MuMuPatGlbGlb *
-       process.onia2MuMuPatGlbGlbFilter *
-       process.centralityBin *
-       process.hionia
-       )
-  else:
-    process.Onia2MuMuPAT = cms.Path(
-       process.genMuons *
-       process.patMuonsWithTriggerSequence *
-       process.patMuonSequence *
-       process.onia2MuMuPatGlbGlb *
-       process.onia2MuMuPatGlbGlbFilter *
-       process.hionia
-       )
-    
-if not isMC:
-  if isPbPb:
-    process.Onia2MuMuPAT = cms.Path(
-       process.patMuonsWithTriggerSequence *
-       process.patMuonSequence *
-       process.onia2MuMuPatGlbGlb *
-       process.onia2MuMuPatGlbGlbFilter *
-       process.centralityBin *
-       process.hionia
-       )
-  else:
-    process.Onia2MuMuPAT = cms.Path(
-       process.patMuonsWithTriggerSequence *
-       process.patMuonSequence *
-       process.onia2MuMuPatGlbGlb *
-       process.onia2MuMuPatGlbGlbFilter *
-       process.hionia
-       )
 
-process.schedule              = cms.Schedule(process.Onia2MuMuPAT)
-
+##### Construct the sequence
+process.schedule = cms.Schedule(process.Onia2MuMuPAT,process.p)
+  
 from Configuration.Applications.ConfigBuilder import MassReplaceInputTag
 MassReplaceInputTag(process)
+
+
+'''
+
+FOR PbPb: /users/HiMuonTrigDev/PbPb/CMSSW_7_5_5/NovDev/V9
+
+dblTriggerPathNames = cms.vstring("HLT_HIL1DoubleMu0_v1",
+	"HLT_HIL1DoubleMu0_2HF_v1",
+	"HLT_HIL1DoubleMu0_2HF0_v1",
+	"HLT_HIL1DoubleMu10_v1",
+	"HLT_HIL2DoubleMu0_NHitQ_v2",
+	"HLT_HIL2DoubleMu0_NHitQ_2HF_v1",
+	"HLT_HIL2DoubleMu0_NHitQ_2HF0_v1",
+	"HLT_HIL1DoubleMu0_2HF_Cent30100_v1",
+	"HLT_HIL1DoubleMu0_2HF0_Cent30100_v1",
+	"HLT_HIL2DoubleMu0_2HF_Cent30100_NHitQ_v1",
+	"HLT_HIL1DoubleMu0_Cent30_v1",
+	"HLT_HIL2DoubleMu0_2HF0_Cent30100_NHitQ_v1",
+	"HLT_HIL2DoubleMu0_Cent30_NHitQ_v1",
+	"HLT_HIL2DoubleMu0_Cent30_OS_NHitQ_v1",
+	"HLT_HIL3DoubleMu0_Cent30_v1",
+	"HLT_HIL3DoubleMu0_Cent30_OS_m2p5to4p5_v1",
+	"HLT_HIL3DoubleMu0_Cent30_OS_m7to14_v1",
+	"HLT_HIL3DoubleMu0_OS_m2p5to4p5_v1",
+	"HLT_HIL3DoubleMu0_OS_m7to14_v1"),
+
+
+dblTriggerFilterNames = cms.vstring("hltHIDoubleMu0L1Filtered",
+	"hltHIDoubleMu0MinBiasL1Filtered",
+	"hltHIDoubleMu0HFTower0Filtered",
+	"hltHIDoubleMu10L1Filtered",
+	"hltHIL2DoubleMu0NHitQFiltered",
+	"hltHIL2DoubleMu0NHitQ2HFFiltered",
+	"hltHIL2DoubleMu0NHitQ2HF0Filtered",
+	"hltHIDoubleMu0MinBiasCent30to100L1Filtered",
+	"hltHIDoubleMu0HFTower0Cent30to100L1Filtered",
+	"hltHIL2DoubleMu02HFcent30100NHitQFiltered",
+	"hltHIDoubleMu0MinBiasCent30L1Filtered",
+	"hltHIL2DoubleMu02HF0cent30100NHitQFiltered",
+	"hltHIL2DoubleMu0cent30NHitQFiltered",
+	"hltHIL2DoubleMu0cent30OSNHitQFiltered",
+	"hltHIDimuonOpenCentrality30L3Filter",
+	"hltHIDimuonOpenCentrality30OSm2p5to4p5L3Filter",
+	"hltHIDimuonOpenCentrality30OSm7to14L3Filter",
+	"hltHIDimuonOpenOSm2p5to4p5L3Filter",
+	"hltHIDimuonOpenOSm7to14L3Filter"),
+
+sglTriggerPathNames = cms.vstring("HLT_HIL2Mu3_NHitQ10_2HF_v1",
+	"HLT_HIL2Mu3_NHitQ10_2HF0_v1",
+	"HLT_HIL3Mu3_NHitQ15_2HF_v1",
+	"HLT_HIL3Mu3_NHitQ15_2HF0_v1",
+	"HLT_HIL2Mu5_NHitQ10_2HF_v1",
+	"HLT_HIL2Mu5_NHitQ10_2HF0_v1",
+	"HLT_HIL3Mu5_NHitQ15_2HF_v1",
+	"HLT_HIL3Mu5_NHitQ15_2HF0_v1",
+	"HLT_HIL2Mu7_NHitQ10_2HF_v1",
+	"HLT_HIL2Mu7_NHitQ10_2HF0_v1",
+	"HLT_HIL3Mu7_NHitQ15_2HF_v1",
+	"HLT_HIL3Mu7_NHitQ15_2HF0_v1",
+	"HLT_HIL2Mu15_v2",
+	"HLT_HIL2Mu15_2HF_v1",
+	"HLT_HIL2Mu15_2HF0_v1",
+	"HLT_HIL3Mu15_v1",
+	"HLT_HIL3Mu15_2HF_v1",
+	"HLT_HIL3Mu15_2HF0_v1",
+	"HLT_HIL2Mu20_v1",
+	"HLT_HIL2Mu20_2HF_v1",	
+	"HLT_HIL2Mu20_2HF0_v1",
+	"HLT_HIL3Mu20_v1",
+	"HLT_HIL3Mu20_2HF_v1",
+	"HLT_HIL2Mu20_2HF0_v1",
+	"HLT_HIL3Mu20_v1",
+	"HLT_HIL3Mu20_2HF_v1",
+	"HLT_HIL3Mu20_2HF0_v1"),
+
+sglTriggerFilterNames = cms.vstring("hltHIL2Mu3N10HitQ2HFL2Filtered",
+	"hltHIL2Mu3N10HitQ2HF0L2Filtered",
+	"hltHISingleMu3NHit152HFL3Filtered",
+	"hltHISingleMu3NHit152HF0L3Filtered",
+	"hltHIL2Mu5N10HitQ2HFL2Filtered",
+	"hltHIL2Mu5N10HitQ2HF0L2Filtered",
+	"hltHISingleMu5NHit152HFL3Filtered",
+	"hltHISingleMu5NHit152HF0L3Filtered",
+	"hltHIL2Mu7N10HitQ2HFL2Filtered",
+	"hltHIL2Mu7N10HitQ2HF0L2Filtered",
+	"hltHISingleMu7NHit152HFL3Filtered",
+	"hltHISingleMu7NHit152HF0L3Filtered",
+	"hltHIL2Mu15L2Filtered",
+	"hltHIL2Mu152HFFiltered",
+	"hltHIL2Mu15N10HitQ2HF0L2Filtered",
+	"hltHISingleMu15L3Filtered",
+	"hltHISingleMu152HFL3Filtered",
+	"hltHISingleMu152HF0L3Filtered",
+	"hltHIL2Mu20L2Filtered",
+	"hltHIL2Mu202HFL2Filtered",
+	"hltHIL2Mu202HF0L2Filtered",
+	"hltHIL3SingleMu20L3Filtered",
+	"hltHISingleMu202HFL3Filtered",
+	"hltHIL2Mu202HF0L2Filtered",
+	"hltHIL3SingleMu20L3Filtered",
+	"hltHISingleMu202HFL3Filtered",
+	"hltHISingleMu202HF0L3Filtered")
+
+
+FOR pp: /users/HiMuonTrigDev/pp5TeV/NovDev/V4
+
+dblTriggerPathNames = cms.vstring("HLT_HIL1DoubleMu0_v1",
+	"HLT_HIL1DoubleMu10_v1",
+	"HLT_HIL2DoubleMu0_NHitQ_v1",
+	"HLT_HIL3DoubleMu0_OS_m2p5to4p5_v1",
+	"HLT_HIL3DoubleMu0_OS_m7to14_v1"),
+
+dblTriggerFilterNames = cms.vstring("hltHIDoubleMu0L1Filtered",
+	"hltHIDoubleMu10MinBiasL1Filtered",
+	"hltHIL2DoubleMu0NHitQFiltered",
+	"hltHIDimuonOpenOSm2p5to4p5L3Filter",
+	"hltHIDimuonOpenOSm7to14L3Filter"),
+
+sglTriggerPathNames = cms.vstring("HLT_HIL2Mu3_NHitQ10_v1",
+	"HLT_HIL3Mu3_NHitQ15_v1",
+	"HLT_HIL2Mu5_NHitQ10_v1",
+	"HLT_HIL3Mu5_NHitQ15_v1",
+	"HLT_HIL2Mu7_NHitQ10_v1",
+	"HLT_HIL3Mu7_NHitQ15_v1",
+	"HLT_HIL2Mu15_v1",
+	"HLT_HIL3Mu15_v1",
+	"HLT_HIL2Mu20_v1",
+	"HLT_HIL3Mu20_v1"),
+
+sglTriggerFilterNames = cms.vstring("hltHIL2Mu3N10HitQL2Filtered",
+	"hltHISingleMu3NHit15L3Filtered",
+	"hltHIL2Mu5N10HitQL2Filtered",
+	"hltHISingleMu5NHit15L3Filtered",
+	"hltHISingleMu5NHit15L3Filtered",
+	"hltHISingleMu7NHit15L3Filtered",
+	"hltHIL2Mu15L2Filtered",
+	"hltHISingleMu15L3Filtered",
+	"hltHIL2Mu20L2Filtered",
+	"hltHIL3SingleMu20L3Filtered")
+
+'''

@@ -8,7 +8,8 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 process = cms.Process("Onia2MuMuPAT")
 
 # Conditions
-isPbPb = True;          
+HLTProName = "HLT"
+isPbPb = False;          
 isMC = False;
 keepGeneralTracks = False;
 keepEventPlane = True;
@@ -18,9 +19,8 @@ muonSelection = "GlbTrk" # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal
 options = VarParsing.VarParsing ('analysis')
 
 # setup any defaults you want
-options.inputFiles = 'file:/afs/cern.ch/user/t/tuos/work/public/reco2AOD/round2April28/DIMUON/step2_RAW2DIGI_L1Reco_DIMUONskim_AOD.root'#step2_reRECO_740_100_1_lRV.root'
-#/afs/cern.ch/user/t/tuos/work/public/reco2AOD/round2April28/DIMUON/step2_RAW2DIGI_L1Reco_DIMUONskim_AOD.root'#step2_reRECO_740_100_1_lRV.root'
-options.outputFile = 'onia2MuMuPAT_740.root'
+options.inputFiles = '/store/group/phys_heavyions/velicanu/store/t0streamer/Data/Express/000/261/396/RECO/bubba_RAW2DIGI_L1Reco_RECO.root'
+options.outputFile = 'onia2MuMuPAT_PP_DATA_RECO_B0T_75X.root'
 
 options.maxEvents = -1 # -1 means all events
 
@@ -36,15 +36,17 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.ReconstructionHeavyIons_cff')
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 
+# Global Tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 if isMC:
   if isPbPb:
-    process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc_hi', '')
+    process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc_HIon', '')
   else:
     process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
-else:
-  process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run1_data', '')
+else:  
+  process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
+process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
 
 '''
 # BSC or HF coincidence (masked unprescaled L1 bits)
@@ -53,26 +55,31 @@ process.bscOrHfCoinc = process.l1Filter.clone(
     algorithms = cms.vstring('*','L1_HcalHfCoincPmORBscMinBiasThresh1_BptxAND_instance1', 'L1_NotBsc2_BscMinBiasOR', 'L1_HcalHfCoincidencePm')
     )
 '''
-
-# HLT dimuon trigger
+# HLT Dimuon Triggers
 import HLTrigger.HLTfilters.hltHighLevel_cfi
 process.hltOniaHI = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
+# HLT PP MENU: /users/HiMuonTrigDev/pp5TeV/NovDev/V4
 process.hltOniaHI.HLTPaths = [
-    "HLT_HIL1DoubleMu0_HighQ_v2",
-    "HLT_HIL2DoubleMu3_v2",
-    "HLT_HIL3DoubleMuOpen_v2",
-    "HLT_HIL3DoubleMuOpen_Mgt2_OS_NoCowboy_v2",
-    "HLT_HIL2Mu3_NHitQ_v2",
-    "HLT_HIL2Mu7_v2",
-    "HLT_HIL2Mu15_v2",
-    "HLT_HIL3Mu3_v2"
-    ]
+  "HLT_HIL1DoubleMu0_v1",
+  "HLT_HIL1DoubleMu10_v1",
+  "HLT_HIL2DoubleMu0_NHitQ_v1",
+  "HLT_HIL3DoubleMu0_OS_m2p5to4p5_v1",
+  "HLT_HIL3DoubleMu0_OS_m7to14_v1"
+  ]
 process.hltOniaHI.throw = False
 process.hltOniaHI.andOr = True
-process.hltOniaHI.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT")
+process.hltOniaHI.TriggerResultsTag = cms.InputTag("TriggerResults","",HLTProName)
 
 from HiSkim.HiOnia2MuMu.onia2MuMuPAT_cff import *
-onia2MuMuPAT(process, GlobalTag=process.GlobalTag.globaltag, MC=isMC, HLT="HLT", Filter=True)
+onia2MuMuPAT(process, GlobalTag=process.GlobalTag.globaltag, MC=isMC, HLT=HLTProName, Filter=True)
+
+### Temporal fix for the PAT Trigger prescale warnings.
+process.patTriggerFull = cms.EDProducer( "PATTriggerProducer",
+                                         l1GtReadoutRecordInputTag = cms.InputTag("gtDigis","","RECO"),
+                                         onlyStandAlone = cms.bool( True ),
+                                         processName    = cms.string( HLTProName )                    
+                                         )
+###
 
 ##### Onia2MuMuPAT input collections/options
 process.onia2MuMuPatGlbGlb.dimuonSelection          = cms.string("mass > 0")
@@ -119,7 +126,6 @@ elif muonSelection == "Trk":
   process.onia2MuMuPatGlbGlb.lowerPuritySelection = cms.string("("+lowP+commonP1+")"+commonP2)
 else:
   print "ERROR: Incorrect muon selection " + muonSelection + " . Valid options are: Glb, Trk, GlbTrk"
-  return
 
 ##### If single track collection has to be kept
 if keepGeneralTracks:
@@ -128,11 +134,12 @@ if keepGeneralTracks:
 
 ##### If event plane collection has to be kept
 if keepEventPlane:
-  process.outOnia2MuMu.outputCommands.extend(('keep *_hiEvtPlane_*_*','keep *_hiEvtPlaneFlat_*_*'))
+  process.outOnia2MuMu.outputCommands.append("keep *_hiEvtPlane_*_*")
+  process.outOnia2MuMu.outputCommands.append("keep *_hiEvtPlaneFlat_*_*")
 
 
 
-process.source.fileNames      = cms.untracked.vstring(options.inputFiles)
+process.source.fileNames      = cms.untracked.vstring(options.inputFiles)        
 process.maxEvents             = cms.untracked.PSet( input = cms.untracked.int32(options.maxEvents) )
 process.outOnia2MuMu.fileName = cms.untracked.string( options.outputFile )
 process.e                     = cms.EndPath(process.outOnia2MuMu)
@@ -196,14 +203,14 @@ process.hltOniaHI.HLTPaths = [
     "HLT_HIL3Mu20_2HF0_v1"
     ]
 
-FOR pp: /users/HiMuonTrigDev/pp5TeV/NovDev/V4
+FOR PP: /users/HiMuonTrigDev/pp5TeV/NovDev/V4
 
 process.hltOniaHI.HLTPaths = [
     "HLT_HIL1DoubleMu0_v1",
     "HLT_HIL1DoubleMu10_v1",
     "HLT_HIL2DoubleMu0_NHitQ_v1",
     "HLT_HIL3DoubleMu0_OS_m2p5to4p5_v1",
-    "HLT_HIL3DoubleMu0_OS_m7to14_v1")
+    "HLT_HIL3DoubleMu0_OS_m7to14_v1",
     "HLT_HIL2Mu3_NHitQ10_v1",
     "HLT_HIL3Mu3_NHitQ15_v1",
     "HLT_HIL2Mu5_NHitQ10_v1",
