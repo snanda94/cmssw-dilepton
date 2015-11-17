@@ -11,7 +11,7 @@ config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'hioniaanalyzer_cfg.py'
 config.JobType.maxMemoryMB = 2400
-config.JobType.outputFiles = ['Jpsi_RECO_PP_B0T_75X.root']    # SET OUTPUT FILE NAME
+config.JobType.outputFiles = ['OniaTree.root']               # SET OUTPUT FILE NAME
 
 config.section_('Data')
 config.Data.inputDataset =''                                  # SET INPUT DATASET

@@ -16,7 +16,7 @@ muonSelection  = "GlbTrk" # Single muon selection: Glb(isGlobal), Trk(isTracker)
 options = VarParsing.VarParsing ('analysis')
 
 # Input and Output File Names
-options.outputFile = "Jpsi_RECO_PP_B0T_75X.root"
+options.outputFile = "OniaTree.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
 options.inputFiles = 'file:/home/llr/cms/stahl/github/CMSSW_7_5_4/src/HiAnalysis/HiOnia/test/onia2MuMuPAT_PP_DATA_RECO_B0T_75X.root'
 options.maxEvents = -1 # -1 means all events

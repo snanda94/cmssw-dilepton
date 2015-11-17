@@ -20,7 +20,7 @@ muonSelection = "GlbTrk" # Single muon selection: Glb, GlbTrk, Trk are availale
 options = VarParsing.VarParsing ('analysis')
 
 # Input and Output File Names
-options.outputFile = "Jpsi_PP_DATA_RECO_B0T_75X.root"
+options.outputFile = "OniaTree.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
 options.inputFiles ='file:/store/group/phys_heavyions/velicanu/store/t0streamer/Data/Express/000/261/396/RECO/bubba_RAW2DIGI_L1Reco_RECO.root'
 options.maxEvents = -1 # -1 means all events
