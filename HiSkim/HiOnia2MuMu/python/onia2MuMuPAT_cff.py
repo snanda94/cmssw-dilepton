@@ -76,7 +76,7 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True):
         primaryVertexTag         = cms.InputTag("hiSelectedVertex"),
         genParticles             = cms.InputTag("genParticles"),
         # At least one muon must pass this selection
-        higherPuritySelection    = cms.string("(isGlobalMuon || (innerTrack.isNonnull && genParticleRef(0).isNonnull)) && abs(innerTrack.dxy)<4 && abs(innerTrack.dz)<35"),
+        higherPuritySelection    = cms.string("((isGlobalMuon && isTrackerMuon) || (innerTrack.isNonnull && genParticleRef(0).isNonnull)) && abs(innerTrack.dxy)<4 && abs(innerTrack.dz)<35"),
         # BOTH muons must pass this selection
         lowerPuritySelection     = cms.string("((isGlobalMuon && isTrackerMuon) || (innerTrack.isNonnull && genParticleRef(0).isNonnull)) && abs(innerTrack.dxy)<4 && abs(innerTrack.dz)<35"),
         dimuonSelection          = cms.string(""), ## The dimuon must pass this selection before vertexing

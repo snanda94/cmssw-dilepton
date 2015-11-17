@@ -115,7 +115,7 @@ if muonSelection == "Glb":
   lowP = "isGlobalMuon"; # BOTH muons must pass this selection
   process.onia2MuMuPatGlbGlb.lowerPuritySelection = cms.string("("+lowP+commonP1+")"+commonP2)
 elif muonSelection == "GlbTrk":
-  highP = "isGlobalMuon";
+  highP = "(isGlobalMuon && isTrackerMuon)";
   process.onia2MuMuPatGlbGlb.higherPuritySelection = cms.string("("+highP+commonP1+")"+commonP2)
   lowP = "(isGlobalMuon && isTrackerMuon)";
   process.onia2MuMuPatGlbGlb.lowerPuritySelection = cms.string("("+lowP+commonP1+")"+commonP2)

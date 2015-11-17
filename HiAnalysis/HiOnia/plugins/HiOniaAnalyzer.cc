@@ -98,7 +98,7 @@ private:
   void fillRecoJpsi(int iSign, int count, std::string trigName, std::string centName);
   void fillHistosAndDS(unsigned int theCat, const pat::CompositeCandidate* aJpsiCand);
 
-  void fillTreeMuon(const pat::Muon* muon, int iType, int trigBits);
+  void fillTreeMuon(const pat::Muon* muon, int iType, ULong64_t trigBits);
   void fillTreeJpsi(int iSign, int count);
 
   void checkTriggers(const pat::CompositeCandidate* aJpsiCand);
@@ -177,7 +177,7 @@ private:
                              1 = +/+
                              2 = -/- 
                           */
-  int Reco_QQ_trig[Max_QQ_size];      // Vector of trigger bits matched to the Onia
+  ULong64_t Reco_QQ_trig[Max_QQ_size];      // Vector of trigger bits matched to the Onia
   bool Reco_QQ_isCowboy[Max_mu_size]; // Cowboy/Sailor Flag 
   float Reco_QQ_VtxProb[Max_QQ_size]; // chi2 probability of vertex fitting 
   float Reco_QQ_ctau[Max_QQ_size];    // ctau: flight time
@@ -234,7 +234,7 @@ private:
   float Reco_QQ_mumi_ptErr_global[Max_QQ_size];  // pT error for minus global muons
 
   int Reco_mu_size;           // Number of reconstructed muons
-  int Reco_mu_trig[Max_mu_size];      // Vector of trigger bits matched to the muons
+  ULong64_t Reco_mu_trig[Max_mu_size];      // Vector of trigger bits matched to the muons
   int Reco_mu_charge[Max_mu_size];  // Vector of charge of muons
   int Reco_mu_type[Max_mu_size];  // Vector of type of muon (global=0, tracker=1, calo=2)  
 
@@ -410,7 +410,7 @@ private:
   bool isTriggerMatched[sNTRIGGERS];
   std::string HLTLastFilters[sNTRIGGERS];
   bool alreadyFilled[sNTRIGGERS];
-  int HLTriggers;
+  ULong64_t HLTriggers;
   int trigPrescale[sNTRIGGERS];
 
   std::map<std::string, int> mapTriggerNameToIntFired_;
@@ -793,7 +793,7 @@ HiOniaAnalyzer::fillRecoHistos(int lastSign) {
 }
 
 void
-HiOniaAnalyzer::fillTreeMuon(const pat::Muon* muon, int iType, int trigBits) {
+HiOniaAnalyzer::fillTreeMuon(const pat::Muon* muon, int iType, ULong64_t trigBits) {
   if (Reco_mu_size >= Max_mu_size) {
     std::cout << "Too many muons: " << Reco_mu_size << std::endl;
     std::cout << "Maximum allowed: " << Max_mu_size << std::endl;
@@ -856,7 +856,7 @@ HiOniaAnalyzer::fillTreeJpsi(int iSign, int count) {
   const pat::Muon* muon1 = dynamic_cast<const pat::Muon*>(aJpsiCand->daughter("muon1"));
   const pat::Muon* muon2 = dynamic_cast<const pat::Muon*>(aJpsiCand->daughter("muon2"));
 
-  int trigBits=0;
+  ULong64_t trigBits=0;
   for (unsigned int iTr=1; iTr<NTRIGGERS; ++iTr) {
     if (isTriggerMatched[iTr])
       trigBits += pow(2,iTr-1);
@@ -1593,7 +1593,7 @@ HiOniaAnalyzer::fillRecoMuons(int iCent)
       if ( muType==Glb || muType==GlbTrk || muType==Trk ) {
         nGoodMuons++;
 
-        int trigBits=0;
+        ULong64_t trigBits=0;
         for (unsigned int iTr=1; iTr<NTRIGGERS; ++iTr) {
           const pat::TriggerObjectStandAloneCollection muHLTMatchesFilter = muon->triggerObjectMatchesByFilter(  HLTLastFilters[iTr] );
           const pat::TriggerObjectStandAloneCollection muHLTMatchesPath = muon->triggerObjectMatchesByPath( theTriggerNames.at(iTr), true, false );
@@ -1679,7 +1679,7 @@ HiOniaAnalyzer::InitTree()
 
   myTree->Branch("nTrig", &nTrig, "nTrig/I");
   myTree->Branch("trigPrescale", trigPrescale, "trigPrescale[nTrig]/I");
-  myTree->Branch("HLTriggers", &HLTriggers, "HLTriggers/I");
+  myTree->Branch("HLTriggers", &HLTriggers, "HLTriggers/l");
 
   myTree->Branch("Npix",&Npix,"Npix/I");
   myTree->Branch("NpixelTracks",&NpixelTracks,"NpixelTracks/I");
@@ -1715,7 +1715,7 @@ HiOniaAnalyzer::InitTree()
   myTree->Branch("Reco_QQ_4mom", "TClonesArray", &Reco_QQ_4mom, 32000, 0);
   myTree->Branch("Reco_QQ_mupl_4mom", "TClonesArray", &Reco_QQ_mupl_4mom, 32000, 0);
   myTree->Branch("Reco_QQ_mumi_4mom", "TClonesArray", &Reco_QQ_mumi_4mom, 32000, 0);
-  myTree->Branch("Reco_QQ_trig", Reco_QQ_trig,   "Reco_QQ_trig[Reco_QQ_size]/I");
+  myTree->Branch("Reco_QQ_trig", Reco_QQ_trig,   "Reco_QQ_trig[Reco_QQ_size]/l");
   myTree->Branch("Reco_QQ_isCowboy", Reco_QQ_isCowboy,   "Reco_QQ_isCowboy[Reco_QQ_size]/O");
   myTree->Branch("Reco_QQ_ctau", Reco_QQ_ctau,   "Reco_QQ_ctau[Reco_QQ_size]/F");
   myTree->Branch("Reco_QQ_ctauErr", Reco_QQ_ctauErr,   "Reco_QQ_ctauErr[Reco_QQ_size]/F");
@@ -1778,7 +1778,7 @@ HiOniaAnalyzer::InitTree()
   myTree->Branch("Reco_mu_charge", Reco_mu_charge,   "Reco_mu_charge[Reco_mu_size]/I");
   myTree->Branch("Reco_mu_4mom", "TClonesArray", &Reco_mu_4mom, 32000, 0);
   //  myTree->Branch("Reco_mu_3vec", "TClonesArray", &Reco_mu_3vec, 32000, 0);
-  myTree->Branch("Reco_mu_trig", Reco_mu_trig,   "Reco_mu_trig[Reco_mu_size]/I");
+  myTree->Branch("Reco_mu_trig", Reco_mu_trig,   "Reco_mu_trig[Reco_mu_size]/l");
 
   if (_useGeTracks && _fillRecoTracks) {
     myTree->Branch("Reco_trk_size", &Reco_trk_size,  "Reco_trk_size/I");
