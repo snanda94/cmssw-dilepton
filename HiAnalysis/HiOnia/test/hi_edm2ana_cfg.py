@@ -10,10 +10,11 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 process = cms.Process("Onia2MuMuPAT")
 
 # Conditions
+HLTProName = "HLT"
 isPbPb = False;          
 isMC = False;
-keepGeneralTracks = False;
-keepEventPlane = True;
+useGeneralTracks = False;
+useEventPlane = True;
 muonSelection = "GlbTrk" # Single muon selection: Glb, GlbTrk, Trk are availale
 
 # setup 'analysis'  options
@@ -22,7 +23,7 @@ options = VarParsing.VarParsing ('analysis')
 # Input and Output File Names
 options.outputFile = "OniaTree.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
-options.inputFiles ='file:/store/group/phys_heavyions/velicanu/store/t0streamer/Data/Express/000/261/396/RECO/bubba_RAW2DIGI_L1Reco_RECO.root'
+options.inputFiles ='/store/group/phys_heavyions/velicanu/store/t0streamer/Data/Express/000/261/396/RECO/bubba_RAW2DIGI_L1Reco_RECO.root'
 options.maxEvents = -1 # -1 means all events
 
 # get and parse the command line arguments
@@ -155,12 +156,12 @@ else:
   print "ERROR: Incorrect muon selection " + muonSelection + " . Valid options are: Glb, Trk, GlbTrk"
 
 ##### If single track collection has to be kept
-if keepGeneralTracks:
+if useGeneralTracks:
   process.outOnia2MuMu.outputCommands.append("keep *_hiGeneralTracks_*_*")
   process.outOnia2MuMu.outputCommands.append("keep *_standAloneMuons_*_*")
 
 ##### If event plane collection has to be kept
-if keepEventPlane:
+if useEventPlane:
   process.outOnia2MuMu.outputCommands.append("keep *_hiEvtPlane_*_*")
   process.outOnia2MuMu.outputCommands.append("keep *_hiEvtPlaneFlat_*_*")
 
