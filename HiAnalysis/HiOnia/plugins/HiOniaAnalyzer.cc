@@ -142,7 +142,6 @@ private:
   TTree* myTree;
 
   TClonesArray* Reco_mu_4mom;
-  TClonesArray* Reco_mu_3vec;
   TClonesArray* Reco_QQ_4mom;
   TClonesArray* Reco_QQ_vtx;
   TClonesArray* Reco_QQ_mupl_4mom;
@@ -151,7 +150,6 @@ private:
   TClonesArray* Reco_trk_vtx;
 
   TClonesArray* Gen_mu_4mom;
-  TClonesArray* Gen_mu_3vec;
   TClonesArray* Gen_QQ_4mom;
   TClonesArray* Gen_QQ_mupl_4mom;
   TClonesArray* Gen_QQ_mumi_4mom;
@@ -1389,16 +1387,17 @@ HiOniaAnalyzer::InitEvent()
   Reco_QQ_mupl_4mom->Clear();
   Reco_QQ_mumi_4mom->Clear();
   Reco_mu_4mom->Clear();
-  Reco_mu_3vec->Clear();
-  Reco_trk_4mom->Clear();
-  Reco_trk_vtx->Clear();
+
+  if (_useGeTracks && _fillRecoTracks) {
+    Reco_trk_4mom->Clear();
+    Reco_trk_vtx->Clear();
+  }
 
   if (_isMC) {
     Gen_QQ_4mom->Clear();
     Gen_QQ_mupl_4mom->Clear();
     Gen_QQ_mumi_4mom->Clear();
     Gen_mu_4mom->Clear();
-    Gen_mu_3vec->Clear();
   }
 
   for(std::map< std::string, int >::iterator clearIt= mapTriggerNameToIntFired_.begin(); clearIt != mapTriggerNameToIntFired_.end(); clearIt++){
@@ -1652,18 +1651,19 @@ void
 HiOniaAnalyzer::InitTree()
 {
   Reco_mu_4mom = new TClonesArray("TLorentzVector", 100);
-  Reco_mu_3vec = new TClonesArray("TVector3", 100);
   Reco_QQ_4mom = new TClonesArray("TLorentzVector",10);
   Reco_QQ_mupl_4mom = new TClonesArray("TLorentzVector",10);
   Reco_QQ_mumi_4mom = new TClonesArray("TLorentzVector",10);
-  Reco_trk_4mom = new TClonesArray("TLorentzVector", 100);
 
   Reco_QQ_vtx = new TClonesArray("TVector3", 100);
-  Reco_trk_vtx = new TClonesArray("TVector3", 100);
+
+  if (_useGeTracks && _fillRecoTracks) {
+    Reco_trk_4mom = new TClonesArray("TLorentzVector", 100);
+    Reco_trk_vtx = new TClonesArray("TVector3", 100);
+  }
 
   if (_isMC) {
     Gen_mu_4mom = new TClonesArray("TLorentzVector", 2);
-    Gen_mu_3vec = new TClonesArray("TVector3", 2);
     Gen_QQ_4mom = new TClonesArray("TLorentzVector", 2);
     Gen_QQ_mupl_4mom = new TClonesArray("TLorentzVector", 2);
     Gen_QQ_mumi_4mom = new TClonesArray("TLorentzVector", 2);
@@ -1698,7 +1698,7 @@ HiOniaAnalyzer::InitTree()
   myTree->Branch("SumET_ZDCplus",&SumET_ZDCplus,"SumET_ZDCplus/F");
   myTree->Branch("SumET_ZDCminus",&SumET_ZDCminus,"SumET_ZDCminus/F");
 
-  if (_isHI) {
+  if (_isHI && _useEvtPlane) {
     myTree->Branch("nEP", &nEP, "nEP/I");
     myTree->Branch("nNfEP", &nNfEP, "nNfEP/I");
     myTree->Branch("rpAng", &rpAng, "rpAng[nEP]/F");
@@ -1727,14 +1727,6 @@ HiOniaAnalyzer::InitTree()
   myTree->Branch("Reco_QQ_dca", Reco_QQ_dca,   "Reco_QQ_dca[Reco_QQ_size]/F");
   myTree->Branch("Reco_QQ_MassErr", Reco_QQ_MassErr,   "Reco_QQ_MassErr[Reco_QQ_size]/F");
   myTree->Branch("Reco_QQ_vtx", "TClonesArray", &Reco_QQ_vtx, 32000, 0);
-
-  myTree->Branch("Reco_QQ_NtrkPt02", Reco_QQ_NtrkPt02, "Reco_QQ_NtrkPt02[Reco_QQ_size]/I");
-  myTree->Branch("Reco_QQ_NtrkPt03", Reco_QQ_NtrkPt03, "Reco_QQ_NtrkPt03[Reco_QQ_size]/I");
-  myTree->Branch("Reco_QQ_NtrkPt04", Reco_QQ_NtrkPt04, "Reco_QQ_NtrkPt04[Reco_QQ_size]/I");
-
-  myTree->Branch("Reco_QQ_NtrkDeltaR03", Reco_QQ_NtrkDeltaR03, "Reco_QQ_NtrkDeltaR03[Reco_QQ_size]/I");
-  myTree->Branch("Reco_QQ_NtrkDeltaR04", Reco_QQ_NtrkDeltaR04, "Reco_QQ_NtrkDeltaR04[Reco_QQ_size]/I");
-  myTree->Branch("Reco_QQ_NtrkDeltaR05", Reco_QQ_NtrkDeltaR05, "Reco_QQ_NtrkDeltaR05[Reco_QQ_size]/I");
 
   if (!_theMinimumFlag) {
     myTree->Branch("Reco_QQ_mupl_TrkMuArb", Reco_QQ_mupl_TrkMuArb,   "Reco_QQ_mupl_TrkMuArb[Reco_QQ_size]/O");
@@ -1777,10 +1769,16 @@ HiOniaAnalyzer::InitTree()
   myTree->Branch("Reco_mu_type", Reco_mu_type,   "Reco_mu_type[Reco_mu_size]/I");
   myTree->Branch("Reco_mu_charge", Reco_mu_charge,   "Reco_mu_charge[Reco_mu_size]/I");
   myTree->Branch("Reco_mu_4mom", "TClonesArray", &Reco_mu_4mom, 32000, 0);
-  //  myTree->Branch("Reco_mu_3vec", "TClonesArray", &Reco_mu_3vec, 32000, 0);
   myTree->Branch("Reco_mu_trig", Reco_mu_trig,   "Reco_mu_trig[Reco_mu_size]/l");
 
   if (_useGeTracks && _fillRecoTracks) {
+    myTree->Branch("Reco_QQ_NtrkPt02", Reco_QQ_NtrkPt02, "Reco_QQ_NtrkPt02[Reco_QQ_size]/I");
+    myTree->Branch("Reco_QQ_NtrkPt03", Reco_QQ_NtrkPt03, "Reco_QQ_NtrkPt03[Reco_QQ_size]/I");
+    myTree->Branch("Reco_QQ_NtrkPt04", Reco_QQ_NtrkPt04, "Reco_QQ_NtrkPt04[Reco_QQ_size]/I");
+    myTree->Branch("Reco_QQ_NtrkDeltaR03", Reco_QQ_NtrkDeltaR03, "Reco_QQ_NtrkDeltaR03[Reco_QQ_size]/I");
+    myTree->Branch("Reco_QQ_NtrkDeltaR04", Reco_QQ_NtrkDeltaR04, "Reco_QQ_NtrkDeltaR04[Reco_QQ_size]/I");
+    myTree->Branch("Reco_QQ_NtrkDeltaR05", Reco_QQ_NtrkDeltaR05, "Reco_QQ_NtrkDeltaR05[Reco_QQ_size]/I");
+
     myTree->Branch("Reco_trk_size", &Reco_trk_size,  "Reco_trk_size/I");
     myTree->Branch("Reco_trk_charge", Reco_trk_charge,   "Reco_trk_charge[Reco_trk_size]/I");
     myTree->Branch("Reco_trk_4mom", "TClonesArray", &Reco_trk_4mom, 32000, 0);
