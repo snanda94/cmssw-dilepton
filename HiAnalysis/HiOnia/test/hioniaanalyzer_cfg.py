@@ -18,7 +18,7 @@ options = VarParsing.VarParsing ('analysis')
 # Input and Output File Names
 options.outputFile = "OniaTree.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
-options.inputFiles = 'file:/home/llr/cms/stahl/CMS-HIN-Dilepton/Official/CMSSW_7_5_4/src/HiAnalysis/HiOnia/test/onia2MuMuPAT_PP_DATA_RECO_75X.root'
+options.inputFiles = 'file:onia2MuMuPAT_DATA_75X.root'
 options.maxEvents = -1 # -1 means all events
 
 # Get and parse the command line arguments
@@ -91,7 +91,6 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                 srcMuon             = cms.InputTag("patMuonsWithTrigger"),     # Name of PAT Muon Collection
                                 srcMuonNoTrig       = cms.InputTag("patMuonsWithoutTrigger"),  # Name of PAT Muon Without Trigger Collection
                                 src                 = cms.InputTag("onia2MuMuPatGlbGlb"),      # Name of Onia Skim Collection
-                                srcTracks           = cms.InputTag("hiGeneralTracks"),         # Name of General Tracks Collection
                                 EvtPlane            = cms.InputTag("hiEvtPlane",""),           # Name of Event Plane Collection. For RECO use: hiEventPlane,recoLevel
                                 EvtPlaneFlat        = cms.InputTag("hiEvtPlaneFlat",""),       # Name of Flat Event Plane Collection. 
 
@@ -182,6 +181,7 @@ if isPbPb:
   process.hionia.genParticles     = cms.InputTag("genParticles")
   process.hionia.muonLessPV       = cms.bool(False)
   process.hionia.CentralitySrc    = cms.InputTag("hiCentrality")
+  process.hionia.srcTracks        = cms.InputTag("hiGeneralTracks")       
   if isMC:
     process.hionia.CentralityBinSrc = cms.InputTag("centralityBin","HFtowersHydjetDrum5")  
   else:
@@ -190,10 +190,11 @@ if isPbPb:
   process.p = cms.Path(process.hiEvtPlane*process.hiEvtPlaneFlat*process.hionia)
 else:    
   process.hionia.primaryVertexTag = cms.InputTag("offlinePrimaryVertices")
-  process.hionia.genParticles     = cms.InputTag("genParticles")
+  process.hionia.genParticles     = cms.InputTag("hiGenParticles")
   process.hionia.muonLessPV       = cms.bool(True)
   process.hionia.CentralitySrc    = cms.InputTag("")
   process.hionia.CentralityBinSrc = cms.InputTag("")
+  process.hionia.srcTracks        = cms.InputTag("generalTracks")       
 
   process.p = cms.Path(process.hionia)
 

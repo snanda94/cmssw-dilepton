@@ -19,7 +19,7 @@ muonSelection = "Trk" # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal&&i
 options = VarParsing.VarParsing ('analysis')
 
 # setup any defaults you want
-options.inputFiles = 'file:/home/llr/cms/stahl/CMS-HIN-Dilepton/Official/CMSSW_7_5_4/src/HiSkim/HiOnia2MuMu/test/FAFEE134-E88E-E511-9CAA-02163E0144B7.root'
+options.inputFiles = 'file:A2CA3037-8C8F-E511-A758-02163E0143E2.root'
 options.outputFile = 'onia2MuMuPAT_DATA_75X.root'
 
 options.maxEvents = -1 # -1 means all events
@@ -137,9 +137,11 @@ else:
 
 ##### If single track collection has to be kept
 if keepGeneralTracks:
-  process.outOnia2MuMu.outputCommands.append("keep *_hiGeneralTracks_*_*")
   process.outOnia2MuMu.outputCommands.append("keep *_standAloneMuons_*_*")
-
+  if isPbPb:
+    process.outOnia2MuMu.outputCommands.append("keep *_hiGeneralTracks_*_*")
+  else:
+    process.outOnia2MuMu.outputCommands.append("keep *_generalTracks_*_*")
 ##### If event plane collection has to be kept
 if keepEventPlane:
   process.outOnia2MuMu.outputCommands.append("keep *_hiEvtPlane_*_*")
