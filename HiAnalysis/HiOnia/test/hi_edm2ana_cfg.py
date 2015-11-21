@@ -15,7 +15,7 @@ isPbPb = False;
 isMC = False;
 useGeneralTracks = False;
 useEventPlane = True;
-muonSelection = "GlbTrk" # Single muon selection: Glb, GlbTrk, Trk are availale
+muonSelection = "Trk" # Single muon selection: Glb, GlbTrk, Trk are availale
 
 # setup 'analysis'  options
 options = VarParsing.VarParsing ('analysis')
@@ -92,7 +92,16 @@ process.hltOniaHI.HLTPaths = [
   "HLT_HIL1DoubleMu10_v1",
   "HLT_HIL2DoubleMu0_NHitQ_v1",
   "HLT_HIL3DoubleMu0_OS_m2p5to4p5_v1",
-  "HLT_HIL3DoubleMu0_OS_m7to14_v1"
+  "HLT_HIL3DoubleMu0_OS_m7to14_v1",
+  "HLT_HIL3Mu3_NHitQ15_v1",
+  "HLT_HIL2Mu5_NHitQ10_v1",
+  "HLT_HIL3Mu5_NHitQ15_v1",
+  "HLT_HIL2Mu7_NHitQ10_v1",
+  "HLT_HIL3Mu7_NHitQ15_v1",
+  "HLT_HIL2Mu15_v1",
+  "HLT_HIL3Mu15_v1",
+  "HLT_HIL2Mu20_v1",
+  "HLT_HIL3Mu20_v1"
   ]
 process.hltOniaHI.throw = False
 process.hltOniaHI.andOr = True
@@ -130,8 +139,6 @@ else: # ispp
 
 ##### Remove few paths for MC
 if isMC:
-  process.patMuonSequence.remove(process.hltOniaHI)
-if not isMC:
   process.patMuonSequence.remove(process.hltOniaHI)
 
 ##### Dimuon pair selection

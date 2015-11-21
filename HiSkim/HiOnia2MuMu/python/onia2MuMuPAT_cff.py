@@ -28,7 +28,7 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True):
 
     # Make PAT Muons
     process.load("MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff")
-    from MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff import addMCinfo, useL1MatchingWindowForSinglets, changeTriggerProcessName, switchOffAmbiguityResolution
+    from MuonAnalysis.MuonAssociators.patMuonsWithTrigger_cff import addMCinfo, useL1MatchingWindowForSinglets, changeTriggerProcessName, switchOffAmbiguityResolution, addHLTL1Passthrough
     # with some customization
     if MC:
         addMCinfo(process)
@@ -38,9 +38,12 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True):
         process.muonMatch.matched = "genMuons"
     changeTriggerProcessName(process, HLT)
     switchOffAmbiguityResolution(process) # Switch off ambiguity resolution: allow multiple reco muons to match to the same trigger muon
+    addHLTL1Passthrough(process)
     #useL1MatchingWindowForSinglets(process)
 
-    process.patMuonsWithoutTrigger.pvSrc = "hiSelectedVertex"
+    #process.patMuonsWithoutTrigger.pvSrc = "hiSelectedVertex"
+    process.patTrigger.collections.remove("hltL3MuonCandidates")
+    process.patTrigger.collections.append("hltHIL3MuonCandidates")
 
     process.muonL1Info.maxDeltaR = 0.3
     process.muonL1Info.fallbackToME1 = True

@@ -10,7 +10,7 @@ isPbPb = False
 isMC   = False
 useEventPlane    = True   # Enable/Disable the use of Event Planes.
 useGeneralTracks = False  # Enable/Disable the use of HiGeneralTracks. Keep False by default
-muonSelection  = "GlbTrk" # Single muon selection: Glb(isGlobal), Trk(isTracker) and GlbTrk(isGlobal&&isTracker) are the available options
+muonSelection  = "Trk" # Single muon selection: Glb(isGlobal), Trk(isTracker) and GlbTrk(isGlobal&&isTracker) are the available options
 
 # Setup 'analysis'  options
 options = VarParsing.VarParsing ('analysis')
@@ -18,7 +18,7 @@ options = VarParsing.VarParsing ('analysis')
 # Input and Output File Names
 options.outputFile = "OniaTree.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
-options.inputFiles = 'file:/home/llr/cms/stahl/github/CMSSW_7_5_4/src/HiAnalysis/HiOnia/test/onia2MuMuPAT_PP_DATA_RECO_B0T_75X.root'
+options.inputFiles = 'file:/home/llr/cms/stahl/CMS-HIN-Dilepton/Official/CMSSW_7_5_4/src/HiAnalysis/HiOnia/test/onia2MuMuPAT_PP_DATA_RECO_75X.root'
 options.maxEvents = -1 # -1 means all events
 
 # Get and parse the command line arguments

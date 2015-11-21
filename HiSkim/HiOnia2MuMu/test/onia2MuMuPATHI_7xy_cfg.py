@@ -13,14 +13,14 @@ isPbPb = False;
 isMC = False;
 keepGeneralTracks = False;
 keepEventPlane = True;
-muonSelection = "GlbTrk" # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal&&isTracker), Trk(isTracker) are availale
+muonSelection = "Trk" # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal&&isTracker), Trk(isTracker) are availale
 
 # setup 'analysis'  options
 options = VarParsing.VarParsing ('analysis')
 
 # setup any defaults you want
-options.inputFiles = '/store/group/phys_heavyions/velicanu/store/t0streamer/Data/Express/000/261/396/RECO/bubba_RAW2DIGI_L1Reco_RECO.root'
-options.outputFile = 'onia2MuMuPAT_PP_DATA_RECO_B0T_75X.root'
+options.inputFiles = 'file:/home/llr/cms/stahl/CMS-HIN-Dilepton/Official/CMSSW_7_5_4/src/HiSkim/HiOnia2MuMu/test/FAFEE134-E88E-E511-9CAA-02163E0144B7.root'
+options.outputFile = 'onia2MuMuPAT_DATA_75X.root'
 
 options.maxEvents = -1 # -1 means all events
 
@@ -60,11 +60,21 @@ import HLTrigger.HLTfilters.hltHighLevel_cfi
 process.hltOniaHI = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
 # HLT PP MENU: /users/HiMuonTrigDev/pp5TeV/NovDev/V4
 process.hltOniaHI.HLTPaths = [
-  "HLT_HIL1DoubleMu0_v1",
-  "HLT_HIL1DoubleMu10_v1",
-  "HLT_HIL2DoubleMu0_NHitQ_v1",
-  "HLT_HIL3DoubleMu0_OS_m2p5to4p5_v1",
-  "HLT_HIL3DoubleMu0_OS_m7to14_v1"
+    "HLT_HIL1DoubleMu0_v1",
+    "HLT_HIL1DoubleMu10_v1",
+    "HLT_HIL2DoubleMu0_NHitQ_v1",
+    "HLT_HIL3DoubleMu0_OS_m2p5to4p5_v1",
+    "HLT_HIL3DoubleMu0_OS_m7to14_v1",
+    "HLT_HIL2Mu3_NHitQ10_v1",
+    "HLT_HIL3Mu3_NHitQ15_v1",
+    "HLT_HIL2Mu5_NHitQ10_v1",
+    "HLT_HIL3Mu5_NHitQ15_v1",
+    "HLT_HIL2Mu7_NHitQ10_v1",
+    "HLT_HIL3Mu7_NHitQ15_v1",
+    "HLT_HIL2Mu15_v1",
+    "HLT_HIL3Mu15_v1",
+    "HLT_HIL2Mu20_v1",
+    "HLT_HIL3Mu20_v1"
   ]
 process.hltOniaHI.throw = False
 process.hltOniaHI.andOr = True
@@ -102,8 +112,6 @@ else: # ispp
 
 ##### Remove few paths for MC
 if isMC:
-  process.patMuonSequence.remove(process.hltOniaHI)
-if not isMC:
   process.patMuonSequence.remove(process.hltOniaHI)
 
 ##### Dimuon pair selection

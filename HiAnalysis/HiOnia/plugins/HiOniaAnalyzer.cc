@@ -176,6 +176,8 @@ private:
                              2 = -/- 
                           */
   ULong64_t Reco_QQ_trig[Max_QQ_size];      // Vector of trigger bits matched to the Onia
+  ULong64_t Reco_QQ_mupl_trig[Max_QQ_size];      // Vector of trigger bits matched to the Onia
+  ULong64_t Reco_QQ_mumi_trig[Max_QQ_size];      // Vector of trigger bits matched to the Onia
   bool Reco_QQ_isCowboy[Max_mu_size]; // Cowboy/Sailor Flag 
   float Reco_QQ_VtxProb[Max_QQ_size]; // chi2 probability of vertex fitting 
   float Reco_QQ_ctau[Max_QQ_size];    // ctau: flight time
@@ -399,7 +401,7 @@ private:
 
  // Triger stuff
   // PUT HERE THE *LAST FILTERS* OF THE BITS YOU LIKE
-  static const unsigned int sNTRIGGERS = 20;
+  static const unsigned int sNTRIGGERS = 65;
   unsigned int NTRIGGERS;
   unsigned int NTRIGGERS_DBL;
   unsigned int nTrig;
@@ -854,10 +856,14 @@ HiOniaAnalyzer::fillTreeJpsi(int iSign, int count) {
   const pat::Muon* muon1 = dynamic_cast<const pat::Muon*>(aJpsiCand->daughter("muon1"));
   const pat::Muon* muon2 = dynamic_cast<const pat::Muon*>(aJpsiCand->daughter("muon2"));
 
-  ULong64_t trigBits=0;
+  ULong64_t trigBits=0, trigBits_mu1=0, trigBits_mu2=0;
   for (unsigned int iTr=1; iTr<NTRIGGERS; ++iTr) {
-    if (isTriggerMatched[iTr])
-      trigBits += pow(2,iTr-1);
+    if (isTriggerMatched[iTr]) {trigBits += pow(2,iTr-1);}
+
+    const pat::TriggerObjectStandAloneCollection mu1HLTMatchesFilter = muon1->triggerObjectMatchesByFilter( HLTLastFilters[iTr] );
+    const pat::TriggerObjectStandAloneCollection mu2HLTMatchesFilter = muon2->triggerObjectMatchesByFilter( HLTLastFilters[iTr] );
+    if (mu1HLTMatchesFilter.size() > 0) { trigBits_mu1 += pow(2,iTr-1); }
+    if (mu2HLTMatchesFilter.size() > 0) { trigBits_mu2 += pow(2,iTr-1); }
   }
 
   Reco_QQ_sign[Reco_QQ_size] = iSign;
@@ -895,6 +901,9 @@ HiOniaAnalyzer::fillTreeJpsi(int iSign, int count) {
     new((*Reco_QQ_mupl_4mom)[Reco_QQ_size])TLorentzVector(vMuon1);
     new((*Reco_QQ_mumi_4mom)[Reco_QQ_size])TLorentzVector(vMuon2);
 
+    Reco_QQ_mupl_trig[Reco_QQ_size] = trigBits_mu1;
+    Reco_QQ_mumi_trig[Reco_QQ_size] = trigBits_mu2;
+
     if (TVector2::Phi_mpi_pi(vMuon1.Phi() - vMuon2.Phi()) > 0) Reco_QQ_isCowboy[Reco_QQ_size] = true;
     else Reco_QQ_isCowboy[Reco_QQ_size] = false;
 
@@ -919,6 +928,9 @@ HiOniaAnalyzer::fillTreeJpsi(int iSign, int count) {
   else {
     new((*Reco_QQ_mupl_4mom)[Reco_QQ_size])TLorentzVector(vMuon2);
     new((*Reco_QQ_mumi_4mom)[Reco_QQ_size])TLorentzVector(vMuon1);
+
+    Reco_QQ_mupl_trig[Reco_QQ_size] = trigBits_mu2;
+    Reco_QQ_mumi_trig[Reco_QQ_size] = trigBits_mu1;
 
     if (TVector2::Phi_mpi_pi(vMuon2.Phi() - vMuon1.Phi()) > 0) Reco_QQ_isCowboy[Reco_QQ_size] = true;
     else Reco_QQ_isCowboy[Reco_QQ_size] = false;
@@ -1716,6 +1728,8 @@ HiOniaAnalyzer::InitTree()
   myTree->Branch("Reco_QQ_mupl_4mom", "TClonesArray", &Reco_QQ_mupl_4mom, 32000, 0);
   myTree->Branch("Reco_QQ_mumi_4mom", "TClonesArray", &Reco_QQ_mumi_4mom, 32000, 0);
   myTree->Branch("Reco_QQ_trig", Reco_QQ_trig,   "Reco_QQ_trig[Reco_QQ_size]/l");
+  myTree->Branch("Reco_QQ_mupl_trig", Reco_QQ_mupl_trig,   "Reco_QQ_mupl_trig[Reco_QQ_size]/l");
+  myTree->Branch("Reco_QQ_mumi_trig", Reco_QQ_mumi_trig,   "Reco_QQ_mumi_trig[Reco_QQ_size]/l");
   myTree->Branch("Reco_QQ_isCowboy", Reco_QQ_isCowboy,   "Reco_QQ_isCowboy[Reco_QQ_size]/O");
   myTree->Branch("Reco_QQ_ctau", Reco_QQ_ctau,   "Reco_QQ_ctau[Reco_QQ_size]/F");
   myTree->Branch("Reco_QQ_ctauErr", Reco_QQ_ctauErr,   "Reco_QQ_ctauErr[Reco_QQ_size]/F");
