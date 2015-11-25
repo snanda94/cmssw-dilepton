@@ -11,11 +11,11 @@ process = cms.Process("Onia2MuMuPAT")
 
 # Conditions
 HLTProName = "HLT"
-isPbPb = False;          
+isPbPb = True;          
 isMC = False;
 useGeneralTracks = False;
 useEventPlane = True;
-muonSelection = "Trk" # Single muon selection: Glb, GlbTrk, Trk are availale
+muonSelection = "GlbTrk" # Single muon selection: Glb, GlbTrk, Trk are availale
 
 # setup 'analysis'  options
 options = VarParsing.VarParsing ('analysis')
@@ -28,6 +28,8 @@ options.maxEvents = -1 # -1 means all events
 
 # get and parse the command line arguments
 options.parseArguments()
+process.load("FWCore.MessageService.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
@@ -67,13 +69,6 @@ if isPbPb:
                  connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS")
                  )
         ])
-  else:
-    process.GlobalTag.toGet.extend([
-        cms.PSet(record = cms.string("HeavyIonRPRcd"),
-                 tag = cms.string("HeavyIonRPRcd_PbPb2011_74X_v01_offline"),
-                 connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS")
-                 )
-        ])
 
 
 '''
@@ -86,23 +81,52 @@ process.bscOrHfCoinc = process.l1Filter.clone(
 # HLT Dimuon Triggers
 import HLTrigger.HLTfilters.hltHighLevel_cfi
 process.hltOniaHI = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
-# HLT PP MENU: /users/HiMuonTrigDev/pp5TeV/NovDev/V4
-process.hltOniaHI.HLTPaths = [
-  "HLT_HIL1DoubleMu0_v1",
-  "HLT_HIL1DoubleMu10_v1",
-  "HLT_HIL2DoubleMu0_NHitQ_v1",
-  "HLT_HIL3DoubleMu0_OS_m2p5to4p5_v1",
-  "HLT_HIL3DoubleMu0_OS_m7to14_v1",
-  "HLT_HIL3Mu3_NHitQ15_v1",
-  "HLT_HIL2Mu5_NHitQ10_v1",
-  "HLT_HIL3Mu5_NHitQ15_v1",
-  "HLT_HIL2Mu7_NHitQ10_v1",
-  "HLT_HIL3Mu7_NHitQ15_v1",
-  "HLT_HIL2Mu15_v1",
-  "HLT_HIL3Mu15_v1",
-  "HLT_HIL2Mu20_v1",
-  "HLT_HIL3Mu20_v1"
-  ]
+# HLT PbPbP MENU:  /online/collisions/2015/HeavyIons/v1.0/HLT/V6
+process.hltOniaHI.HLTPaths =  [
+    "HLT_HIL1DoubleMu0_v1",
+    "HLT_HIL1DoubleMu0_2HF_v1",
+    "HLT_HIL1DoubleMu0_2HF0_v1",
+    "HLT_HIL1DoubleMu10_v1",
+    "HLT_HIL2DoubleMu0_NHitQ_v2",
+    "HLT_HIL2DoubleMu0_NHitQ_2HF_v1",
+    "HLT_HIL2DoubleMu0_NHitQ_2HF0_v1",
+    "HLT_HIL1DoubleMu0_2HF_Cent30100_v1",
+    "HLT_HIL1DoubleMu0_2HF0_Cent30100_v1",
+    "HLT_HIL2DoubleMu0_2HF_Cent30100_NHitQ_v1",
+    "HLT_HIL1DoubleMu0_Cent30_v1",
+    "HLT_HIL2DoubleMu0_2HF0_Cent30100_NHitQ_v1",
+    "HLT_HIL2DoubleMu0_Cent30_NHitQ_v1",
+    "HLT_HIL2DoubleMu0_Cent30_OS_NHitQ_v1",
+    "HLT_HIL3DoubleMu0_Cent30_v1",
+    "HLT_HIL3DoubleMu0_Cent30_OS_m2p5to4p5_v1",
+    "HLT_HIL3DoubleMu0_Cent30_OS_m7to14_v1",
+    "HLT_HIL3DoubleMu0_OS_m2p5to4p5_v1",
+    "HLT_HIL3DoubleMu0_OS_m7to14_v1",
+    "HLT_HIL2Mu3_NHitQ10_2HF_v1",
+    "HLT_HIL2Mu3_NHitQ10_2HF0_v1",
+    "HLT_HIL3Mu3_NHitQ15_2HF_v1",
+    "HLT_HIL3Mu3_NHitQ15_2HF0_v1",
+    "HLT_HIL2Mu5_NHitQ10_2HF_v1",
+    "HLT_HIL2Mu5_NHitQ10_2HF0_v1",
+    "HLT_HIL3Mu5_NHitQ15_2HF_v1",
+    "HLT_HIL3Mu5_NHitQ15_2HF0_v1",
+    "HLT_HIL2Mu7_NHitQ10_2HF_v1",
+    "HLT_HIL2Mu7_NHitQ10_2HF0_v1",
+    "HLT_HIL3Mu7_NHitQ15_2HF_v1",
+    "HLT_HIL3Mu7_NHitQ15_2HF0_v1",
+    "HLT_HIL2Mu15_v2",
+    "HLT_HIL2Mu15_2HF_v1",
+    "HLT_HIL2Mu15_2HF0_v1",
+    "HLT_HIL3Mu15_v1",
+    "HLT_HIL3Mu15_2HF_v1",
+    "HLT_HIL3Mu15_2HF0_v1",
+    "HLT_HIL2Mu20_v1",
+    "HLT_HIL2Mu20_2HF_v1",	
+    "HLT_HIL2Mu20_2HF0_v1",
+    "HLT_HIL3Mu20_v1",
+    "HLT_HIL3Mu20_2HF_v1",
+    "HLT_HIL3Mu20_2HF0_v1"
+    ]
 process.hltOniaHI.throw = False
 process.hltOniaHI.andOr = True
 process.hltOniaHI.TriggerResultsTag = cms.InputTag("TriggerResults","",HLTProName)
@@ -164,8 +188,9 @@ else:
 
 ##### If single track collection has to be kept
 if useGeneralTracks:
-  process.outOnia2MuMu.outputCommands.append("keep *_hiGeneralTracks_*_*")
   process.outOnia2MuMu.outputCommands.append("keep *_standAloneMuons_*_*")
+  if isPbPb: process.outOnia2MuMu.outputCommands.append("keep *_hiGeneralTracks_*_*")
+  else: process.outOnia2MuMu.outputCommands.append("keep *_generalTracks_*_*")
 
 ##### If event plane collection has to be kept
 if useEventPlane:
@@ -184,7 +209,6 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                 srcMuon             = cms.InputTag("patMuonsWithTrigger"),     # Name of PAT Muon Collection
                                 srcMuonNoTrig       = cms.InputTag("patMuonsWithoutTrigger"),  # Name of PAT Muon Without Trigger Collection
                                 src                 = cms.InputTag("onia2MuMuPatGlbGlb"),      # Name of Onia Skim Collection
-                                srcTracks           = cms.InputTag("hiGeneralTracks"),         # Name of General Tracks Collection
                                 EvtPlane            = cms.InputTag("hiEvtPlane",""),           # Name of Event Plane Collection. For RECO use: hiEventPlane,recoLevel
                                 EvtPlaneFlat        = cms.InputTag("hiEvtPlaneFlat",""),       # Name of Flat Event Plane Collection. 
 
@@ -232,41 +256,97 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                 histFileName      = cms.string(options.outputFile),		
                                 dataSetName       = cms.string(options.secondaryOutputFile),
                                 
-                                # HLT PP MENU: /users/HiMuonTrigDev/pp5TeV/NovDev/V4
-                                
+                                # HLT PbPbP MENU:  /online/collisions/2015/HeavyIons/v1.0/HLT/V6
+
                                 dblTriggerPathNames = cms.vstring("HLT_HIL1DoubleMu0_v1",
+                                                                  "HLT_HIL1DoubleMu0_2HF_v1",
+                                                                  "HLT_HIL1DoubleMu0_2HF0_v1",
                                                                   "HLT_HIL1DoubleMu10_v1",
-                                                                  "HLT_HIL2DoubleMu0_NHitQ_v1",
+                                                                  "HLT_HIL2DoubleMu0_NHitQ_v2",
+                                                                  "HLT_HIL2DoubleMu0_NHitQ_2HF_v1",
+                                                                  "HLT_HIL2DoubleMu0_NHitQ_2HF0_v1",
+                                                                  "HLT_HIL1DoubleMu0_2HF_Cent30100_v1",
+                                                                  "HLT_HIL1DoubleMu0_2HF0_Cent30100_v1",
+                                                                  "HLT_HIL2DoubleMu0_2HF_Cent30100_NHitQ_v1",
+                                                                  "HLT_HIL1DoubleMu0_Cent30_v1",
+                                                                  "HLT_HIL2DoubleMu0_2HF0_Cent30100_NHitQ_v1",
+                                                                  "HLT_HIL2DoubleMu0_Cent30_NHitQ_v1",
+                                                                  "HLT_HIL2DoubleMu0_Cent30_OS_NHitQ_v1",
+                                                                  "HLT_HIL3DoubleMu0_Cent30_v1",
+                                                                  "HLT_HIL3DoubleMu0_Cent30_OS_m2p5to4p5_v1",
+                                                                  "HLT_HIL3DoubleMu0_Cent30_OS_m7to14_v1",
                                                                   "HLT_HIL3DoubleMu0_OS_m2p5to4p5_v1",
                                                                   "HLT_HIL3DoubleMu0_OS_m7to14_v1"),
                                 
                                 dblTriggerFilterNames = cms.vstring("hltHIDoubleMu0L1Filtered",
-                                                                    "hltHIDoubleMu10MinBiasL1Filtered",
+                                                                    "hltHIDoubleMu0MinBiasL1Filtered",
+                                                                    "hltHIDoubleMu0HFTower0Filtered",
+                                                                    "hltHIDoubleMu10L1Filtered",
                                                                     "hltHIL2DoubleMu0NHitQFiltered",
+                                                                    "hltHIL2DoubleMu0NHitQ2HFFiltered",
+                                                                    "hltHIL2DoubleMu0NHitQ2HF0Filtered",
+                                                                    "hltHIDoubleMu0MinBiasCent30to100L1Filtered",
+                                                                    "hltHIDoubleMu0HFTower0Cent30to100L1Filtered",
+                                                                    "hltHIL2DoubleMu02HFcent30100NHitQFiltered",
+                                                                    "hltHIDoubleMu0MinBiasCent30L1Filtered",
+                                                                    "hltHIL2DoubleMu02HF0cent30100NHitQFiltered",
+                                                                    "hltHIL2DoubleMu0cent30NHitQFiltered",
+                                                                    "hltHIL2DoubleMu0cent30OSNHitQFiltered",
+                                                                    "hltHIDimuonOpenCentrality30L3Filter",
+                                                                    "hltHIDimuonOpenCentrality30OSm2p5to4p5L3Filter",
+                                                                    "hltHIDimuonOpenCentrality30OSm7to14L3Filter",
                                                                     "hltHIDimuonOpenOSm2p5to4p5L3Filter",
                                                                     "hltHIDimuonOpenOSm7to14L3Filter"),
                                 
-                                sglTriggerPathNames = cms.vstring("HLT_HIL2Mu3_NHitQ10_v1",
-                                                                  "HLT_HIL3Mu3_NHitQ15_v1",
-                                                                  "HLT_HIL2Mu5_NHitQ10_v1",
-                                                                  "HLT_HIL3Mu5_NHitQ15_v1",
-                                                                  "HLT_HIL2Mu7_NHitQ10_v1",
-                                                                  "HLT_HIL3Mu7_NHitQ15_v1",
-                                                                  "HLT_HIL2Mu15_v1",
+                                sglTriggerPathNames = cms.vstring("HLT_HIL2Mu3_NHitQ10_2HF_v1",
+                                                                  "HLT_HIL2Mu3_NHitQ10_2HF0_v1",
+                                                                  "HLT_HIL3Mu3_NHitQ15_2HF_v1",
+                                                                  "HLT_HIL3Mu3_NHitQ15_2HF0_v1",
+                                                                  "HLT_HIL2Mu5_NHitQ10_2HF_v1",
+                                                                  "HLT_HIL2Mu5_NHitQ10_2HF0_v1",
+                                                                  "HLT_HIL3Mu5_NHitQ15_2HF_v1",
+                                                                  "HLT_HIL3Mu5_NHitQ15_2HF0_v1",
+                                                                  "HLT_HIL2Mu7_NHitQ10_2HF_v1",
+                                                                  "HLT_HIL2Mu7_NHitQ10_2HF0_v1",
+                                                                  "HLT_HIL3Mu7_NHitQ15_2HF_v1",
+                                                                  "HLT_HIL3Mu7_NHitQ15_2HF0_v1",
+                                                                  "HLT_HIL2Mu15_v2",
+                                                                  "HLT_HIL2Mu15_2HF_v1",
+                                                                  "HLT_HIL2Mu15_2HF0_v1",
                                                                   "HLT_HIL3Mu15_v1",
+                                                                  "HLT_HIL3Mu15_2HF_v1",
+                                                                  "HLT_HIL3Mu15_2HF0_v1",
                                                                   "HLT_HIL2Mu20_v1",
-                                                                  "HLT_HIL3Mu20_v1"),
+                                                                  "HLT_HIL2Mu20_2HF_v1",	
+                                                                  "HLT_HIL2Mu20_2HF0_v1",
+                                                                  "HLT_HIL3Mu20_v1",
+                                                                  "HLT_HIL3Mu20_2HF_v1",
+                                                                  "HLT_HIL3Mu20_2HF0_v1"),
                                 
-                                sglTriggerFilterNames = cms.vstring("hltHIL2Mu3N10HitQL2Filtered",
-                                                                    "hltHISingleMu3NHit15L3Filtered",
-                                                                    "hltHIL2Mu5N10HitQL2Filtered",
-                                                                    "hltHISingleMu5NHit15L3Filtered",
-                                                                    "hltHISingleMu5NHit15L3Filtered",
-                                                                    "hltHISingleMu7NHit15L3Filtered",
+                                sglTriggerFilterNames = cms.vstring("hltHIL2Mu3N10HitQ2HFL2Filtered",
+                                                                    "hltHIL2Mu3N10HitQ2HF0L2Filtered",
+                                                                    "hltHISingleMu3NHit152HFL3Filtered",
+                                                                    "hltHISingleMu3NHit152HF0L3Filtered",
+                                                                    "hltHIL2Mu5N10HitQ2HFL2Filtered",
+                                                                    "hltHIL2Mu5N10HitQ2HF0L2Filtered",
+                                                                    "hltHISingleMu5NHit152HFL3Filtered",
+                                                                    "hltHISingleMu5NHit152HF0L3Filtered",
+                                                                    "hltHIL2Mu7N10HitQ2HFL2Filtered",
+                                                                    "hltHIL2Mu7N10HitQ2HF0L2Filtered",
+                                                                    "hltHISingleMu7NHit152HFL3Filtered",
+                                                                    "hltHISingleMu7NHit152HF0L3Filtered",
                                                                     "hltHIL2Mu15L2Filtered",
+                                                                    "hltHIL2Mu152HFFiltered",
+                                                                    "hltHIL2Mu15N10HitQ2HF0L2Filtered",
                                                                     "hltHISingleMu15L3Filtered",
+                                                                    "hltHISingleMu152HFL3Filtered",
+                                                                    "hltHISingleMu152HF0L3Filtered",
                                                                     "hltHIL2Mu20L2Filtered",
-                                                                    "hltHIL3SingleMu20L3Filtered")
+                                                                    "hltHIL2Mu202HFL2Filtered",
+                                                                    "hltHIL2Mu202HF0L2Filtered",
+                                                                    "hltHIL3SingleMu20L3Filtered",
+                                                                    "hltHISingleMu202HFL3Filtered",
+                                                                    "hltHISingleMu202HF0L3Filtered")
 
                                 )
 
@@ -275,24 +355,27 @@ if isPbPb:
   process.hionia.genParticles     = cms.InputTag("genParticles")
   process.hionia.muonLessPV       = cms.bool(False)
   process.hionia.CentralitySrc    = cms.InputTag("hiCentrality")
+  process.hionia.srcTracks        = cms.InputTag("hiGeneralTracks") 
   if isMC:
     process.hionia.CentralityBinSrc = cms.InputTag("centralityBin","HFtowersHydjetDrum5")  
   else:
     process.hionia.CentralityBinSrc = cms.InputTag("centralityBin","HFtowers")
   
-  process.p = cms.EndPath(process.hiEvtPlane*process.hiEvtPlaneFlat*process.hionia)
+  #process.p = cms.EndPath(process.hiEvtPlane*process.hiEvtPlaneFlat*process.hionia)
+  process.Onia2MuMuPAT.append(process.hionia)
 else:    
   process.hionia.primaryVertexTag = cms.InputTag("offlinePrimaryVertices")
   process.hionia.genParticles     = cms.InputTag("genParticles")
   process.hionia.muonLessPV       = cms.bool(True)
   process.hionia.CentralitySrc    = cms.InputTag("")
   process.hionia.CentralityBinSrc = cms.InputTag("")
+  process.hionia.srcTracks        = cms.InputTag("generalTracks")  
 
-  process.p = cms.EndPath(process.hionia)
+  process.Onia2MuMuPAT.append(process.hionia)
 
 
 ##### Construct the sequence
-process.schedule = cms.Schedule(process.Onia2MuMuPAT,process.p)
+process.schedule = cms.Schedule(process.Onia2MuMuPAT)
   
 from Configuration.Applications.ConfigBuilder import MassReplaceInputTag
 MassReplaceInputTag(process)
@@ -300,7 +383,7 @@ MassReplaceInputTag(process)
 
 '''
 
-FOR PbPb: /users/HiMuonTrigDev/PbPb/CMSSW_7_5_5/NovDev/V9
+FOR PbPb: /online/collisions/2015/HeavyIons/v1.0/HLT/V6
 
 dblTriggerPathNames = cms.vstring("HLT_HIL1DoubleMu0_v1",
 	"HLT_HIL1DoubleMu0_2HF_v1",
@@ -366,9 +449,6 @@ sglTriggerPathNames = cms.vstring("HLT_HIL2Mu3_NHitQ10_2HF_v1",
 	"HLT_HIL2Mu20_2HF0_v1",
 	"HLT_HIL3Mu20_v1",
 	"HLT_HIL3Mu20_2HF_v1",
-	"HLT_HIL2Mu20_2HF0_v1",
-	"HLT_HIL3Mu20_v1",
-	"HLT_HIL3Mu20_2HF_v1",
 	"HLT_HIL3Mu20_2HF0_v1"),
 
 sglTriggerFilterNames = cms.vstring("hltHIL2Mu3N10HitQ2HFL2Filtered",
@@ -391,9 +471,6 @@ sglTriggerFilterNames = cms.vstring("hltHIL2Mu3N10HitQ2HFL2Filtered",
 	"hltHISingleMu152HF0L3Filtered",
 	"hltHIL2Mu20L2Filtered",
 	"hltHIL2Mu202HFL2Filtered",
-	"hltHIL2Mu202HF0L2Filtered",
-	"hltHIL3SingleMu20L3Filtered",
-	"hltHISingleMu202HFL3Filtered",
 	"hltHIL2Mu202HF0L2Filtered",
 	"hltHIL3SingleMu20L3Filtered",
 	"hltHISingleMu202HFL3Filtered",
