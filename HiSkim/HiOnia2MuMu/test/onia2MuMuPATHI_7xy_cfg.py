@@ -138,10 +138,8 @@ else:
 ##### If single track collection has to be kept
 if keepGeneralTracks:
   process.outOnia2MuMu.outputCommands.append("keep *_standAloneMuons_*_*")
-  if isPbPb:
-    process.outOnia2MuMu.outputCommands.append("keep *_hiGeneralTracks_*_*")
-  else:
-    process.outOnia2MuMu.outputCommands.append("keep *_generalTracks_*_*")
+  if isPbPb: process.outOnia2MuMu.outputCommands.append("keep *_hiGeneralTracks_*_*")
+  else: process.outOnia2MuMu.outputCommands.append("keep *_generalTracks_*_*")
 ##### If event plane collection has to be kept
 if keepEventPlane:
   process.outOnia2MuMu.outputCommands.append("keep *_hiEvtPlane_*_*")
