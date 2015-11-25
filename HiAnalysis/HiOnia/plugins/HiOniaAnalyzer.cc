@@ -1002,9 +1002,10 @@ HiOniaAnalyzer::fillTreeJpsi(int iSign, int count) {
     Reco_QQ_ctau3D[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlPV3D");
     Reco_QQ_ctauErr3D[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlErrPV3D");
   }
-  Reco_QQ_ctauTrue[Reco_QQ_size] = 10.*aJpsiCand->userFloat("ppdlTrue");
-  Reco_QQ_ctauTrue3D[Reco_QQ_size] = 10.*aJpsiCand->userFloat("ppdlTrue3D");
-
+  if (_isMC) {
+    Reco_QQ_ctauTrue[Reco_QQ_size] = 10.*aJpsiCand->userFloat("ppdlTrue");
+    Reco_QQ_ctauTrue3D[Reco_QQ_size] = 10.*aJpsiCand->userFloat("ppdlTrue3D");
+  }
   Reco_QQ_VtxProb[Reco_QQ_size] = aJpsiCand->userFloat("vProb");
   Reco_QQ_dca[Reco_QQ_size] = aJpsiCand->userFloat("DCA");
   Reco_QQ_MassErr[Reco_QQ_size] = aJpsiCand->userFloat("MassErr");
@@ -1708,10 +1709,12 @@ HiOniaAnalyzer::InitTree()
   myTree->Branch("Reco_QQ_isCowboy", Reco_QQ_isCowboy,   "Reco_QQ_isCowboy[Reco_QQ_size]/O");
   myTree->Branch("Reco_QQ_ctau", Reco_QQ_ctau,   "Reco_QQ_ctau[Reco_QQ_size]/F");
   myTree->Branch("Reco_QQ_ctauErr", Reco_QQ_ctauErr,   "Reco_QQ_ctauErr[Reco_QQ_size]/F");
-  myTree->Branch("Reco_QQ_ctauTrue", Reco_QQ_ctauTrue,   "Reco_QQ_ctauTrue[Reco_QQ_size]/F");
   myTree->Branch("Reco_QQ_ctau3D", Reco_QQ_ctau3D,   "Reco_QQ_ctau3D[Reco_QQ_size]/F");
   myTree->Branch("Reco_QQ_ctauErr3D", Reco_QQ_ctauErr3D,   "Reco_QQ_ctauErr3D[Reco_QQ_size]/F");
-  myTree->Branch("Reco_QQ_ctauTrue3D", Reco_QQ_ctauTrue3D,   "Reco_QQ_ctauTrue3D[Reco_QQ_size]/F");
+  if (_isMC) {
+    myTree->Branch("Reco_QQ_ctauTrue", Reco_QQ_ctauTrue,   "Reco_QQ_ctauTrue[Reco_QQ_size]/F");
+    myTree->Branch("Reco_QQ_ctauTrue3D", Reco_QQ_ctauTrue3D,   "Reco_QQ_ctauTrue3D[Reco_QQ_size]/F");
+  }
   myTree->Branch("Reco_QQ_VtxProb", Reco_QQ_VtxProb,   "Reco_QQ_VtxProb[Reco_QQ_size]/F");
   myTree->Branch("Reco_QQ_dca", Reco_QQ_dca,   "Reco_QQ_dca[Reco_QQ_size]/F");
   myTree->Branch("Reco_QQ_MassErr", Reco_QQ_MassErr,   "Reco_QQ_MassErr[Reco_QQ_size]/F");

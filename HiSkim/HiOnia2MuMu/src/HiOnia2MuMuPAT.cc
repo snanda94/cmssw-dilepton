@@ -430,6 +430,10 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
           myCand.addUserFloat("ppdlTrue",-99.);
           myCand.addUserFloat("ppdlTrue3D",-99.);
         }
+      } else {
+        myCand.addUserInt("momPDGId",0);
+        myCand.addUserFloat("ppdlTrue",-99.);
+        myCand.addUserFloat("ppdlTrue3D",-99.);
       }
 
       // ---- Push back output ----  
