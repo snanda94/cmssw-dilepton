@@ -173,7 +173,6 @@ if keepGeneralTracks:
 ##### If event plane collection has to be kept
 if keepEventPlane:
   process.outOnia2MuMu.outputCommands.append("keep *_hiEvtPlane_*_*")
-  process.outOnia2MuMu.outputCommands.append("keep *_hiEvtPlaneFlat_*_*")
 
 
 

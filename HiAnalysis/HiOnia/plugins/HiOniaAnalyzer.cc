@@ -302,13 +302,9 @@ private:
   // Event Plane variables
   int nEP;   // number of event planes
   float *hiEvtPlane;
-  int nNfEP;
   float rpAng[50];
   float rpCos[50];
   float rpSin[50];
-  float NfRpAng[50];
-  float NfRpCos[50];
-  float NfRpSin[50];
 
   // handles
   edm::Handle<pat::CompositeCandidateCollection> collJpsi;
@@ -331,7 +327,6 @@ private:
   edm::EDGetTokenT<reco::Centrality>                  _centralityTagToken;
   edm::EDGetTokenT<int>                               _centralityBinTagToken;
   edm::EDGetTokenT<reco::EvtPlaneCollection>          _evtPlaneTagToken;
-  edm::EDGetTokenT<reco::EvtPlaneCollection>          _evtPlaneFlatTagToken;
   std::string         _histfilename;
   std::string         _datasetname;
   std::string         _muonSel;
@@ -444,7 +439,6 @@ HiOniaAnalyzer::HiOniaAnalyzer(const edm::ParameterSet& iConfig):
   _centralityTagToken(consumes<reco::Centrality>(iConfig.getParameter<edm::InputTag> ("CentralitySrc"))),
   _centralityBinTagToken(consumes<int>(iConfig.getParameter<edm::InputTag> ("CentralityBinSrc"))),
   _evtPlaneTagToken(consumes<reco::EvtPlaneCollection>(iConfig.getParameter<edm::InputTag> ("EvtPlane"))),
-  _evtPlaneFlatTagToken(consumes<reco::EvtPlaneCollection>(iConfig.getParameter<edm::InputTag> ("EvtPlaneFlat"))),
   _histfilename(iConfig.getParameter<std::string>("histFileName")),             
   _datasetname(iConfig.getParameter<std::string>("dataSetName")),         
   _muonSel(iConfig.getParameter<std::string>("muonSel")),
@@ -695,7 +689,7 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   if (_isHI && _useEvtPlane) {
     nEP = 0; 
     edm::Handle<reco::EvtPlaneCollection> flatEvtPlanes;
-    iEvent.getByToken(_evtPlaneFlatTagToken,flatEvtPlanes);
+    iEvent.getByToken(_evtPlaneTagToken,flatEvtPlanes);
     
     if(flatEvtPlanes.isValid()) {
       for (reco::EvtPlaneCollection::const_iterator rp = flatEvtPlanes->begin(); rp!=flatEvtPlanes->end(); rp++) {
@@ -708,20 +702,6 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
     else if (!_isMC) 
       std::cout << "Warning! Can't get flattened hiEvtPlane product!" << std::endl;
-
-    nNfEP = 0;
-    edm::Handle<reco::EvtPlaneCollection> noFlatEvtPlanes;
-    iEvent.getByToken(_evtPlaneTagToken,noFlatEvtPlanes);
-    if(noFlatEvtPlanes.isValid()){
-      for (reco::EvtPlaneCollection::const_iterator rp = noFlatEvtPlanes->begin(); rp!=noFlatEvtPlanes->end(); rp++) {
-        NfRpAng[nNfEP] = rp->angle();
-        NfRpSin[nNfEP] = rp->sumSin();
-        NfRpCos[nNfEP] = rp->sumCos();
-        nNfEP++;
-      }
-    }
-    else if (!_isMC)
-      std::cout << "Warning! Can't get non-flattened hiEvtPlane product!" << std::endl;
   }
 
   iEvent.getByToken(_patJpsiToken,collJpsi); 
@@ -1381,7 +1361,6 @@ HiOniaAnalyzer::InitEvent()
   HLTriggers = 0;
 
   nEP = 0;
-  nNfEP = 0;
 
   _thePassedCats[0].clear();      _thePassedCands[0].clear();
   _thePassedCats[1].clear();      _thePassedCands[1].clear();
@@ -1712,13 +1691,9 @@ HiOniaAnalyzer::InitTree()
 
   if (_isHI && _useEvtPlane) {
     myTree->Branch("nEP", &nEP, "nEP/I");
-    myTree->Branch("nNfEP", &nNfEP, "nNfEP/I");
     myTree->Branch("rpAng", &rpAng, "rpAng[nEP]/F");
     myTree->Branch("rpSin", &rpSin, "rpSin[nEP]/F");
     myTree->Branch("rpCos", &rpCos, "rpCos[nEP]/F");
-    myTree->Branch("NfRpAng", &NfRpAng, "NfRpAng[nNfEP]/F");
-    myTree->Branch("NfRpSin", &NfRpSin, "NfRpSin[nNfEP]/F");
-    myTree->Branch("NfRpCos", &NfRpCos, "NfRpCos[nNfEP]/F");
   }
 
   myTree->Branch("Reco_QQ_size", &Reco_QQ_size,  "Reco_QQ_size/I");

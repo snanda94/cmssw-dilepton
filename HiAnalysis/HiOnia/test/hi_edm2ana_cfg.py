@@ -61,7 +61,6 @@ process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
 keepEventPlane = True if (RELEASE[0]==7 and RELEASE[1]==5 and RELEASE[2]>3) else False
 if isPbPb:
   process.load("RecoHI.HiEvtPlaneAlgos.HiEvtPlane_cfi")
-  process.load("RecoHI.HiEvtPlaneAlgos.hiEvtPlaneFlat_cfi")  
   if isMC:
     process.GlobalTag.toGet.extend([
         cms.PSet(record = cms.string("HeavyIonRPRcd"),
@@ -195,8 +194,6 @@ if useGeneralTracks:
 ##### If event plane collection has to be kept
 if useEventPlane:
   process.outOnia2MuMu.outputCommands.append("keep *_hiEvtPlane_*_*")
-  process.outOnia2MuMu.outputCommands.append("keep *_hiEvtPlaneFlat_*_*")
-
 
 process.source.fileNames      = cms.untracked.vstring(options.inputFiles)
 process.maxEvents             = cms.untracked.PSet( input = cms.untracked.int32(options.maxEvents) )
@@ -210,7 +207,6 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                 srcMuonNoTrig       = cms.InputTag("patMuonsWithoutTrigger"),  # Name of PAT Muon Without Trigger Collection
                                 src                 = cms.InputTag("onia2MuMuPatGlbGlb"),      # Name of Onia Skim Collection
                                 EvtPlane            = cms.InputTag("hiEvtPlane",""),           # Name of Event Plane Collection. For RECO use: hiEventPlane,recoLevel
-                                EvtPlaneFlat        = cms.InputTag("hiEvtPlaneFlat",""),       # Name of Flat Event Plane Collection. 
 
                                 triggerResultsLabel = cms.InputTag("TriggerResults","","HLT"), # Label of Trigger Results
 
@@ -361,7 +357,7 @@ if isPbPb:
   else:
     process.hionia.CentralityBinSrc = cms.InputTag("centralityBin","HFtowers")
   
-  #process.p = cms.EndPath(process.hiEvtPlane*process.hiEvtPlaneFlat*process.hionia)
+  #process.p = cms.EndPath(process.hiEvtPlane*process.hionia)
   process.Onia2MuMuPAT.append(process.hionia)
 else:    
   process.hionia.primaryVertexTag = cms.InputTag("offlinePrimaryVertices")
