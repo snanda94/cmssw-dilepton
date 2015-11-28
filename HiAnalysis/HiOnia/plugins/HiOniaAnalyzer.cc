@@ -863,8 +863,10 @@ HiOniaAnalyzer::fillTreeJpsi(int iSign, int count) {
     RefVtx_yError = (*aJpsiCand->userData<reco::Vertex>("PVwithmuons")).yError();
     RefVtx_zError = (*aJpsiCand->userData<reco::Vertex>("PVwithmuons")).zError();
   }
-  else
+  else {
     cout << "HiOniaAnalyzer::fillTreeJpsi: no PVfor muon pair stored" << endl;
+    return;
+  }
 
   new((*Reco_QQ_vtx)[Reco_QQ_size])TVector3(RefVtx.X(),RefVtx.Y(),RefVtx.Z());
 
@@ -1202,8 +1204,10 @@ HiOniaAnalyzer::makeCuts(int sign) {
         RefVtx = (*cand->userData<reco::Vertex>("muonlessPV")).position();
       else if (!_muonLessPrimaryVertex && cand->hasUserData("PVwithmuons"))
         RefVtx = (*cand->userData<reco::Vertex>("PVwithmuons")).position();
-      else
+      else {
         std::cout << "HiOniaAnalyzer::makeCuts: no PV for muon pair stored" << std::endl;
+        continue;
+      }
 
       if (fabs(RefVtx.Z()) > _iConfig.getParameter< double > ("maxAbsZ")) continue;
 
