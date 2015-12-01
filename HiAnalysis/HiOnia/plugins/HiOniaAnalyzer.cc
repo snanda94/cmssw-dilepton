@@ -1911,7 +1911,7 @@ HiOniaAnalyzer::beginJob()
   }
   hStats->Sumw2();
 
-  hCent = new TH1F("hCent","hCent;centrality bin;Number of Events",100,0,100);
+  hCent = new TH1F("hCent","hCent;centrality bin;Number of Events",200,0,200);
   hCent->Sumw2();
 
   hPileUp = new TH1F("hPileUp","Number of Primary Vertices;n_{PV};counts", 50, 0, 50);
