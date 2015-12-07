@@ -19,14 +19,13 @@ muonSelection = "GlbTrk" # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal
 options = VarParsing.VarParsing ('analysis')
 
 # setup any defaults you want
-options.inputFiles = 'file:A2CA3037-8C8F-E511-A758-02163E0143E2.root'
+options.inputFiles = '/store/express/HIRun2015/HIExpressPhysics/FEVT/Express-v1/000/262/548/00000/18C4EDDA-5D93-E511-A185-02163E01474C.root'
 options.outputFile = 'onia2MuMuPAT_DATA_75X.root'
 
 options.maxEvents = -1 # -1 means all events
 
 # get and parse the command line arguments
 options.parseArguments()
-options = VarParsing.VarParsing ('analysis')
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
@@ -166,6 +165,7 @@ elif muonSelection == "Trk":
 else:
   print "ERROR: Incorrect muon selection " + muonSelection + " . Valid options are: Glb, Trk, GlbTrk"
 
+process.outOnia2MuMu.outputCommands.append("keep recoConversions_*_*_*")
 ##### If single track collection has to be kept
 if keepGeneralTracks:
   process.outOnia2MuMu.outputCommands.append("keep *_standAloneMuons_*_*")

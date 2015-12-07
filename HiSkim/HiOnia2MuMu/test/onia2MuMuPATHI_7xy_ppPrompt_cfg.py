@@ -19,7 +19,7 @@ muonSelection = "GlbTrk" # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal
 options = VarParsing.VarParsing ('analysis')
 
 # setup any defaults you want
-options.inputFiles = '/store/express/Run2015E/ExpressPhysics/FEVT/Express-v1/000/262/163/00000/2A20B8A2-F88E-E511-B42E-02163E011CD1.root'
+options.inputFiles = '/store/data/Run2015E/DoubleMu/RECO/Onia-PromptReco-v1/000/262/157/00000/78E03674-9291-E511-B29C-02163E013584.root'
 options.outputFile = 'onia2MuMuPAT_DATA_75X.root'
 
 options.maxEvents = -1 # -1 means all events
@@ -47,7 +47,7 @@ if isMC:
   else:
     process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 else:  
-  process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_Express_ppAt5TeV_v0', '')
+  process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_Prompt_ppAt5TeV_v1', '')
 process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
 
 '''

@@ -9,7 +9,7 @@ process = cms.Process("Onia2MuMuPAT")
 
 # Conditions
 HLTProName = "HLT"
-isPbPb = False;          
+isPbPb = True;          
 isMC = False;
 keepGeneralTracks = False;
 keepEventPlane = True;
@@ -19,7 +19,7 @@ muonSelection = "GlbTrk" # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal
 options = VarParsing.VarParsing ('analysis')
 
 # setup any defaults you want
-options.inputFiles = '/store/express/Run2015E/ExpressPhysics/FEVT/Express-v1/000/262/163/00000/2A20B8A2-F88E-E511-B42E-02163E011CD1.root'
+options.inputFiles = '/store/hidata/HIRun2015/HIOniaL1DoubleMu0/AOD/PromptReco-v1/000/262/694/00000/16147348-3A99-E511-84D5-02163E0141A8.root'
 options.outputFile = 'onia2MuMuPAT_DATA_75X.root'
 
 options.maxEvents = -1 # -1 means all events
@@ -47,7 +47,7 @@ if isMC:
   else:
     process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 else:  
-  process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_Express_ppAt5TeV_v0', '')
+  process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_PromptHI_v3', '')
 process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
 
 '''
@@ -60,23 +60,51 @@ process.bscOrHfCoinc = process.l1Filter.clone(
 # HLT Dimuon Triggers
 import HLTrigger.HLTfilters.hltHighLevel_cfi
 process.hltOniaHI = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
-# HLT PP MENU: /users/HiMuonTrigDev/pp5TeV/NovDev/V4
-process.hltOniaHI.HLTPaths = [
+# HLT PbPbP MENU:  /online/collisions/2015/HeavyIons/v1.0/HLT/V6
+process.hltOniaHI.HLTPaths =  [
     "HLT_HIL1DoubleMu0_v1",
+    "HLT_HIL1DoubleMu0_2HF_v1",
+    "HLT_HIL1DoubleMu0_2HF0_v1",
     "HLT_HIL1DoubleMu10_v1",
-    "HLT_HIL2DoubleMu0_NHitQ_v1",
+    "HLT_HIL2DoubleMu0_NHitQ_v2",
+    "HLT_HIL2DoubleMu0_NHitQ_2HF_v1",
+    "HLT_HIL2DoubleMu0_NHitQ_2HF0_v1",
+    "HLT_HIL1DoubleMu0_2HF_Cent30100_v1",
+    "HLT_HIL1DoubleMu0_2HF0_Cent30100_v1",
+    "HLT_HIL2DoubleMu0_2HF_Cent30100_NHitQ_v1",
+    "HLT_HIL1DoubleMu0_Cent30_v1",
+    "HLT_HIL2DoubleMu0_2HF0_Cent30100_NHitQ_v1",
+    "HLT_HIL2DoubleMu0_Cent30_NHitQ_v1",
+    "HLT_HIL2DoubleMu0_Cent30_OS_NHitQ_v1",
+    "HLT_HIL3DoubleMu0_Cent30_v1",
+    "HLT_HIL3DoubleMu0_Cent30_OS_m2p5to4p5_v1",
+    "HLT_HIL3DoubleMu0_Cent30_OS_m7to14_v1",
     "HLT_HIL3DoubleMu0_OS_m2p5to4p5_v1",
     "HLT_HIL3DoubleMu0_OS_m7to14_v1",
-    "HLT_HIL2Mu3_NHitQ10_v1",
-    "HLT_HIL3Mu3_NHitQ15_v1",
-    "HLT_HIL2Mu5_NHitQ10_v1",
-    "HLT_HIL3Mu5_NHitQ15_v1",
-    "HLT_HIL2Mu7_NHitQ10_v1",
-    "HLT_HIL3Mu7_NHitQ15_v1",
-    "HLT_HIL2Mu15_v1",
+    "HLT_HIL2Mu3_NHitQ10_2HF_v1",
+    "HLT_HIL2Mu3_NHitQ10_2HF0_v1",
+    "HLT_HIL3Mu3_NHitQ15_2HF_v1",
+    "HLT_HIL3Mu3_NHitQ15_2HF0_v1",
+    "HLT_HIL2Mu5_NHitQ10_2HF_v1",
+    "HLT_HIL2Mu5_NHitQ10_2HF0_v1",
+    "HLT_HIL3Mu5_NHitQ15_2HF_v1",
+    "HLT_HIL3Mu5_NHitQ15_2HF0_v1",
+    "HLT_HIL2Mu7_NHitQ10_2HF_v1",
+    "HLT_HIL2Mu7_NHitQ10_2HF0_v1",
+    "HLT_HIL3Mu7_NHitQ15_2HF_v1",
+    "HLT_HIL3Mu7_NHitQ15_2HF0_v1",
+    "HLT_HIL2Mu15_v2",
+    "HLT_HIL2Mu15_2HF_v1",
+    "HLT_HIL2Mu15_2HF0_v1",
     "HLT_HIL3Mu15_v1",
+    "HLT_HIL3Mu15_2HF_v1",
+    "HLT_HIL3Mu15_2HF0_v1",
     "HLT_HIL2Mu20_v1",
-    "HLT_HIL3Mu20_v1"
+    "HLT_HIL2Mu20_2HF_v1",	
+    "HLT_HIL2Mu20_2HF0_v1",
+    "HLT_HIL3Mu20_v1",
+    "HLT_HIL3Mu20_2HF_v1",
+    "HLT_HIL3Mu20_2HF0_v1"
     ]
 process.hltOniaHI.throw = False
 process.hltOniaHI.andOr = True
