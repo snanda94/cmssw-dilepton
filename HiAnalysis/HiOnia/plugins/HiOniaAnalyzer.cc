@@ -1026,7 +1026,9 @@ HiOniaAnalyzer::fillTreeJpsi(int iSign, int count) {
   }
   if (_isMC){
     Reco_QQ_ctauTrue[Reco_QQ_size] = 10.*aJpsiCand->userFloat("ppdlTrue");
-    Reco_QQ_ctauTrue3D[Reco_QQ_size] = 10.*aJpsiCand->userFloat("ppdlTrue3D");
+    if (aJpsiCand->hasUserFloat("ppdlTrue3D")){
+      Reco_QQ_ctauTrue3D[Reco_QQ_size] = 10.*aJpsiCand->userFloat("ppdlTrue3D");
+    }  
   }
   Reco_QQ_VtxProb[Reco_QQ_size] = aJpsiCand->userFloat("vProb");
   Reco_QQ_dca[Reco_QQ_size] = aJpsiCand->userFloat("DCA");
