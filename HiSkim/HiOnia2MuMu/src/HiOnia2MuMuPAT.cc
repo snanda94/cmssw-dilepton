@@ -67,6 +67,9 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   using namespace reco;
   typedef Candidate::LorentzVector LorentzVector;
 
+  std::map< std::string, int > userInt;
+  std::map< std::string, float > userFloat;
+  std::map< std::string, reco::Vertex > userVertex;
 
   vector<double> muMasses;
   muMasses.push_back( 0.1056583715 );
@@ -139,15 +142,15 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
         CachingVertex<5> VtxForInvMass = vtxFitter.vertex( t_tks );
         Measurement1D MassWErr = massCalculator.invariantMass( VtxForInvMass, muMasses );
-        myCand.addUserFloat("MassErr",MassWErr.error());
+        userFloat["MassErr"] = MassWErr.error();
 
         if (myVertex.isValid()) {
           float vChi2 = myVertex.totalChiSquared();
           float vNDF  = myVertex.degreesOfFreedom();
           float vProb(TMath::Prob(vChi2,(int)vNDF));
           
-          myCand.addUserFloat("vNChi2",vChi2/vNDF);
-          myCand.addUserFloat("vProb",vProb);
+          userFloat["vNChi2"] = (vChi2/vNDF);
+          userFloat["vProb"] = vProb;
 
           TVector3 vtx, vtx3D;
           TVector3 pvtx, pvtx3D;
@@ -280,9 +283,9 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
               }
             } catch (std::exception & err) {std::cout << " Counting tracks from PV, fails! " << std::endl; return ; }
           }
-          myCand.addUserInt("countTksOfPV", countTksOfPV);
-          myCand.addUserFloat("vertexWeight", (float) vertexWeight);
-          myCand.addUserFloat("sumPTPV", (float) sumPTPV);
+          userInt["countTksOfPV"] = countTksOfPV;
+          userFloat["vertexWeight"] = (float) vertexWeight;
+          userFloat["sumPTPV"] = (float) sumPTPV;
 
           ///DCA
           TrajectoryStateClosestToPoint mu1TS = t_tks[0].impactPointTSCP();
@@ -293,14 +296,14 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
             cApp.calculate(mu1TS.theState(), mu2TS.theState());
             if (cApp.status() ) dca = cApp.distance();
           }
-          myCand.addUserFloat("DCA", dca );
+          userFloat["DCA"] = dca;
           ///end DCA
          
           if (addMuonlessPrimaryVertex_) {
-            myCand.addUserData("muonlessPV",Vertex(thePrimaryV));
-            myCand.addUserData("PVwithmuons",theOriginalPV);
+            userVertex["muonlessPV"] = thePrimaryV;
+            userVertex["PVwithmuons"] = theOriginalPV;
           } else {
-            myCand.addUserData("PVwithmuons",thePrimaryV);
+            userVertex["PVwithmuons"] = thePrimaryV;
           }
           
           // lifetime using PV
@@ -314,9 +317,9 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
           AlgebraicSymMatrix33 vXYe = v1e.matrix()+ v2e.matrix();
           double ctauErrPV = sqrt(ROOT::Math::Similarity(vpperp,vXYe))*3.096916/(pperp.Perp2());
 
-          myCand.addUserFloat("ppdlPV",ctauPV);
-          myCand.addUserFloat("ppdlErrPV",ctauErrPV);
-          myCand.addUserFloat("cosAlpha",cosAlpha);
+          userFloat["ppdlPV"] = ctauPV;
+          userFloat["ppdlErrPV"] = ctauErrPV;
+          userFloat["cosAlpha"] = cosAlpha;
 
           pvtx3D.SetXYZ(thePrimaryV.position().x(),thePrimaryV.position().y(),thePrimaryV.position().z());
           TVector3 vdiff3D = vtx3D - pvtx3D;
@@ -325,9 +328,9 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
           double ctauPV3D = distXYZ.value()*cosAlpha3D*3.096916/pxyz.Mag();
           double ctauErrPV3D = sqrt(ROOT::Math::Similarity(vpxyz,vXYe))*3.096916/(pxyz.Mag2());
           
-          myCand.addUserFloat("ppdlPV3D",ctauPV3D);
-          myCand.addUserFloat("ppdlErrPV3D",ctauErrPV3D);
-          myCand.addUserFloat("cosAlpha3D",cosAlpha3D);
+          userFloat["ppdlPV3D"] = ctauPV3D;
+          userFloat["ppdlErrPV3D"] = ctauErrPV3D;
+          userFloat["cosAlpha3D"] = cosAlpha3D;
 
           // lifetime using BS
           pvtx.SetXYZ(theBeamSpotV.position().x(),theBeamSpotV.position().y(),0);
@@ -340,9 +343,8 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
           AlgebraicSymMatrix33 vXYeB = v1eB.matrix()+ v2eB.matrix();
           double ctauErrBS = sqrt(ROOT::Math::Similarity(vpperp,vXYeB))*3.09688/(pperp.Perp2());
           
-          myCand.addUserFloat("ppdlBS",ctauBS);
-          myCand.addUserFloat("ppdlErrBS",ctauErrBS);
-
+          userFloat["ppdlBS"] = ctauBS;
+          userFloat["ppdlErrBS"] = ctauErrBS;
           pvtx3D.SetXYZ(theBeamSpotV.position().x(),theBeamSpotV.position().y(),theBeamSpotV.position().z());
           vdiff3D = vtx3D - pvtx3D;
           cosAlpha3D = vdiff3D.Dot(pxyz)/(vdiff3D.Mag()*pxyz.Mag());
@@ -350,34 +352,34 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
           double ctauBS3D = distXYZ.value()*cosAlpha3D*3.09688/pxyz.Mag();
           double ctauErrBS3D = sqrt(ROOT::Math::Similarity(vpxyz,vXYeB))*3.09688/(pxyz.Mag2());
 
-          myCand.addUserFloat("ppdlBS3D",ctauBS3D);
-          myCand.addUserFloat("ppdlErrBS3D",ctauErrBS3D);
+          userFloat["ppdlBS3D"] = ctauBS3D;
+          userFloat["ppdlErrBS3D"] = ctauErrBS3D;
           
           if (addCommonVertex_) {
-            myCand.addUserData("commonVertex",Vertex(myVertex));
+            userVertex["commonVertex"] = Vertex(myVertex);
           }
         } else {
-          myCand.addUserFloat("vNChi2",-1);
-          myCand.addUserFloat("vProb", -1);
-          myCand.addUserFloat("ppdlPV",-100);
-          myCand.addUserFloat("ppdlErrPV",-100);
-          myCand.addUserFloat("cosAlpha",-100);
-          myCand.addUserFloat("ppdlBS",-100);
-          myCand.addUserFloat("ppdlErrBS",-100);
-          myCand.addUserFloat("ppdlPV3D",-100);
-          myCand.addUserFloat("ppdlErrPV3D",-100);
-          myCand.addUserFloat("cosAlpha3D",-100);
-          myCand.addUserFloat("ppdlBS3D",-100);
-          myCand.addUserFloat("ppdlErrBS3D",-100);
+          userFloat["vNChi2"] = -1;
+          userFloat["vProb"] = -1;
+          userFloat["ppdlPV"] = -100;
+          userFloat["ppdlErrPV"] = -100;
+          userFloat["cosAlpha"] = -100;
+          userFloat["ppdlBS"] = -100;
+          userFloat["ppdlErrBS"] = -100;
+          userFloat["ppdlPV3D"] = -100;
+          userFloat["ppdlErrPV3D"] = -100;
+          userFloat["cosAlpha3D"] = -100;
+          userFloat["ppdlBS3D"] = -100;
+          userFloat["ppdlErrBS3D"] = -100;
 
           if (addCommonVertex_) {
-            myCand.addUserData("commonVertex",Vertex());
+            userVertex["commonVertex"] = Vertex();
           }
           if (addMuonlessPrimaryVertex_) {
-            myCand.addUserData("muonlessPV",Vertex());
-            myCand.addUserData("PVwithmuons",Vertex());
+            userVertex["muonlessPV"] = Vertex();
+            userVertex["PVwithmuons"] = Vertex();
           } else {
-            myCand.addUserData("PVwithmuons",Vertex());
+            userVertex["PVwithmuons"] = Vertex();
           }
         }
       }
@@ -394,12 +396,13 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
               myCand.setGenParticleRef(mom1); // set
               myCand.embedGenParticle();      // and embed
               std::pair<int, std::pair<float, float> > MCinfo = findJpsiMCInfo(mom1);
-              myCand.addUserInt("momPDGId",MCinfo.first);
-              myCand.addUserFloat("ppdlTrue",MCinfo.second.first);
-              myCand.addUserFloat("ppdlTrue3D",MCinfo.second.second);
+              userInt["momPDGId"] = MCinfo.first;
+              userFloat["ppdlTrue"] = MCinfo.second.first;
+              userFloat["ppdlTrue3D"] = MCinfo.second.second;
             } else {
-              myCand.addUserInt("momPDGId",0);
-              myCand.addUserFloat("ppdlTrue",-99.);
+              userInt["momPDGId"] =  0;
+              userFloat["ppdlTrue"] = -99.;
+              userFloat["ppdlTrue3D"] = -99.;
             }
           } else {
             Handle<GenParticleCollection>theGenParticles;
@@ -413,27 +416,31 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
                   myCand.setGenParticleRef(mom1);
                   myCand.embedGenParticle();
                   std::pair<int, std::pair<float, float> > MCinfo = findJpsiMCInfo(mom1);
-                  myCand.addUserInt("momPDGId",MCinfo.first);
-                  myCand.addUserFloat("ppdlTrue",MCinfo.second.first);
-                  myCand.addUserFloat("ppdlTrue3D",MCinfo.second.second);
+                  userInt["momPDGId"] = MCinfo.first;
+                  userFloat["ppdlTrue"] = MCinfo.second.first;
+                  userFloat["ppdlTrue3D"] = MCinfo.second.second;
                 }
               }
             } else {
-              myCand.addUserInt("momPDGId",0);
-              myCand.addUserFloat("ppdlTrue",-99.);
-              myCand.addUserFloat("ppdlTrue3D",-99.);
+              userInt["momPDGId"] =  0;
+              userFloat["ppdlTrue"] = -99.;
+              userFloat["ppdlTrue3D"] = -99.;
             }
           }
         } else {
-          myCand.addUserInt("momPDGId",0);
-          myCand.addUserFloat("ppdlTrue",-99.);
-          myCand.addUserFloat("ppdlTrue3D",-99.);
+          userInt["momPDGId"] =  0;
+          userFloat["ppdlTrue"] = -99.;
+          userFloat["ppdlTrue3D"] = -99.;
         }
       } else {
-        myCand.addUserInt("momPDGId",0);
-        myCand.addUserFloat("ppdlTrue",-99.);
-        myCand.addUserFloat("ppdlTrue3D",-99.);
+        userInt["momPDGId"] =  0;
+        userFloat["ppdlTrue"] = -99.;
+        userFloat["ppdlTrue3D"] = -99.;
       }
+      
+      for (std::map<std::string, int>::iterator i = userInt.begin(); i != userInt.end(); i++) { myCand.addUserInt(i->first , i->second); }
+      for (std::map<std::string, float>::iterator i = userFloat.begin(); i != userFloat.end(); i++) { myCand.addUserFloat(i->first , i->second); }
+      for (std::map<std::string, reco::Vertex>::iterator i = userVertex.begin(); i != userVertex.end(); i++) { myCand.addUserData(i->first , i->second); }
 
       // ---- Push back output ----  
       oniaOutput->push_back(myCand);
