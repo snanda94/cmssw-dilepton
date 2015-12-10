@@ -1117,8 +1117,7 @@ HiOniaAnalyzer::fillTreeJpsi(int iSign, int count) {
 void
 HiOniaAnalyzer::fillRecoJpsi(int iSign, int count, std::string trigName, std::string centName) {
   pat::CompositeCandidate* aJpsiCand = _thePassedCands[iSign].at(count)->clone();
-  if (aJpsiCand->hasUserInt("centBin")) {aJpsiCand->addUserInt("centBin",centBin);}
-  else {std::cout << "Warning: User Int centBin was not found" << std::endl;}
+  aJpsiCand->addUserInt("centBin",centBin);
 
   std::string theLabel =  trigName + "_" + centName + "_" + theSign.at(iSign);
 
