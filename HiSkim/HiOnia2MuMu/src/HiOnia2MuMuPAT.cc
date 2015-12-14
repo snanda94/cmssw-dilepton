@@ -242,8 +242,16 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
                 "TransientVertex re-fitted is not valid!! You got still the 'old vertex'" << "\n";
               }
             } else {
-              edm::LogWarning("HiOnia2MuMuPAT_muonLessSizeORpvTrkSize") << 
-              "Still have the original PV: the refit was not done 'cose there are not enough tracks to do the refit without the muon tracks" << "\n";
+              if ( muonLess.size()==thePrimaryV.tracksSize() ){
+                edm::LogWarning("HiOnia2MuMuPAT_muonLessSizeORpvTrkSize") << 
+                  "Still have the original PV: the refit was not done 'cose it is already muonless" << "\n";
+              } else if ( muonLess.size()<=1 ){
+                edm::LogWarning("HiOnia2MuMuPAT_muonLessSizeORpvTrkSize") << 
+                  "Still have the original PV: the refit was not done 'cose there are not enough tracks to do the refit without the muon tracks" << "\n";
+              } else {
+                edm::LogWarning("HiOnia2MuMuPAT_muonLessSizeORpvTrkSize") << 
+                  "Still have the original PV: Something weird just happend, muonLess.size()=" << muonLess.size() << " and thePrimaryV.tracksSize()=" << thePrimaryV.tracksSize() << " ." << "\n";
+              }
             }
           }// refit vtx without the muon tracks
 
@@ -337,11 +345,11 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
           vdiff = vtx - pvtx;
           cosAlpha = vdiff.Dot(pperp)/(vdiff.Perp()*pperp.Perp());
           distXY = vdistXY.distance(Vertex(myVertex), theBeamSpotV);
-          double ctauBS = distXY.value()*cosAlpha*3.09688/pperp.Perp();
+          double ctauBS = distXY.value()*cosAlpha*3.096916/pperp.Perp();
           GlobalError v1eB = (Vertex(myVertex)).error();
           GlobalError v2eB = theBeamSpotV.error();
           AlgebraicSymMatrix33 vXYeB = v1eB.matrix()+ v2eB.matrix();
-          double ctauErrBS = sqrt(ROOT::Math::Similarity(vpperp,vXYeB))*3.09688/(pperp.Perp2());
+          double ctauErrBS = sqrt(ROOT::Math::Similarity(vpperp,vXYeB))*3.096916/(pperp.Perp2());
           
           userFloat["ppdlBS"] = ctauBS;
           userFloat["ppdlErrBS"] = ctauErrBS;
@@ -349,11 +357,35 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
           vdiff3D = vtx3D - pvtx3D;
           cosAlpha3D = vdiff3D.Dot(pxyz)/(vdiff3D.Mag()*pxyz.Mag());
           distXYZ = vdistXYZ.distance(Vertex(myVertex), theBeamSpotV);
-          double ctauBS3D = distXYZ.value()*cosAlpha3D*3.09688/pxyz.Mag();
-          double ctauErrBS3D = sqrt(ROOT::Math::Similarity(vpxyz,vXYeB))*3.09688/(pxyz.Mag2());
+          double ctauBS3D = distXYZ.value()*cosAlpha3D*3.096916/pxyz.Mag();
+          double ctauErrBS3D = sqrt(ROOT::Math::Similarity(vpxyz,vXYeB))*3.096916/(pxyz.Mag2());
 
           userFloat["ppdlBS3D"] = ctauBS3D;
           userFloat["ppdlErrBS3D"] = ctauErrBS3D;
+          
+          // lifetime using Original PV
+          pvtx.SetXYZ(theOriginalPV.position().x(),theOriginalPV.position().y(),0);
+          vdiff = vtx - pvtx;
+          double cosAlphaOrigPV = vdiff.Dot(pperp)/(vdiff.Perp()*pperp.Perp());
+          distXY = vdistXY.distance(Vertex(myVertex), theOriginalPV);
+          double ctauOrigPV = distXY.value()*cosAlphaOrigPV*3.096916/pperp.Perp();
+          GlobalError v1eOrigPV = (Vertex(myVertex)).error();
+          GlobalError v2eOrigPV = theOriginalPV.error();
+          AlgebraicSymMatrix33 vXYeOrigPV = v1eOrigPV.matrix()+ v2eOrigPV.matrix();
+          double ctauErrOrigPV = sqrt(ROOT::Math::Similarity(vpperp,vXYeOrigPV))*3.096916/(pperp.Perp2());
+
+          userFloat["ppdlOrigPV"] = ctauOrigPV;
+          userFloat["ppdlErrOrigPV"] = ctauErrOrigPV;
+
+          pvtx3D.SetXYZ(theOriginalPV.position().x(), theOriginalPV.position().y(), theOriginalPV.position().z());
+          vdiff3D = vtx3D - pvtx3D;
+          double cosAlphaOrigPV3D = vdiff3D.Dot(pxyz)/(vdiff3D.Mag()*pxyz.Mag());
+          distXYZ = vdistXYZ.distance(Vertex(myVertex), theOriginalPV);
+          double ctauOrigPV3D = distXYZ.value()*cosAlphaOrigPV3D*3.096916/pxyz.Mag();
+          double ctauErrOrigPV3D = sqrt(ROOT::Math::Similarity(vpxyz,vXYeOrigPV))*3.096916/(pxyz.Mag2());
+          
+          userFloat["ppdlOrigPV3D"] = ctauOrigPV3D;
+          userFloat["ppdlErrOrigPV3D"] = ctauErrOrigPV3D;
           
           if (addCommonVertex_) {
             userVertex["commonVertex"] = Vertex(myVertex);
@@ -366,11 +398,15 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
           userFloat["cosAlpha"] = -100;
           userFloat["ppdlBS"] = -100;
           userFloat["ppdlErrBS"] = -100;
+          userFloat["ppdlOrigPV"] = -100;
+          userFloat["ppdlErrOrigPV"] = -100;
           userFloat["ppdlPV3D"] = -100;
           userFloat["ppdlErrPV3D"] = -100;
           userFloat["cosAlpha3D"] = -100;
           userFloat["ppdlBS3D"] = -100;
           userFloat["ppdlErrBS3D"] = -100;
+          userFloat["ppdlOrigPV3D"] = -100;
+          userFloat["ppdlErrOrigPV3D"] = -100;
 
           if (addCommonVertex_) {
             userVertex["commonVertex"] = Vertex();

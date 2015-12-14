@@ -12,6 +12,7 @@ HLTProName = "HLT"
 isPbPb = False;          
 isMC = False;
 keepGeneralTracks = False;
+keepPhotons = False;
 keepEventPlane = True;
 muonSelection = "GlbTrk" # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal&&isTracker), Trk(isTracker) are availale
 
@@ -86,11 +87,7 @@ from HiSkim.HiOnia2MuMu.onia2MuMuPAT_cff import *
 onia2MuMuPAT(process, GlobalTag=process.GlobalTag.globaltag, MC=isMC, HLT=HLTProName, Filter=True)
 
 ### Temporal fix for the PAT Trigger prescale warnings.
-process.patTriggerFull = cms.EDProducer( "PATTriggerProducer",
-                                         l1GtReadoutRecordInputTag = cms.InputTag("gtDigis","","RECO"),
-                                         onlyStandAlone = cms.bool( True ),
-                                         processName    = cms.string( HLTProName )                    
-                                         )
+process.patTriggerFull.l1GtReadoutRecordInputTag = cms.InputTag("gtDigis","","RECO")
 ###
 
 ##### Onia2MuMuPAT input collections/options
@@ -137,12 +134,21 @@ elif muonSelection == "Trk":
 else:
   print "ERROR: Incorrect muon selection " + muonSelection + " . Valid options are: Glb, Trk, GlbTrk"
 
-process.outOnia2MuMu.outputCommands.append("keep recoConversions_*_*_*")
 ##### If single track collection has to be kept
 if keepGeneralTracks:
   process.outOnia2MuMu.outputCommands.append("keep *_standAloneMuons_*_*")
   if isPbPb: process.outOnia2MuMu.outputCommands.append("keep *_hiGeneralTracks_*_*")
   else: process.outOnia2MuMu.outputCommands.append("keep *_generalTracks_*_*")
+##### If converted photon collection has to be kept
+if keepPhotons:
+  process.outOnia2MuMu.outputCommands.append("keep recoConversions_*_*_*")
+  process.outOnia2MuMu.outputCommands.append("keep *_conversions_*_*")
+  process.outOnia2MuMu.outputCommands.append("keep *_mustacheConversions_*_*")
+  process.outOnia2MuMu.outputCommands.append("drop *_conversions_uncleanedConversions_*")
+  process.outOnia2MuMu.outputCommands.append("keep *_gedPhotonCore_*_*")
+  process.outOnia2MuMu.outputCommands.append("keep *_gedPhotonsTmp_*_*")
+  process.outOnia2MuMu.outputCommands.append("keep *_gedPhotons_*_*")
+  process.outOnia2MuMu.outputCommands.append("keep *_standAloneMuons_*_*")
 ##### If event plane collection has to be kept
 if keepEventPlane:
   process.outOnia2MuMu.outputCommands.append("keep *_hiEvtPlane_*_*")

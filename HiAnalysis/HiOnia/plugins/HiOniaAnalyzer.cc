@@ -1013,37 +1013,89 @@ HiOniaAnalyzer::fillTreeJpsi(int iSign, int count) {
   new((*Reco_QQ_4mom)[Reco_QQ_size])TLorentzVector(vJpsi);
 
   if (_useBS) {
-    if (aJpsiCand->hasUserFloat("ppdlBS")) {Reco_QQ_ctau[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlBS");}
-    else {std::cout << "Warning: User Float ppdlBS was not found" << std::endl;}
-    if (aJpsiCand->hasUserFloat("ppdlErrBS")) {Reco_QQ_ctauErr[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlErrBS");}
-    else {std::cout << "Warning: User Float ppdlErrBS was not found" << std::endl;}
-    if (aJpsiCand->hasUserFloat("ppdlBS3D")) {Reco_QQ_ctau3D[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlBS3D");}
-    else {std::cout << "Warning: User Float ppdlBS3D was not found" << std::endl;}
-    if (aJpsiCand->hasUserFloat("ppdlErrBS3D")) {Reco_QQ_ctauErr3D[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlErrBS3D");}
-    else {std::cout << "Warning: User Float ppdlErrBS3D was not found" << std::endl;}
+    if (aJpsiCand->hasUserFloat("ppdlBS")) {
+      Reco_QQ_ctau[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlBS");
+    } else {  
+      Reco_QQ_ctau[Reco_QQ_size] = -100;
+      std::cout << "Warning: User Float ppdlBS was not found" << std::endl;
+    }
+    if (aJpsiCand->hasUserFloat("ppdlErrBS")) {
+      Reco_QQ_ctauErr[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlErrBS");
+    } else {
+      Reco_QQ_ctauErr[Reco_QQ_size] = -100;
+      std::cout << "Warning: User Float ppdlErrBS was not found" << std::endl;
+    }
+    if (aJpsiCand->hasUserFloat("ppdlBS3D")) {
+      Reco_QQ_ctau3D[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlBS3D");
+    } else {
+      Reco_QQ_ctau3D[Reco_QQ_size] = -100;
+      std::cout << "Warning: User Float ppdlBS3D was not found" << std::endl;
+    }
+    if (aJpsiCand->hasUserFloat("ppdlErrBS3D")) {
+      Reco_QQ_ctauErr3D[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlErrBS3D");
+    } else {
+      Reco_QQ_ctauErr3D[Reco_QQ_size] = -100;
+      std::cout << "Warning: User Float ppdlErrBS3D was not found" << std::endl;
+    }
   }
   else {
-    if (aJpsiCand->hasUserFloat("ppdlPV")) {Reco_QQ_ctau[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlPV");}
-    else {std::cout << "Warning: User Float ppdlPV was not found" << std::endl;}
-    if (aJpsiCand->hasUserFloat("ppdlErrPV")) {Reco_QQ_ctauErr[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlErrPV");}
-    else {std::cout << "Warning: User Float ppdlErrPV was not found" << std::endl;}
-    if (aJpsiCand->hasUserFloat("ppdlPV3D")) {Reco_QQ_ctau3D[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlPV3D");}
-    else {std::cout << "Warning: User Float ppdlPV3D was not found" << std::endl;}
-    if (aJpsiCand->hasUserFloat("ppdlErrPV3D")) {Reco_QQ_ctauErr3D[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlErrPV3D");}
-    else {std::cout << "Warning: User Float ppdlErrPV3D was not found" << std::endl;}
+    if (aJpsiCand->hasUserFloat("ppdlPV")) {
+      Reco_QQ_ctau[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlPV");
+    } else {
+      Reco_QQ_ctau[Reco_QQ_size] = -100;
+      std::cout << "Warning: User Float ppdlPV was not found" << std::endl;
+    }
+    if (aJpsiCand->hasUserFloat("ppdlErrPV")) {
+      Reco_QQ_ctauErr[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlErrPV");
+    } else {
+      Reco_QQ_ctauErr[Reco_QQ_size] = -100;
+      std::cout << "Warning: User Float ppdlErrPV was not found" << std::endl;
+    }
+    if (aJpsiCand->hasUserFloat("ppdlPV3D")) {
+      Reco_QQ_ctau3D[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlPV3D");
+    } else {
+      Reco_QQ_ctau3D[Reco_QQ_size] = -100;
+      std::cout << "Warning: User Float ppdlPV3D was not found" << std::endl;
+    }
+    if (aJpsiCand->hasUserFloat("ppdlErrPV3D")) {
+      Reco_QQ_ctauErr3D[Reco_QQ_size] = 10.0*aJpsiCand->userFloat("ppdlErrPV3D");
+    } else {
+      Reco_QQ_ctau3D[Reco_QQ_size] = -100;
+      std::cout << "Warning: User Float ppdlErrPV3D was not found" << std::endl;
+    }
   }
   if (_isMC){
-    if (aJpsiCand->hasUserFloat("ppdlTrue")) {Reco_QQ_ctauTrue[Reco_QQ_size] = 10.*aJpsiCand->userFloat("ppdlTrue");}
-    else {std::cout << "Warning: User Float ppdlTrue was not found" << std::endl;}
-    if (aJpsiCand->hasUserFloat("ppdlTrue3D")) {Reco_QQ_ctauTrue3D[Reco_QQ_size] = 10.*aJpsiCand->userFloat("ppdlTrue3D");}
-    else {std::cout << "Warning: User Float ppdlTrue3D was not found" << std::endl;}
+    if (aJpsiCand->hasUserFloat("ppdlTrue")) {
+      Reco_QQ_ctauTrue[Reco_QQ_size] = 10.*aJpsiCand->userFloat("ppdlTrue");
+    } else {
+      Reco_QQ_ctauTrue[Reco_QQ_size] = -99;
+      std::cout << "Warning: User Float ppdlTrue was not found" << std::endl;
+    }
+    if (aJpsiCand->hasUserFloat("ppdlTrue3D")) {
+      Reco_QQ_ctauTrue3D[Reco_QQ_size] = 10.*aJpsiCand->userFloat("ppdlTrue3D");
+    } else {
+      Reco_QQ_ctauTrue3D[Reco_QQ_size] = -99;
+      std::cout << "Warning: User Float ppdlTrue3D was not found" << std::endl;
+    }
   }
-  if (aJpsiCand->hasUserFloat("vProb")) {Reco_QQ_VtxProb[Reco_QQ_size] = aJpsiCand->userFloat("vProb");}
-  else {std::cout << "Warning: User Float vProb was not found" << std::endl;}
-  if (aJpsiCand->hasUserFloat("DCA")) {Reco_QQ_dca[Reco_QQ_size] = aJpsiCand->userFloat("DCA");}
-  else {std::cout << "Warning: User Float DCA was not found" << std::endl;}
-  if (aJpsiCand->hasUserFloat("MassErr")) {Reco_QQ_MassErr[Reco_QQ_size] = aJpsiCand->userFloat("MassErr");}
-  else {std::cout << "Warning: User Float MassErr was not found" << std::endl;}
+  if (aJpsiCand->hasUserFloat("vProb")) {
+    Reco_QQ_VtxProb[Reco_QQ_size] = aJpsiCand->userFloat("vProb");
+  } else {
+    Reco_QQ_VtxProb[Reco_QQ_size] = -1;
+    std::cout << "Warning: User Float vProb was not found" << std::endl;
+  }
+  if (aJpsiCand->hasUserFloat("DCA")) {
+    Reco_QQ_dca[Reco_QQ_size] = aJpsiCand->userFloat("DCA");
+  } else {
+    Reco_QQ_dca[Reco_QQ_size] = -99;
+    std::cout << "Warning: User Float DCA was not found" << std::endl;
+  }
+  if (aJpsiCand->hasUserFloat("MassErr")) {
+    Reco_QQ_MassErr[Reco_QQ_size] = aJpsiCand->userFloat("MassErr");
+  } else {
+    Reco_QQ_MassErr[Reco_QQ_size] = -99;
+    std::cout << "Warning: User Float MassErr was not found" << std::endl;
+  }
 
   Reco_QQ_NtrkDeltaR03[Reco_QQ_size]=0;
   Reco_QQ_NtrkDeltaR04[Reco_QQ_size]=0;
@@ -1336,7 +1388,7 @@ HiOniaAnalyzer::isSoftMuon(const pat::Muon* aMuon) {
           muon::isGoodMuon(*aMuon, muon::TMOneStationTight) &&
           aMuon->innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5   &&
           aMuon->innerTrack()->hitPattern().pixelLayersWithMeasurement()   > 0   &&
-          aMuon->innerTrack()->quality(reco::TrackBase::highPurity) &&
+          //aMuon->innerTrack()->quality(reco::TrackBase::highPurity) &&
           fabs(aMuon->innerTrack()->dxy(RefVtx)) < 0.3 &&
           fabs(aMuon->innerTrack()->dz(RefVtx)) < 20. 
           );
