@@ -4,23 +4,39 @@
 import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
 
+
+#----------------------------------------------------------------------------
+
+# Setup Settings for ONIA SKIM:
+
+isPbPb         = True;     # if PbPb data/MC: True or if pp data/MC: False    
+isMC           = True;     # if input is MONTECARLO: True or if it's DATA: False
+isPromptDATA   = False;    # if input is Prompt RECO DATA: True or if it's Express Stream DATA: False
+keepExtraColl  = False;    # General Tracks + Stand Alone Muons + Converted Photon collections
+muonSelection  = "GlbTrk"  # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal&&isTracker), Trk(isTracker) are availale
+
+#----------------------------------------------------------------------------
+
+
+# Print Onia Skim settings:
+if (isPromptDATA and isMC): raise SystemExit("[ERROR] isMC and isPromptDATA can not be true at the same time, please fix your settings!.")
+print( " " ) 
+print( "[INFO] Settings used for ONIA SKIM: " )  
+print( "[INFO] isPbPb        = " + ("True" if isPbPb else "False") )  
+print( "[INFO] isMC          = " + ("True" if isMC else "False") )  
+print( "[INFO] isPromptDATA  = " + ("True" if isPromptDATA else "False") )  
+print( "[INFO] keepExtraColl = " + ("True" if keepExtraColl else "False") )  
+print( "[INFO] muonSelection = " + muonSelection )  
+print( " " ) 
+
 # set up process
 process = cms.Process("Onia2MuMuPAT")
-
-# Conditions
-HLTProName = "HLT"
-isPbPb = True;          
-isMC = True;
-keepGeneralTracks = False;
-keepPhotons = False;
-keepEventPlane = True;
-muonSelection = "GlbTrk" # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal&&isTracker), Trk(isTracker) are availale
 
 # setup 'analysis'  options
 options = VarParsing.VarParsing ('analysis')
 
 # setup any defaults you want
-options.inputFiles = '/store/user/echapon/JpsiMM_5p02TeV_TuneCUETP8M1_ptJpsi36/JpsiMM_5p02TeV_TuneCUETP8M1_ptJpsi36_step3_20151208/151208_094647/0000/step3_RAW2DIGI_L1Reco_RECO_102.root'
+options.inputFiles = '/store/user/echapon/JpsiMM_5p02TeV_TuneCUETP8M1_ptJpsi69/JpsiMM_5p02TeV_TuneCUETP8M1_ptJpsi69_step3_20151208/151208_142918/0000/step3_RAW2DIGI_L1Reco_RECO_1.root'
 options.outputFile = 'onia2MuMuPAT_DATA_75X.root'
 
 options.maxEvents = -1 # -1 means all events
@@ -46,23 +62,28 @@ if isMC:
   if isPbPb:
     process.GlobalTag = GlobalTag(process.GlobalTag, '75X_mcRun2_HeavyIon_v11', '')
   else:
-    process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+    process.GlobalTag = GlobalTag(process.GlobalTag, '75X_mcRun2_asymptotic_ppAt5TeV_v3', '')
 else:  
-  process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_PromptHI_v3', '')
+  if isPromptDATA:
+    if isPbPb:
+      process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_PromptHI_v3', '')
+    else:
+      process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_Prompt_ppAt5TeV_v1', '')
+  else:
+    if isPbPb:
+      process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_ExpressHI_v2', '')
+    else:
+      process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_Express_ppAt5TeV_v0', '')
 process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
 
-'''
-# BSC or HF coincidence (masked unprescaled L1 bits)
-process.load('L1Trigger.Skimmer.l1Filter_cfi')
-process.bscOrHfCoinc = process.l1Filter.clone(
-    algorithms = cms.vstring('*','L1_HcalHfCoincPmORBscMinBiasThresh1_BptxAND_instance1', 'L1_NotBsc2_BscMinBiasOR', 'L1_HcalHfCoincidencePm')
-    )
-'''
+
+HLTProName = "HLT"
 # HLT Dimuon Triggers
 import HLTrigger.HLTfilters.hltHighLevel_cfi
 process.hltOniaHI = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
-# HLT PbPbP MENU:  /online/collisions/2015/HeavyIons/v1.0/HLT/V6
-process.hltOniaHI.HLTPaths =  [
+if isPbPb:
+  # HLT PbPbP MENU:  /online/collisions/2015/HeavyIons/v1.0/HLT/V6
+  process.hltOniaHI.HLTPaths =  [
     "HLT_HIL1DoubleMu0_v1",
     "HLT_HIL1DoubleMu0_2HF_v1",
     "HLT_HIL1DoubleMu0_2HF0_v1",
@@ -107,6 +128,25 @@ process.hltOniaHI.HLTPaths =  [
     "HLT_HIL3Mu20_2HF_v1",
     "HLT_HIL3Mu20_2HF0_v1"
     ]
+else:
+  # HLT PP MENU: /users/HiMuonTrigDev/pp5TeV/NovDev/V4
+  process.hltOniaHI.HLTPaths = [
+    "HLT_HIL1DoubleMu0_v1",
+    "HLT_HIL1DoubleMu10_v1",
+    "HLT_HIL2DoubleMu0_NHitQ_v1",
+    "HLT_HIL3DoubleMu0_OS_m2p5to4p5_v1",
+    "HLT_HIL3DoubleMu0_OS_m7to14_v1",
+    "HLT_HIL2Mu3_NHitQ10_v1",
+    "HLT_HIL3Mu3_NHitQ15_v1",
+    "HLT_HIL2Mu5_NHitQ10_v1",
+    "HLT_HIL3Mu5_NHitQ15_v1",
+    "HLT_HIL2Mu7_NHitQ10_v1",
+    "HLT_HIL3Mu7_NHitQ15_v1",
+    "HLT_HIL2Mu15_v1",
+    "HLT_HIL3Mu15_v1",
+    "HLT_HIL2Mu20_v1",
+    "HLT_HIL3Mu20_v1"
+    ]
 process.hltOniaHI.throw = False
 process.hltOniaHI.andOr = True
 process.hltOniaHI.TriggerResultsTag = cms.InputTag("TriggerResults","",HLTProName)
@@ -122,24 +162,23 @@ process.patTriggerFull.l1GtReadoutRecordInputTag = cms.InputTag("gtDigis","","RE
 process.onia2MuMuPatGlbGlb.dimuonSelection          = cms.string("mass > 0")
 process.onia2MuMuPatGlbGlb.resolvePileUpAmbiguity   = False
 if isPbPb:
+  process.onia2MuMuPatGlbGlb.srcTracks                = cms.InputTag("hiGeneralTracks")
   process.onia2MuMuPatGlbGlb.primaryVertexTag         = cms.InputTag("hiSelectedVertex")
   process.patMuonsWithoutTrigger.pvSrc                = cms.InputTag("hiSelectedVertex")
   process.onia2MuMuPatGlbGlb.addMuonlessPrimaryVertex = False
-  if isMC:
-    process.genMuons.src = "genParticles"
-    process.onia2MuMuPatGlbGlb.genParticles = "genParticles"
 else: # ispp
+  process.onia2MuMuPatGlbGlb.srcTracks                = cms.InputTag("generalTracks")
   process.onia2MuMuPatGlbGlb.primaryVertexTag         = cms.InputTag("offlinePrimaryVertices")
   process.patMuonsWithoutTrigger.pvSrc                = cms.InputTag("offlinePrimaryVertices")
   # Adding muonLessPV gives you lifetime values wrt. muonLessPV only
   process.onia2MuMuPatGlbGlb.addMuonlessPrimaryVertex = True
-  if isMC:
-    process.genMuons.src = "genParticles"
-    process.onia2MuMuPatGlbGlb.genParticles = "genParticles"
+if isMC:
+  process.genMuons.src = "genParticles"
+  process.onia2MuMuPatGlbGlb.genParticles = "genParticles"
 
 ##### Remove few paths for MC
-if isMC:
-  process.patMuonSequence.remove(process.hltOniaHI)
+#if isMC:
+#  process.patMuonSequence.remove(process.hltOniaHI)
 
 ##### Dimuon pair selection
 commonP1 = "|| (innerTrack.isNonnull && genParticleRef(0).isNonnull)"
@@ -162,13 +201,14 @@ elif muonSelection == "Trk":
 else:
   print "ERROR: Incorrect muon selection " + muonSelection + " . Valid options are: Glb, Trk, GlbTrk"
 
-##### If single track collection has to be kept
-if keepGeneralTracks:
+##### Event Plane collection  to be kept
+process.outOnia2MuMu.outputCommands.append("keep *_hiEvtPlane_*_*")
+
+##### If extra collections has to be kept
+if keepExtraColl:
   process.outOnia2MuMu.outputCommands.append("keep *_standAloneMuons_*_*")
   if isPbPb: process.outOnia2MuMu.outputCommands.append("keep *_hiGeneralTracks_*_*")
   else: process.outOnia2MuMu.outputCommands.append("keep *_generalTracks_*_*")
-##### If converted photon collection has to be kept
-if keepPhotons:
   process.outOnia2MuMu.outputCommands.append("keep recoConversions_*_*_*")
   process.outOnia2MuMu.outputCommands.append("keep *_conversions_*_*")
   process.outOnia2MuMu.outputCommands.append("keep *_mustacheConversions_*_*")
@@ -177,9 +217,6 @@ if keepPhotons:
   process.outOnia2MuMu.outputCommands.append("keep *_gedPhotonsTmp_*_*")
   process.outOnia2MuMu.outputCommands.append("keep *_gedPhotons_*_*")
   process.outOnia2MuMu.outputCommands.append("keep *_standAloneMuons_*_*")
-##### If event plane collection has to be kept
-if keepEventPlane:
-  process.outOnia2MuMu.outputCommands.append("keep *_hiEvtPlane_*_*")
 
 
 
@@ -191,77 +228,3 @@ process.schedule              = cms.Schedule(process.Onia2MuMuPAT,process.e)
 
 from Configuration.Applications.ConfigBuilder import MassReplaceInputTag
 MassReplaceInputTag(process)
-
-
-
-'''
-
-FOR PbPb: /online/collisions/2015/HeavyIons/v1.0/HLT/V6
-
-process.hltOniaHI.HLTPaths = [
-    "HLT_HIL1DoubleMu0_v1",
-    "HLT_HIL1DoubleMu0_2HF_v1",
-    "HLT_HIL1DoubleMu0_2HF0_v1",
-    "HLT_HIL1DoubleMu10_v1",
-    "HLT_HIL2DoubleMu0_NHitQ_v2",
-    "HLT_HIL2DoubleMu0_NHitQ_2HF_v1",
-    "HLT_HIL2DoubleMu0_NHitQ_2HF0_v1",
-    "HLT_HIL1DoubleMu0_2HF_Cent30100_v1",
-    "HLT_HIL1DoubleMu0_2HF0_Cent30100_v1",
-    "HLT_HIL2DoubleMu0_2HF_Cent30100_NHitQ_v1",
-    "HLT_HIL1DoubleMu0_Cent30_v1",
-    "HLT_HIL2DoubleMu0_2HF0_Cent30100_NHitQ_v1",
-    "HLT_HIL2DoubleMu0_Cent30_NHitQ_v1",
-    "HLT_HIL2DoubleMu0_Cent30_OS_NHitQ_v1",
-    "HLT_HIL3DoubleMu0_Cent30_v1",
-    "HLT_HIL3DoubleMu0_Cent30_OS_m2p5to4p5_v1",
-    "HLT_HIL3DoubleMu0_Cent30_OS_m7to14_v1",
-    "HLT_HIL3DoubleMu0_OS_m2p5to4p5_v1",
-    "HLT_HIL3DoubleMu0_OS_m7to14_v1",
-    "HLT_HIL2Mu3_NHitQ10_2HF_v1",
-    "HLT_HIL2Mu3_NHitQ10_2HF0_v1",
-    "HLT_HIL3Mu3_NHitQ15_2HF_v1",
-    "HLT_HIL3Mu3_NHitQ15_2HF0_v1",
-    "HLT_HIL2Mu5_NHitQ10_2HF_v1",
-    "HLT_HIL2Mu5_NHitQ10_2HF0_v1",
-    "HLT_HIL3Mu5_NHitQ15_2HF_v1",
-    "HLT_HIL3Mu5_NHitQ15_2HF0_v1",
-    "HLT_HIL2Mu7_NHitQ10_2HF_v1",
-    "HLT_HIL2Mu7_NHitQ10_2HF0_v1",
-    "HLT_HIL3Mu7_NHitQ15_2HF_v1",
-    "HLT_HIL3Mu7_NHitQ15_2HF0_v1",
-    "HLT_HIL2Mu15_v2",
-    "HLT_HIL2Mu15_2HF_v1",
-    "HLT_HIL2Mu15_2HF0_v1",
-    "HLT_HIL3Mu15_v1",
-    "HLT_HIL3Mu15_2HF_v1",
-    "HLT_HIL3Mu15_2HF0_v1",
-    "HLT_HIL2Mu20_v1",
-    "HLT_HIL2Mu20_2HF_v1",	
-    "HLT_HIL2Mu20_2HF0_v1",
-    "HLT_HIL3Mu20_v1",
-    "HLT_HIL3Mu20_2HF_v1",
-    "HLT_HIL3Mu20_2HF0_v1"
-    ]
-
-FOR PP: /users/HiMuonTrigDev/pp5TeV/NovDev/V4
-
-process.hltOniaHI.HLTPaths = [
-    "HLT_HIL1DoubleMu0_v1",
-    "HLT_HIL1DoubleMu10_v1",
-    "HLT_HIL2DoubleMu0_NHitQ_v1",
-    "HLT_HIL3DoubleMu0_OS_m2p5to4p5_v1",
-    "HLT_HIL3DoubleMu0_OS_m7to14_v1",
-    "HLT_HIL2Mu3_NHitQ10_v1",
-    "HLT_HIL3Mu3_NHitQ15_v1",
-    "HLT_HIL2Mu5_NHitQ10_v1",
-    "HLT_HIL3Mu5_NHitQ15_v1",
-    "HLT_HIL2Mu7_NHitQ10_v1",
-    "HLT_HIL3Mu7_NHitQ15_v1",
-    "HLT_HIL2Mu15_v1",
-    "HLT_HIL3Mu15_v1",
-    "HLT_HIL2Mu20_v1",
-    "HLT_HIL3Mu20_v1"
-    ]
-
-'''

@@ -57,6 +57,7 @@ class HiOnia2MuMuPAT : public edm::EDProducer {
     edm::EDGetTokenT< edm::View<pat::Muon> >        muonsToken_;         
     edm::EDGetTokenT<reco::BeamSpot>                thebeamspotToken_;
     edm::EDGetTokenT<reco::VertexCollection>        thePVsToken_;
+    edm::EDGetTokenT<reco::TrackCollection>         recoTracksToken_;
     edm::EDGetTokenT<reco::GenParticleCollection>   theGenParticlesToken_;
     StringCutObjectSelector<pat::Muon> higherPuritySelection_;
     StringCutObjectSelector<pat::Muon> lowerPuritySelection_; 
