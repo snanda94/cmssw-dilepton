@@ -9,11 +9,12 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 
 # Setup Settings for ONIA SKIM:
 
-isPbPb         = False;    # if PbPb data/MC: True or if pp data/MC: False    
-isMC           = False;    # if input is MONTECARLO: True or if it's DATA: False
-isPromptDATA   = True;     # if input is Prompt RECO DATA: True or if it's Express Stream DATA: False
-keepExtraColl  = False;    # General Tracks + Stand Alone Muons + Converted Photon collections
-muonSelection  = "GlbTrk"  # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal&&isTracker), Trk(isTracker) are availale
+isPbPb         = False     # if PbPb data/MC: True or if pp data/MC: False    
+isMC           = False     # if input is MONTECARLO: True or if it's DATA: False
+isPromptDATA   = True      # if input is Prompt RECO DATA: True or if it's Express Stream DATA: False
+keepExtraColl  = True      # General Tracks + Stand Alone Muons + Converted Photon collections
+applyEventSel  = False     # if we want to apply Event Selection
+muonSelection  = "Trk"     # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal&&isTracker), Trk(isTracker) are availale
 
 #----------------------------------------------------------------------------
 
@@ -25,7 +26,8 @@ print( "[INFO] Settings used for ONIA SKIM: " )
 print( "[INFO] isPbPb        = " + ("True" if isPbPb else "False") )  
 print( "[INFO] isMC          = " + ("True" if isMC else "False") )  
 print( "[INFO] isPromptDATA  = " + ("True" if isPromptDATA else "False") )  
-print( "[INFO] keepExtraColl = " + ("True" if keepExtraColl else "False") )  
+print( "[INFO] keepExtraColl = " + ("True" if keepExtraColl else "False") ) 
+print( "[INFO] applyEventSel = " + ("True" if applyEventSel else "False") )  
 print( "[INFO] muonSelection = " + muonSelection )  
 print( " " ) 
 
@@ -36,7 +38,7 @@ process = cms.Process("Onia2MuMuPAT")
 options = VarParsing.VarParsing ('analysis')
 
 # setup any defaults you want
-options.inputFiles = '/store/data/Run2015E/DoubleMu/RECO/Onia-PromptReco-v1/000/262/157/00000/78E03674-9291-E511-B29C-02163E013584.root'
+options.inputFiles = '/store/data/Run2015E/DoubleMu/AOD/PromptReco-v1/000/262/327/00000/1609E4F5-D2A6-E511-96C4-02163E013704.root'
 options.outputFile = 'onia2MuMuPAT_DATA_75X.root'
 
 options.maxEvents = -1 # -1 means all events
@@ -45,6 +47,8 @@ options.maxEvents = -1 # -1 means all events
 options.parseArguments()
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.categories.extend(["HiOnia2MuMuPAT_muonLessSizeORpvTrkSize"])
+process.MessageLogger.cerr.HiOnia2MuMuPAT_muonLessSizeORpvTrkSize = cms.untracked.PSet( limit = cms.untracked.int32(5) )
 
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
@@ -176,10 +180,6 @@ if isMC:
   process.genMuons.src = "genParticles"
   process.onia2MuMuPatGlbGlb.genParticles = "genParticles"
 
-##### Remove few paths for MC
-#if isMC:
-#  process.patMuonSequence.remove(process.hltOniaHI)
-
 ##### Dimuon pair selection
 commonP1 = "|| (innerTrack.isNonnull && genParticleRef(0).isNonnull)"
 commonP2 = " && abs(innerTrack.dxy)<4 && abs(innerTrack.dz)<35"
@@ -201,14 +201,32 @@ elif muonSelection == "Trk":
 else:
   print "ERROR: Incorrect muon selection " + muonSelection + " . Valid options are: Glb, Trk, GlbTrk"
 
-##### Event Plane collection  to be kept
-process.outOnia2MuMu.outputCommands.append("keep *_hiEvtPlane_*_*")
+##### Event Selection
+if applyEventSel:
+  if isPbPb:
+    process.load('HeavyIonsAnalysis.Configuration.collisionEventSelection_cff')
+    process.load('HeavyIonsAnalysis.EventAnalysis.HIClusterCompatibilityFilter_cfi')
+    process.clusterCompatibilityFilter.clusterPars = cms.vdouble(0.0,0.006)
+    process.patMuonSequence.replace(process.hltOniaHI , process.hltOniaHI * process.hfCoincFilter3 * process.primaryVertexFilter * process.clusterCompatibilityFilter )
+  else:
+    process.PAprimaryVertexFilter = cms.EDFilter("VertexSelector",
+                                                 src = cms.InputTag("offlinePrimaryVertices"),
+                                                 cut = cms.string("!isFake && abs(z) <= 25 && position.Rho <= 2 && tracksSize >= 2"),
+                                                 filter = cms.bool(True),
+                                                 )
+    process.NoScraping = cms.EDFilter("FilterOutScraping",
+                                      applyfilter = cms.untracked.bool(True),
+                                      debugOn = cms.untracked.bool(False),
+                                      numtrack = cms.untracked.uint32(10),
+                                      thresh = cms.untracked.double(0.25),
+                                      )
+    process.patMuonSequence.replace(process.hltOniaHI , process.hltOniaHI * process.PAprimaryVertexFilter * process.NoScraping )
 
 ##### If extra collections has to be kept
 if keepExtraColl:
-  process.outOnia2MuMu.outputCommands.append("keep *_standAloneMuons_*_*")
   if isPbPb: process.outOnia2MuMu.outputCommands.append("keep *_hiGeneralTracks_*_*")
   else: process.outOnia2MuMu.outputCommands.append("keep *_generalTracks_*_*")
+  process.outOnia2MuMu.outputCommands.append("keep *_standAloneMuons_*_*")
   process.outOnia2MuMu.outputCommands.append("keep recoConversions_*_*_*")
   process.outOnia2MuMu.outputCommands.append("keep *_conversions_*_*")
   process.outOnia2MuMu.outputCommands.append("keep *_mustacheConversions_*_*")
@@ -216,7 +234,6 @@ if keepExtraColl:
   process.outOnia2MuMu.outputCommands.append("keep *_gedPhotonCore_*_*")
   process.outOnia2MuMu.outputCommands.append("keep *_gedPhotonsTmp_*_*")
   process.outOnia2MuMu.outputCommands.append("keep *_gedPhotons_*_*")
-  process.outOnia2MuMu.outputCommands.append("keep *_standAloneMuons_*_*")
 
 
 

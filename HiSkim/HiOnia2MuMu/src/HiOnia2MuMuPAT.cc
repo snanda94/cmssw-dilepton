@@ -108,6 +108,17 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   KalmanVertexFitter vtxFitter(true);
   TrackCollection muonLess; // track collection related to PV, minus the 2 minus (if muonLessPV option is activated)
 
+  Handle<reco::TrackCollection> collTracks;
+  iEvent.getByToken(recoTracksToken_,collTracks);
+  int Ntrk = -1; 
+  if ( collTracks.isValid() ) {
+    Ntrk = 0;
+    for(std::vector<reco::Track>::const_iterator it=collTracks->begin(); it!=collTracks->end(); ++it) {
+      const reco::Track* track = &(*it);        
+      if ( track->qualityByName("highPurity") ) { Ntrk++; }
+    }
+  }
+
   // JPsi candidates only from muons
   for(View<pat::Muon>::const_iterator it = muons->begin(), itend = muons->end(); it != itend; ++it){
     // both must pass low quality
@@ -475,18 +486,7 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
         userFloat["ppdlTrue3D"] = -99.;
       }
 
-      Handle<reco::TrackCollection> collTracks;
-      iEvent.getByToken(recoTracksToken_,collTracks);
-      if ( collTracks.isValid() ) {
-        int Ntrk = 0; 
-        for(std::vector<reco::Track>::const_iterator it=collTracks->begin(); it!=collTracks->end(); ++it) {
-          const reco::Track* track = &(*it);        
-          if ( track->qualityByName("highPurity") ) { Ntrk++; }
-        }
-        userInt["Ntrk"] = Ntrk;
-      } else {
-        userInt["Ntrk"] = -1;
-      }
+      userInt["Ntrk"] = Ntrk;
 
       for (std::map<std::string, int>::iterator i = userInt.begin(); i != userInt.end(); i++) { myCand.addUserInt(i->first , i->second); }
       for (std::map<std::string, float>::iterator i = userFloat.begin(); i != userFloat.end(); i++) { myCand.addUserFloat(i->first , i->second); }
