@@ -12,7 +12,7 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 isPbPb         = False     # if PbPb data/MC: True or if pp data/MC: False    
 isMC           = False     # if input is MONTECARLO: True or if it's DATA: False
 isPromptDATA   = True      # if input is Prompt RECO DATA: True or if it's Express Stream DATA: False
-keepExtraColl  = True      # General Tracks + Stand Alone Muons + Converted Photon collections
+keepExtraColl  = False     # General Tracks + Stand Alone Muons + Converted Photon collections
 applyEventSel  = True      # if we want to apply Event Selection
 muonSelection  = "Trk"     # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal&&isTracker), Trk(isTracker) are availale
 

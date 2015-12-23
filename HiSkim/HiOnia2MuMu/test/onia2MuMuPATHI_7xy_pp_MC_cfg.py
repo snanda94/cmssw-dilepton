@@ -133,7 +133,7 @@ if isPbPb:
     "HLT_HIL3Mu20_2HF0_v1"
     ]
 else:
-  # HLT PP MENU: /users/HiMuonTrigDev/pp5TeV/NovDev/V4
+  # HLT PP MENU: FOR RUN 2 PP MC 2015
   process.hltOniaHI.HLTPaths = [
     "HLT_HIL1DoubleMu0ForPPRef_v1",
     "HLT_HIL1DoubleMu10ForPPRef_v1",

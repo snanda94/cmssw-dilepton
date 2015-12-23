@@ -405,6 +405,9 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
         } else {
           userFloat["vNChi2"] = -1;
           userFloat["vProb"] = -1;
+          userFloat["vertexWeight"] = -100;
+          userFloat["sumPTPV"] = -100;
+          userFloat["DCA"] = -100;
           userFloat["ppdlPV"] = -100;
           userFloat["ppdlErrPV"] = -100;
           userFloat["cosAlpha"] = -100;
@@ -419,6 +422,8 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
           userFloat["ppdlErrBS3D"] = -100;
           userFloat["ppdlOrigPV3D"] = -100;
           userFloat["ppdlErrOrigPV3D"] = -100;
+
+          userInt["countTksOfPV"] = -1;
 
           if (addCommonVertex_) {
             userVertex["commonVertex"] = Vertex();
@@ -438,8 +443,20 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
         reco::GenParticleRef genMu2 = it2->genParticleRef();
         if (genMu1.isNonnull() && genMu2.isNonnull()) {
           if (genMu1->numberOfMothers()>0 && genMu2->numberOfMothers()>0){
+            if ( !(abs(genMu1->pdgId())==13) || !(abs(genMu2->pdgId())==13) ) { 
+              std::cout << "Warning: Generated particles are not muons, pdgID1: " << genMu1->pdgId() << " and pdgID2: " <<  genMu1->pdgId() << std::endl;
+            }
             reco::GenParticleRef mom1 = genMu1->motherRef();
             reco::GenParticleRef mom2 = genMu2->motherRef();
+            for(int i=0; i<1000; ++i) {
+              if (mom1.isNonnull() && (mom1->pdgId()==genMu1->pdgId()) && mom1->numberOfMothers()>0) {
+                mom1 = mom1->motherRef();
+              } else break;
+            }
+            for(int i=0; i<1000; ++i) {
+              if (mom2.isNonnull() && (mom2->pdgId()==genMu2->pdgId()) && mom2->numberOfMothers()>0) {
+                mom2 = mom2->motherRef();
+              } else break;            }
             if (mom1.isNonnull() && (mom1 == mom2)) {
               myCand.setGenParticleRef(mom1); // set
               myCand.embedGenParticle();      // and embed
@@ -523,6 +540,19 @@ HiOnia2MuMuPAT::isAMixedbHadron(int pdgID, int momPdgID) {
 
 }
 
+reco::GenParticleRef   
+HiOnia2MuMuPAT::findMotherRef(reco::GenParticleRef GenParticle, int GenParticlePDG) {
+
+  reco::GenParticleRef GenParticleMother = GenParticle;       // find mothers
+  for(int i=0; i<1000; ++i) {
+    if (GenParticleMother.isNonnull() && (GenParticleMother->pdgId()==GenParticlePDG) && GenParticleMother->numberOfMothers()>0) {        
+      GenParticleMother = GenParticleMother->motherRef();
+    } else break;
+  }
+  return GenParticleMother;
+
+}
+
 std::pair<int, std::pair<float, float> >   
 HiOnia2MuMuPAT::findJpsiMCInfo(reco::GenParticleRef genJpsi) {
 
@@ -539,7 +569,7 @@ HiOnia2MuMuPAT::findJpsiMCInfo(reco::GenParticleRef genJpsi) {
     trueP.SetXYZ(genJpsi->momentum().x(),genJpsi->momentum().y(),genJpsi->momentum().z());
             
     bool aBhadron = false;
-    reco::GenParticleRef Jpsimom = genJpsi->motherRef();       // find mothers
+    reco::GenParticleRef Jpsimom = findMotherRef(genJpsi->motherRef(), genJpsi->pdgId());   
     if (Jpsimom.isNull()) {
       std::pair<float, float> trueLifePair = std::make_pair(trueLife, trueLife3D);
       std::pair<int, std::pair<float, float>> result = std::make_pair(momJpsiID, trueLifePair);
@@ -551,7 +581,7 @@ HiOnia2MuMuPAT::findJpsiMCInfo(reco::GenParticleRef genJpsi) {
         aBhadron = true;
       }
     } else {
-      reco::GenParticleRef Jpsigrandmom = Jpsimom->motherRef();   
+      reco::GenParticleRef Jpsigrandmom = findMotherRef(Jpsimom->motherRef(), Jpsimom->pdgId());  
       if (isAbHadron(Jpsimom->pdgId())) {       
         if (Jpsigrandmom.isNonnull() && isAMixedbHadron(Jpsimom->pdgId(),Jpsigrandmom->pdgId())) {       
           momJpsiID = Jpsigrandmom->pdgId();
@@ -566,7 +596,7 @@ HiOnia2MuMuPAT::findJpsiMCInfo(reco::GenParticleRef genJpsi) {
           momJpsiID = Jpsigrandmom->pdgId();
           trueVtxMom.SetXYZ(Jpsigrandmom->vertex().x(),Jpsigrandmom->vertex().y(),Jpsigrandmom->vertex().z());
         } else { 
-          reco::GenParticleRef JpsiGrandgrandmom = Jpsigrandmom->motherRef();
+          reco::GenParticleRef JpsiGrandgrandmom = findMotherRef(Jpsigrandmom->motherRef(), Jpsigrandmom->pdgId());
           if (JpsiGrandgrandmom.isNonnull() && isAMixedbHadron(Jpsigrandmom->pdgId(),JpsiGrandgrandmom->pdgId())) {
             momJpsiID = JpsiGrandgrandmom->pdgId();
             trueVtxMom.SetXYZ(JpsiGrandgrandmom->vertex().x(),JpsiGrandgrandmom->vertex().y(),JpsiGrandgrandmom->vertex().z());

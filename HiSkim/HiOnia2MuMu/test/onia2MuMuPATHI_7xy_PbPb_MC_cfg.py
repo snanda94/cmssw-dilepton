@@ -131,23 +131,23 @@ if isPbPb:
     "HLT_HIL3Mu20_2HF0_v1"
     ]
 else:
-  # HLT PP MENU: /users/HiMuonTrigDev/pp5TeV/NovDev/V4
+  # HLT PP MENU: FOR RUN 2 PP MC 2015
   process.hltOniaHI.HLTPaths = [
-    "HLT_HIL1DoubleMu0_v1",
-    "HLT_HIL1DoubleMu10_v1",
-    "HLT_HIL2DoubleMu0_NHitQ_v1",
-    "HLT_HIL3DoubleMu0_OS_m2p5to4p5_v1",
-    "HLT_HIL3DoubleMu0_OS_m7to14_v1",
-    "HLT_HIL2Mu3_NHitQ10_v1",
-    "HLT_HIL3Mu3_NHitQ15_v1",
-    "HLT_HIL2Mu5_NHitQ10_v1",
-    "HLT_HIL3Mu5_NHitQ15_v1",
-    "HLT_HIL2Mu7_NHitQ10_v1",
-    "HLT_HIL3Mu7_NHitQ15_v1",
-    "HLT_HIL2Mu15_v1",
-    "HLT_HIL3Mu15_v1",
-    "HLT_HIL2Mu20_v1",
-    "HLT_HIL3Mu20_v1"
+    "HLT_HIL1DoubleMu0ForPPRef_v1",
+    "HLT_HIL1DoubleMu10ForPPRef_v1",
+    "HLT_HIL2DoubleMu0_NHitQForPPRef_v1",
+    "HLT_HIL3DoubleMu0_OS_m2p5to4p5ForPPRef_v1",
+    "HLT_HIL3DoubleMu0_OS_m7to14ForPPRef_v1",
+    "HLT_HIL2Mu3_NHitQ10ForPPRef_v1",
+    "HLT_HIL3Mu3_NHitQ15ForPPRef_v1",
+    "HLT_HIL2Mu5_NHitQ10ForPPRef_v1",
+    "HLT_HIL3Mu5_NHitQ15ForPPRef_v1",
+    "HLT_HIL2Mu7_NHitQ10ForPPRef_v1",
+    "HLT_HIL3Mu7_NHitQ15ForPPRef_v1",
+    "HLT_HIL2Mu15ForPPRef_v1",
+    "HLT_HIL3Mu15ForPPRef_v1",
+    "HLT_HIL2Mu20ForPPRef_v1",
+    "HLT_HIL3Mu20ForPPRef_v1"
     ]
 process.hltOniaHI.throw = False
 process.hltOniaHI.andOr = True

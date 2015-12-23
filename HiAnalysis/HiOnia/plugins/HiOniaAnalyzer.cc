@@ -75,9 +75,11 @@ private:
   void makeCuts(int sign) ;
   bool checkCuts(const pat::CompositeCandidate* cand, const pat::Muon* muon1,  const pat::Muon* muon2, bool(HiOniaAnalyzer::* callFunc1)(const pat::Muon*), bool(HiOniaAnalyzer::* callFunc2)(const pat::Muon*)); 
 
+  const reco::Candidate* getDaughter(const reco::GenParticle* GenParticle, unsigned int i);
   void fillGenInfo();
   bool isAbHadron(int pdgID);
   bool isAMixedbHadron(int pdgID, int momPdgID);
+  reco::GenParticleRef findMotherRef(reco::GenParticleRef GenParticle, int GenParticlePDG);
   std::pair<int, std::pair<float, float> >  findGenMCInfo(const reco::GenParticle *genJpsi);
 
   void fillRecoMuons(int theCentralityBin);
@@ -154,8 +156,8 @@ private:
   TClonesArray* Gen_QQ_mupl_4mom;
   TClonesArray* Gen_QQ_mumi_4mom;
 
-  static const int Max_QQ_size = 100;
-  static const int Max_mu_size = 1000;
+  static const int Max_QQ_size = 10000;
+  static const int Max_mu_size = 10000;
   static const int Max_trk_size = 10000;
 
   int Gen_QQ_size; // number of generated Onia
@@ -189,6 +191,7 @@ private:
   float Reco_QQ_dca[Max_QQ_size];
   float Reco_QQ_MassErr[Max_QQ_size];
 
+  int  Reco_QQ_Ntrk[Max_QQ_size];
   int  Reco_QQ_NtrkPt02[Max_QQ_size];
   int  Reco_QQ_NtrkPt03[Max_QQ_size];
   int  Reco_QQ_NtrkPt04[Max_QQ_size];
@@ -699,18 +702,16 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     nEP = 0; 
     edm::Handle<reco::EvtPlaneCollection> flatEvtPlanes;
     iEvent.getByToken(_evtPlaneTagToken,flatEvtPlanes);
-    
     if(flatEvtPlanes.isValid()) {
       for (reco::EvtPlaneCollection::const_iterator rp = flatEvtPlanes->begin(); rp!=flatEvtPlanes->end(); rp++) {
-        rpAng[nEP] = rp->angle();
-        rpSin[nEP] = rp->sumSin();
-        rpCos[nEP] = rp->sumCos();
+        rpAng[nEP] = rp->angle(0);   // Using Event Plane Level 0
+        rpSin[nEP] = rp->sumSin(0);  // Using Event Plane Level 0
+        rpCos[nEP] = rp->sumCos(0);  // Using Event Plane Level 0
         nEP++;
       }
-    
-    }
-    else if (!_isMC) 
+    } else if (!_isMC) {
       std::cout << "Warning! Can't get flattened hiEvtPlane product!" << std::endl;
+    }
   }
 
   iEvent.getByToken(_patJpsiToken,collJpsi); 
@@ -1066,15 +1067,15 @@ HiOniaAnalyzer::fillTreeJpsi(int iSign, int count) {
   }
   if (_isMC){
     if (aJpsiCand->hasUserFloat("ppdlTrue")) {
-      Reco_QQ_ctauTrue[Reco_QQ_size] = 10.*aJpsiCand->userFloat("ppdlTrue");
+      Reco_QQ_ctauTrue[Reco_QQ_size] = 10.0*(float)aJpsiCand->userFloat("ppdlTrue");
     } else {
-      Reco_QQ_ctauTrue[Reco_QQ_size] = -99;
+      Reco_QQ_ctauTrue[Reco_QQ_size] = -100;
       std::cout << "Warning: User Float ppdlTrue was not found" << std::endl;
     }
     if (aJpsiCand->hasUserFloat("ppdlTrue3D")) {
-      Reco_QQ_ctauTrue3D[Reco_QQ_size] = 10.*aJpsiCand->userFloat("ppdlTrue3D");
+      Reco_QQ_ctauTrue3D[Reco_QQ_size] = 10.0*(float)aJpsiCand->userFloat("ppdlTrue3D");
     } else {
-      Reco_QQ_ctauTrue3D[Reco_QQ_size] = -99;
+      Reco_QQ_ctauTrue3D[Reco_QQ_size] = -100;
       std::cout << "Warning: User Float ppdlTrue3D was not found" << std::endl;
     }
   }
@@ -1095,6 +1096,12 @@ HiOniaAnalyzer::fillTreeJpsi(int iSign, int count) {
   } else {
     Reco_QQ_MassErr[Reco_QQ_size] = -99;
     std::cout << "Warning: User Float MassErr was not found" << std::endl;
+  }
+  if (aJpsiCand->hasUserInt("Ntrk")) {
+    Reco_QQ_Ntrk[Reco_QQ_size] = aJpsiCand->userInt("Ntrk");
+  } else {
+    Reco_QQ_Ntrk[Reco_QQ_size] = -1;
+    std::cout << "Warning: User Int Ntrk was not found" << std::endl;
   }
 
   Reco_QQ_NtrkDeltaR03[Reco_QQ_size]=0;
@@ -1491,6 +1498,27 @@ HiOniaAnalyzer::InitEvent()
   return;
 }
 
+const reco::Candidate*  
+HiOniaAnalyzer::getDaughter(const reco::GenParticle* GenParticle, unsigned int i) {
+
+  reco::GenParticleRef GenParticleTmp      = GenParticle->daughterRef(0);                    
+  reco::GenParticleRef GenParticleDaughter = GenParticle->daughterRef(0);    // find daughters
+  bool searched = false;
+  for(int j=0; j<1000; ++j) {
+    if (GenParticleDaughter.isNonnull() && (GenParticleDaughter->pdgId()==GenParticle->pdgId()) && GenParticleDaughter->numberOfDaughters()>i) { 
+      GenParticleTmp      = GenParticleDaughter;
+      GenParticleDaughter = GenParticleDaughter->daughterRef(0);      
+      searched = true;
+    } else break;
+  }
+  if (GenParticleTmp.isNonnull() && GenParticleTmp->numberOfDaughters()>i && searched ) {
+    return GenParticleTmp->daughter(i);
+  } else {
+    return GenParticle->daughter(i);
+  } 
+
+}
+
 void
 HiOniaAnalyzer::fillGenInfo()
 {
@@ -1514,8 +1542,9 @@ HiOniaAnalyzer::fillGenInfo()
       if (abs(gen->pdgId()) == _oniaPDG  && gen->status() == 2 &&
           gen->numberOfDaughters() >= 2) {
 
-        const reco::Candidate* genMuon1 = gen->daughter(0);
-        const reco::Candidate* genMuon2 = gen->daughter(1);
+        const reco::Candidate* genMuon1 = getDaughter(gen, 0);
+        const reco::Candidate* genMuon2 = getDaughter(gen, 1);
+
         if ( abs(genMuon1->pdgId()) == 13 &&
              abs(genMuon2->pdgId()) == 13 &&
              genMuon1->status() == 1 &&
@@ -1731,6 +1760,7 @@ HiOniaAnalyzer::fillRecoMuons(int iCent)
 void
 HiOniaAnalyzer::InitTree()
 {
+
   Reco_mu_4mom = new TClonesArray("TLorentzVector", 100);
   Reco_QQ_4mom = new TClonesArray("TLorentzVector",10);
   Reco_QQ_mupl_4mom = new TClonesArray("TLorentzVector",10);
@@ -1800,6 +1830,7 @@ HiOniaAnalyzer::InitTree()
   myTree->Branch("Reco_QQ_ctauErr", Reco_QQ_ctauErr,   "Reco_QQ_ctauErr[Reco_QQ_size]/F");
   myTree->Branch("Reco_QQ_ctau3D", Reco_QQ_ctau3D,   "Reco_QQ_ctau3D[Reco_QQ_size]/F");
   myTree->Branch("Reco_QQ_ctauErr3D", Reco_QQ_ctauErr3D,   "Reco_QQ_ctauErr3D[Reco_QQ_size]/F");
+
   if (_isMC){
     myTree->Branch("Reco_QQ_ctauTrue", Reco_QQ_ctauTrue,   "Reco_QQ_ctauTrue[Reco_QQ_size]/F");
     myTree->Branch("Reco_QQ_ctauTrue3D", Reco_QQ_ctauTrue3D,   "Reco_QQ_ctauTrue3D[Reco_QQ_size]/F");
@@ -1808,6 +1839,7 @@ HiOniaAnalyzer::InitTree()
   myTree->Branch("Reco_QQ_dca", Reco_QQ_dca,   "Reco_QQ_dca[Reco_QQ_size]/F");
   myTree->Branch("Reco_QQ_MassErr", Reco_QQ_MassErr,   "Reco_QQ_MassErr[Reco_QQ_size]/F");
   myTree->Branch("Reco_QQ_vtx", "TClonesArray", &Reco_QQ_vtx, 32000, 0);
+  myTree->Branch("Reco_QQ_Ntrk", Reco_QQ_Ntrk, "Reco_QQ_Ntrk[Reco_QQ_size]/I");
 
   if (!_theMinimumFlag) {
     myTree->Branch("Reco_QQ_mupl_isGoodMuon", Reco_QQ_mupl_isGoodMuon,   "Reco_QQ_mupl_isGoodMuon[Reco_QQ_size]/O");
@@ -2048,7 +2080,7 @@ HiOniaAnalyzer::endJob() {
   hPileUp->Write();
   hZVtx->Write();
 
-  if (_fillTree)
+  if (_fillTree)  
     myTree->Write();
 
   hGoodMuonsNoTrig->Write();
@@ -2134,7 +2166,7 @@ HiOniaAnalyzer::hltReport(const edm::Event &iEvent ,const edm::EventSetup& iSetu
           mapTriggerNameToIntFired_[triggerPathName] = 3;
         }
         //-------prescale factor------------
-        if ( !_isMC &&  hltPrescaleInit && hltPrescaleProvider.prescaleSet(iEvent,iSetup)>=0 ) {
+        if ( hltPrescaleInit && hltPrescaleProvider.prescaleSet(iEvent,iSetup)>=0 ) {
           std::pair<std::vector<std::pair<std::string,int> >,int> detailedPrescaleInfo = hltPrescaleProvider.prescaleValuesInDetail(iEvent, iSetup, triggerPathName);
           //get HLT prescale info from hltPrescaleProvider     
           const int hltPrescale = detailedPrescaleInfo.second;
@@ -2178,6 +2210,19 @@ HiOniaAnalyzer::isAMixedbHadron(int pdgID, int momPdgID) {
 
 }
 
+reco::GenParticleRef   
+HiOniaAnalyzer::findMotherRef(reco::GenParticleRef GenParticle, int GenParticlePDG) {
+
+  reco::GenParticleRef GenParticleMother = GenParticle;       // find mothers
+  for(int i=0; i<1000; ++i) {
+    if (GenParticleMother.isNonnull() && (GenParticleMother->pdgId()==GenParticlePDG) && GenParticleMother->numberOfMothers()>0) {        
+      GenParticleMother = GenParticleMother->motherRef();
+    } else break;
+  }
+  return GenParticleMother;
+
+}
+
 std::pair<int, std::pair<float, float> >  
 HiOniaAnalyzer::findGenMCInfo(const reco::GenParticle* genJpsi) {
 
@@ -2194,7 +2239,7 @@ HiOniaAnalyzer::findGenMCInfo(const reco::GenParticle* genJpsi) {
     trueP.SetXYZ(genJpsi->momentum().x(),genJpsi->momentum().y(),genJpsi->momentum().z());
 
     bool aBhadron = false;
-    reco::GenParticleRef Jpsimom = genJpsi->motherRef();       // find mothers
+    reco::GenParticleRef Jpsimom = findMotherRef(genJpsi->motherRef(), genJpsi->pdgId());      
     if (Jpsimom.isNull()) {
       std::pair<float, float> trueLifePair = std::make_pair(trueLife, trueLife3D);
       std::pair<int, std::pair<float, float>> result = std::make_pair(momJpsiID, trueLifePair);
@@ -2208,7 +2253,7 @@ HiOniaAnalyzer::findGenMCInfo(const reco::GenParticle* genJpsi) {
       }
     } 
     else {
-      reco::GenParticleRef Jpsigrandmom = Jpsimom->motherRef();   
+      reco::GenParticleRef Jpsigrandmom = findMotherRef(Jpsimom->motherRef(), Jpsimom->pdgId());   
       if (isAbHadron(Jpsimom->pdgId())) {       
         if (Jpsigrandmom.isNonnull() && isAMixedbHadron(Jpsimom->pdgId(),Jpsigrandmom->pdgId())) {       
           momJpsiID = Jpsigrandmom->pdgId();
@@ -2220,13 +2265,13 @@ HiOniaAnalyzer::findGenMCInfo(const reco::GenParticle* genJpsi) {
         }
         aBhadron = true;
       } 
-      else if (Jpsigrandmom.isNonnull() && isAbHadron(Jpsigrandmom->pdgId()))  {        
+      else if (Jpsigrandmom.isNonnull() && isAbHadron(Jpsigrandmom->pdgId()))  {  
         if (Jpsigrandmom->numberOfMothers()<=0) {
           momJpsiID = Jpsigrandmom->pdgId();
           trueVtxMom.SetXYZ(Jpsigrandmom->vertex().x(),Jpsigrandmom->vertex().y(),Jpsigrandmom->vertex().z());
         } 
         else { 
-          reco::GenParticleRef JpsiGrandgrandmom = Jpsigrandmom->motherRef();
+          reco::GenParticleRef JpsiGrandgrandmom = findMotherRef(Jpsigrandmom->motherRef(), Jpsigrandmom->pdgId());
           if (JpsiGrandgrandmom.isNonnull() && isAMixedbHadron(Jpsigrandmom->pdgId(),JpsiGrandgrandmom->pdgId())) {
             momJpsiID = JpsiGrandgrandmom->pdgId();
             trueVtxMom.SetXYZ(JpsiGrandgrandmom->vertex().x(),JpsiGrandgrandmom->vertex().y(),JpsiGrandgrandmom->vertex().z());

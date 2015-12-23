@@ -9,9 +9,9 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 
 # Setup Settings for ONIA TREE:
 
-isPbPb         = True      # if PbPb data/MC: True or if pp data/MC: False    
+isPbPb         = False     # if PbPb data/MC: True or if pp data/MC: False    
 isMC           = False     # if input is MONTECARLO: True or if it's DATA: False
-isPromptDATA   = False     # if input is Prompt RECO DATA: True or if it's Express Stream DATA: False
+isPromptDATA   = True      # if input is Prompt RECO DATA: True or if it's Express Stream DATA: False
 isPromptMC     = False     # if MC is Prompt Quarkonia: True or if it's Non Prompt Quarkonia: False
 useExtraColl   = False     # General Tracks + Stand Alone Muons + Converted Photon collections
 applyEventSel  = False     # Only apply Event Selection if the required collections are present 
@@ -44,7 +44,7 @@ options = VarParsing.VarParsing ('analysis')
 # Input and Output File Names
 options.outputFile = "OniaTree.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
-options.inputFiles = 'file:onia2MuMuPAT_DATA_75X_PbPbExpress.root'
+options.inputFiles = 'file:onia2MuMuPAT_DATA_75X_ppPrompt.root'
 
 options.maxEvents = -1 # -1 means all events
 

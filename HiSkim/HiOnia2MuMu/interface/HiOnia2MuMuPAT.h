@@ -50,6 +50,7 @@ class HiOnia2MuMuPAT : public edm::EDProducer {
     virtual void endJob() ;
     bool isAbHadron(int pdgID);
     bool isAMixedbHadron(int pdgID, int momPdgID);
+    reco::GenParticleRef findMotherRef(reco::GenParticleRef GenParticle, int GenParticlePDG);
     std::pair<int, std::pair<float, float> > findJpsiMCInfo(reco::GenParticleRef genJpsi);
 
   // ----------member data ---------------------------
