@@ -75,11 +75,12 @@ private:
   void makeCuts(int sign) ;
   bool checkCuts(const pat::CompositeCandidate* cand, const pat::Muon* muon1,  const pat::Muon* muon2, bool(HiOniaAnalyzer::* callFunc1)(const pat::Muon*), bool(HiOniaAnalyzer::* callFunc2)(const pat::Muon*)); 
 
-  const reco::Candidate* getDaughter(const reco::GenParticle* GenParticle, unsigned int i);
+
+  reco::GenParticleRef findDaughterRef(reco::GenParticleRef GenParticleDaughter, int GenParticlePDG);
   void fillGenInfo();
   bool isAbHadron(int pdgID);
   bool isAMixedbHadron(int pdgID, int momPdgID);
-  reco::GenParticleRef findMotherRef(reco::GenParticleRef GenParticle, int GenParticlePDG);
+  reco::GenParticleRef findMotherRef(reco::GenParticleRef GenParticleMother, int GenParticlePDG);
   std::pair<int, std::pair<float, float> >  findGenMCInfo(const reco::GenParticle *genJpsi);
 
   void fillRecoMuons(int theCentralityBin);
@@ -1498,24 +1499,20 @@ HiOniaAnalyzer::InitEvent()
   return;
 }
 
-const reco::Candidate*  
-HiOniaAnalyzer::getDaughter(const reco::GenParticle* GenParticle, unsigned int i) {
+reco::GenParticleRef  
+HiOniaAnalyzer::findDaughterRef(reco::GenParticleRef GenParticleDaughter, int GenParticlePDG) {
 
-  reco::GenParticleRef GenParticleTmp      = GenParticle->daughterRef(0);                    
-  reco::GenParticleRef GenParticleDaughter = GenParticle->daughterRef(0);    // find daughters
-  bool searched = false;
-  for(int j=0; j<1000; ++j) {
-    if (GenParticleDaughter.isNonnull() && (GenParticleDaughter->pdgId()==GenParticle->pdgId()) && GenParticleDaughter->numberOfDaughters()>i) { 
-      GenParticleTmp      = GenParticleDaughter;
-      GenParticleDaughter = GenParticleDaughter->daughterRef(0);      
-      searched = true;
+  reco::GenParticleRef GenParticleTmp = GenParticleDaughter;   
+  for(int j=0; j<1000; ++j) { 
+    if (GenParticleTmp.isNonnull() && ((GenParticleTmp->pdgId()==GenParticlePDG) || (GenParticleTmp->pdgId()==GenParticleDaughter->pdgId())) && GenParticleTmp->numberOfDaughters()>0) { 
+      GenParticleDaughter = GenParticleTmp;
+      GenParticleTmp      = GenParticleDaughter->daughterRef(0);
     } else break;
   }
-  if (GenParticleTmp.isNonnull() && GenParticleTmp->numberOfDaughters()>i && searched ) {
-    return GenParticleTmp->daughter(i);
-  } else {
-    return GenParticle->daughter(i);
-  } 
+  if (GenParticleTmp.isNonnull() && (GenParticleTmp->pdgId()==GenParticleDaughter->pdgId())) {
+    GenParticleDaughter = GenParticleTmp;
+  }   
+  return GenParticleDaughter;
 
 }
 
@@ -1542,8 +1539,8 @@ HiOniaAnalyzer::fillGenInfo()
       if (abs(gen->pdgId()) == _oniaPDG  && gen->status() == 2 &&
           gen->numberOfDaughters() >= 2) {
 
-        const reco::Candidate* genMuon1 = getDaughter(gen, 0);
-        const reco::Candidate* genMuon2 = getDaughter(gen, 1);
+        reco::GenParticleRef genMuon1 = findDaughterRef(gen->daughterRef(0), gen->pdgId());
+        reco::GenParticleRef genMuon2 = findDaughterRef(gen->daughterRef(1), gen->pdgId());
 
         if ( abs(genMuon1->pdgId()) == 13 &&
              abs(genMuon2->pdgId()) == 13 &&
@@ -2211,9 +2208,8 @@ HiOniaAnalyzer::isAMixedbHadron(int pdgID, int momPdgID) {
 }
 
 reco::GenParticleRef   
-HiOniaAnalyzer::findMotherRef(reco::GenParticleRef GenParticle, int GenParticlePDG) {
+HiOniaAnalyzer::findMotherRef(reco::GenParticleRef GenParticleMother, int GenParticlePDG) {
 
-  reco::GenParticleRef GenParticleMother = GenParticle;       // find mothers
   for(int i=0; i<1000; ++i) {
     if (GenParticleMother.isNonnull() && (GenParticleMother->pdgId()==GenParticlePDG) && GenParticleMother->numberOfMothers()>0) {        
       GenParticleMother = GenParticleMother->motherRef();
