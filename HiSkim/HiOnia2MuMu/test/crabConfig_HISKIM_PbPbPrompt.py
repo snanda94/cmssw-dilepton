@@ -32,7 +32,7 @@ config.Data.publication = True
 config.Data.outputDatasetTag = 'HIOniaL1DoubleMu0_HIRun2015-PromptReco-v1_Run_262548_263757_ONIASKIM'
 config.Data.outLFNDirBase = '/store/user/%s/HIPromptReco/%s' % (getUsernameFromSiteDB(), config.Data.outputDatasetTag)
 
-
 config.section_('Site')
+config.Site.whitelist = ["T1_FR*"]
 config.Site.storageSite = 'T2_FR_GRIF_LLR'
 
