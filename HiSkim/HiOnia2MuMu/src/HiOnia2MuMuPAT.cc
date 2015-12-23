@@ -446,17 +446,8 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
             if ( !(abs(genMu1->pdgId())==13) || !(abs(genMu2->pdgId())==13) ) { 
               std::cout << "Warning: Generated particles are not muons, pdgID1: " << genMu1->pdgId() << " and pdgID2: " <<  genMu1->pdgId() << std::endl;
             }
-            reco::GenParticleRef mom1 = genMu1->motherRef();
-            reco::GenParticleRef mom2 = genMu2->motherRef();
-            for(int i=0; i<1000; ++i) {
-              if (mom1.isNonnull() && (mom1->pdgId()==genMu1->pdgId()) && mom1->numberOfMothers()>0) {
-                mom1 = mom1->motherRef();
-              } else break;
-            }
-            for(int i=0; i<1000; ++i) {
-              if (mom2.isNonnull() && (mom2->pdgId()==genMu2->pdgId()) && mom2->numberOfMothers()>0) {
-                mom2 = mom2->motherRef();
-              } else break;            }
+            reco::GenParticleRef mom1 = findMotherRef(genMu1->motherRef(), genMu1->pdgId());
+            reco::GenParticleRef mom2 = findMotherRef(genMu2->motherRef(), genMu2->pdgId());
             if (mom1.isNonnull() && (mom1 == mom2)) {
               myCand.setGenParticleRef(mom1); // set
               myCand.embedGenParticle();      // and embed
