@@ -86,9 +86,12 @@ HLTProName = "HLT"
 import HLTrigger.HLTfilters.hltHighLevel_cfi
 process.hltOniaHI = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
 if isPbPb:
-  # HLT PbPbP MENU:  /online/collisions/2015/HeavyIons/v1.0/HLT/V6
+  # HLT PbPbP MENU:  /cdaq/physics/Run2015HI/HeavyIon/500Bunches/v8.0/HLT/V7
   process.hltOniaHI.HLTPaths =  [
     "HLT_HIL1DoubleMu0_v1",
+    "HLT_HIL1DoubleMu0_part1_v1",
+    "HLT_HIL1DoubleMu0_part2_v1",
+    "HLT_HIL1DoubleMu0_part3_v1",
     "HLT_HIL1DoubleMu0_2HF_v1",
     "HLT_HIL1DoubleMu0_2HF0_v1",
     "HLT_HIL1DoubleMu10_v1",

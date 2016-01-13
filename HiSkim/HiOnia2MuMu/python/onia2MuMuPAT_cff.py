@@ -18,7 +18,7 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True):
 
     # Prune generated particles to muons and their parents
     process.genMuons = cms.EDProducer("GenParticlePruner",
-        src = cms.InputTag("hiGenParticles"),
+        src = cms.InputTag("genParticles"),
         select = cms.vstring(
             "drop  *  ",                     # this is the default
             "++keep abs(pdgId) = 13",        # keep muons and their parents
@@ -33,7 +33,7 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True):
     if MC:
         addMCinfo(process)
         # since we match inner tracks, keep the matching tight and make it one-to-one
-        process.muonMatch.maxDeltaR = 0.05
+        process.muonMatch.maxDeltaR = cms.double(0.05)
         process.muonMatch.resolveByMatchQuality = True
         process.muonMatch.matched = "genMuons"
     changeTriggerProcessName(process, HLT)

@@ -38,7 +38,7 @@ process = cms.Process("Onia2MuMuPAT")
 options = VarParsing.VarParsing ('analysis')
 
 # setup any defaults you want
-options.inputFiles =  '/store/hidata/HIRun2015/HIOniaL1DoubleMu0/AOD/PromptReco-v1/000/262/694/00000/16147348-3A99-E511-84D5-02163E0141A8.root'
+options.inputFiles =  '/store/hidata/HIRun2015/HIOniaL1DoubleMu0/AOD/PromptReco-v1/000/262/620/00000/8C63FDAB-5FA7-E511-A64A-02163E0144F6.root'
 options.outputFile = 'onia2MuMuPAT_DATA_75X.root'
 
 options.maxEvents = -1 # -1 means all events
@@ -84,9 +84,12 @@ HLTProName = "HLT"
 import HLTrigger.HLTfilters.hltHighLevel_cfi
 process.hltOniaHI = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
 if isPbPb:
-  # HLT PbPbP MENU:  /online/collisions/2015/HeavyIons/v1.0/HLT/V6
+  # HLT PbPbP MENU:  /cdaq/physics/Run2015HI/HeavyIon/500Bunches/v8.0/HLT/V7
   process.hltOniaHI.HLTPaths =  [
     "HLT_HIL1DoubleMu0_v1",
+    "HLT_HIL1DoubleMu0_part1_v1",
+    "HLT_HIL1DoubleMu0_part2_v1",
+    "HLT_HIL1DoubleMu0_part3_v1",
     "HLT_HIL1DoubleMu0_2HF_v1",
     "HLT_HIL1DoubleMu0_2HF0_v1",
     "HLT_HIL1DoubleMu10_v1",

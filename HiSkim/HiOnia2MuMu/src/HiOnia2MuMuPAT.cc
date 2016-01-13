@@ -68,10 +68,6 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   using namespace reco;
   typedef Candidate::LorentzVector LorentzVector;
 
-  std::map< std::string, int > userInt;
-  std::map< std::string, float > userFloat;
-  std::map< std::string, reco::Vertex > userVertex;
-
   vector<double> muMasses;
   muMasses.push_back( 0.1056583715 );
   muMasses.push_back( 0.1056583715 );
@@ -138,6 +134,10 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
       LorentzVector jpsi = it->p4() + it2->p4();
       myCand.setP4(jpsi);
       myCand.setCharge(it->charge()+it2->charge());
+
+      std::map< std::string, int > userInt;
+      std::map< std::string, float > userFloat;
+      std::map< std::string, reco::Vertex > userVertex;
 
       // ---- apply the dimuon cut ----
       if(!dimuonSelection_(myCand)) continue;
@@ -434,6 +434,38 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
           } else {
             userVertex["PVwithmuons"] = Vertex();
           }
+        }
+      } else {
+        userFloat["vNChi2"] = -1;
+        userFloat["vProb"] = -1;
+        userFloat["vertexWeight"] = -100;
+        userFloat["sumPTPV"] = -100;
+        userFloat["DCA"] = -100;
+        userFloat["ppdlPV"] = -100;
+        userFloat["ppdlErrPV"] = -100;
+        userFloat["cosAlpha"] = -100;
+        userFloat["ppdlBS"] = -100;
+        userFloat["ppdlErrBS"] = -100;
+        userFloat["ppdlOrigPV"] = -100;
+        userFloat["ppdlErrOrigPV"] = -100;
+        userFloat["ppdlPV3D"] = -100;
+        userFloat["ppdlErrPV3D"] = -100;
+        userFloat["cosAlpha3D"] = -100;
+        userFloat["ppdlBS3D"] = -100;
+        userFloat["ppdlErrBS3D"] = -100;
+        userFloat["ppdlOrigPV3D"] = -100;
+        userFloat["ppdlErrOrigPV3D"] = -100;
+        
+        userInt["countTksOfPV"] = -1;
+        
+        if (addCommonVertex_) {
+          userVertex["commonVertex"] = Vertex();
+        }
+        if (addMuonlessPrimaryVertex_) {
+          userVertex["muonlessPV"] = Vertex();
+          userVertex["PVwithmuons"] = Vertex();
+        } else {
+          userVertex["PVwithmuons"] = Vertex();
         }
       }
       
