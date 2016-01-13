@@ -13,7 +13,7 @@ isPbPb         = False     # if PbPb data/MC: True or if pp data/MC: False
 isMC           = True      # if input is MONTECARLO: True or if it's DATA: False
 isPromptDATA   = False     # if input is Prompt RECO DATA: True or if it's Express Stream DATA: False
 keepExtraColl  = False     # General Tracks + Stand Alone Muons + Converted Photon collections
-applyEventSel  = True      # if we want to apply Event Selection
+applyEventSel  = False      # if we want to apply Event Selection
 muonSelection  = "Trk"  # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal&&isTracker), Trk(isTracker) are availale
 
 #----------------------------------------------------------------------------
@@ -64,7 +64,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 if isMC:
   if isPbPb:
-    process.GlobalTag = GlobalTag(process.GlobalTag, '75X_mcRun2_HeavyIon_v11', '')
+    process.GlobalTag = GlobalTag(process.GlobalTag, '75X_mcRun2_HeavyIon_v12', '')
   else:
     process.GlobalTag = GlobalTag(process.GlobalTag, '75X_mcRun2_asymptotic_ppAt5TeV_v3', '')
 else:  
@@ -159,7 +159,7 @@ process.hltOniaHI.andOr = True
 process.hltOniaHI.TriggerResultsTag = cms.InputTag("TriggerResults","",HLTProName)
 
 from HiSkim.HiOnia2MuMu.onia2MuMuPAT_cff import *
-onia2MuMuPAT(process, GlobalTag=process.GlobalTag.globaltag, MC=isMC, HLT=HLTProName, Filter=True)
+onia2MuMuPAT(process, GlobalTag=process.GlobalTag.globaltag, MC=isMC, HLT=HLTProName, Filter=False)
 
 ### Temporal fix for the PAT Trigger prescale warnings.
 process.patTriggerFull.l1GtReadoutRecordInputTag = cms.InputTag("gtDigis","","RECO")
@@ -224,6 +224,10 @@ if applyEventSel:
                                       thresh = cms.untracked.double(0.25),
                                       )
     process.patMuonSequence.replace(process.hltOniaHI , process.hltOniaHI * process.PAprimaryVertexFilter * process.NoScraping )
+
+##### Remove few paths for MC
+if isMC:
+  process.patMuonSequence.remove(process.hltOniaHI)
 
 ##### If extra collections has to be kept
 if keepExtraColl:
