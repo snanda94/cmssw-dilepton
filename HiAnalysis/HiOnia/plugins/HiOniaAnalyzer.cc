@@ -53,6 +53,9 @@
 #include "HiAnalysis/HiOnia/interface/MyCommonHistoManager.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+
 //
 // class declaration
 //
@@ -137,6 +140,9 @@ private:
 
   float etaMin;
   float etaMax;
+
+  // TFileService
+  edm::Service<TFileService> fs;
 
   // TFile
   TFile* fOut;
@@ -280,9 +286,7 @@ private:
   // histos
   TH1F* hGoodMuonsNoTrig;
   TH1F* hGoodMuons;
-  TH1F* hL1DoubleMuOpen;
-  TH1F* hL2DoubleMu3;
-  TH1F* hL3Mu12;
+  TH1F* hL1DoubleMu0;
 
   MyCommonHistoManager* myRecoMuonHistos;
   MyCommonHistoManager* myRecoGlbMuonHistos;
@@ -1631,9 +1635,7 @@ HiOniaAnalyzer::fillRecoTracks()
 void
 HiOniaAnalyzer::fillRecoMuons(int iCent)
 {
-  int nL1DoubleMuOpenMuons=0;
-  int nL2DoubleMu3Muons=0;
-  int nL3Mu12Muons=0;
+  int nL1DoubleMu0Muons=0;
   int nGoodMuons=0;
   int nGoodMuonsNoTrig=0;
 
@@ -1734,9 +1736,7 @@ HiOniaAnalyzer::fillRecoMuons(int iCent)
 
             trigBits += pow(2,iTr-1);
 
-            if (iTr==1) nL1DoubleMuOpenMuons++;
-            if (iTr==3) nL2DoubleMu3Muons++;
-            if (iTr==6) nL3Mu12Muons++;
+            if (iTr==1) nL1DoubleMu0Muons++;
           }
         }
         if (_fillTree)
@@ -1747,9 +1747,7 @@ HiOniaAnalyzer::fillRecoMuons(int iCent)
   
   hGoodMuonsNoTrig->Fill(nGoodMuonsNoTrig);
   hGoodMuons->Fill(nGoodMuons);
-  hL1DoubleMuOpen->Fill(nL1DoubleMuOpenMuons);
-  hL2DoubleMu3->Fill(nL2DoubleMu3Muons);
-  hL3Mu12->Fill(nL3Mu12Muons);
+  hL1DoubleMu0->Fill(nL1DoubleMu0Muons);
 
   return;
 }
@@ -1777,7 +1775,8 @@ HiOniaAnalyzer::InitTree()
     Gen_QQ_mumi_4mom = new TClonesArray("TLorentzVector", 2);
   }
 
-  myTree = new TTree("myTree","My TTree of dimuons");
+  //myTree = new TTree("myTree","My TTree of dimuons");
+  myTree = fs->make<TTree>("myTree","My TTree of dimuons");
   
   myTree->Branch("eventNb", &eventNb,   "eventNb/i");
   myTree->Branch("runNb",   &runNb,     "runNb/i");
@@ -1949,21 +1948,20 @@ HiOniaAnalyzer::InitTree()
 void 
 HiOniaAnalyzer::beginJob()
 {
-  fOut = new TFile(_histfilename.c_str(), "RECREATE");
+  //fOut = new TFile(_histfilename.c_str(), "RECREATE");
   InitTree();
 
   // book histos
-  hGoodMuonsNoTrig = new TH1F("hGoodMuonsNoTrig","hGoodMuonsNoTrig",10,0,10);
-  hGoodMuons = new TH1F("hGoodMuons","hGoodMuons",10,0,10);
-  hL1DoubleMuOpen = new TH1F("hL1DoubleMuOpen","hL1DoubleMuOpen",10,0,10);
-  hL2DoubleMu3    = new TH1F("hL1DoubleMu3","hL2DoubleMu3",10,0,10);
-  hL3Mu12         = new TH1F("hL3Mu12","hL3Mu12",10,0,10);
+  //hGoodMuonsNoTrig = new TH1F("hGoodMuonsNoTrig","hGoodMuonsNoTrig",10,0,10);
+  hGoodMuonsNoTrig = fs->make<TH1F>("hGoodMuonsNoTrig","hGoodMuonsNoTrig",10,0,10);
+  //hGoodMuons = new TH1F("hGoodMuons","hGoodMuons",10,0,10);
+  hGoodMuons = fs->make<TH1F>("hGoodMuons","hGoodMuons",10,0,10);
+  //hL1DoubleMu0 = new TH1F("hL1DoubleMu0","hL1DoubleMu0",10,0,10);
+  hL1DoubleMu0 = fs->make<TH1F>("hL1DoubleMu0","hL1DoubleMu0",10,0,10);
   
   hGoodMuonsNoTrig->Sumw2();
   hGoodMuons->Sumw2();
-  hL1DoubleMuOpen->Sumw2();
-  hL2DoubleMu3->Sumw2();
-  hL3Mu12->Sumw2();
+  hL1DoubleMu0->Sumw2();
 
   // muons
   if (_combineCategories) 
@@ -2026,7 +2024,8 @@ HiOniaAnalyzer::beginJob()
   else
     myRecoGlbMuonHistos->Print();
 
-  hStats = new TH1F("hStats","hStats;;Number of Events",2*NTRIGGERS+1,0,2*NTRIGGERS+1);
+  //hStats = new TH1F("hStats","hStats;;Number of Events",2*NTRIGGERS+1,0,2*NTRIGGERS+1);
+  hStats = fs->make<TH1F>("hStats","hStats;;Number of Events",2*NTRIGGERS+1,0,2*NTRIGGERS+1);
   hStats->GetXaxis()->SetBinLabel(1,"All");
   for (int i=2; i< (int) theTriggerNames.size()+1; ++i) {
     hStats->GetXaxis()->SetBinLabel(i,theTriggerNames.at(i-1).c_str()); // event info
@@ -2034,13 +2033,16 @@ HiOniaAnalyzer::beginJob()
   }
   hStats->Sumw2();
 
-  hCent = new TH1F("hCent","hCent;centrality bin;Number of Events",200,0,200);
+  //hCent = new TH1F("hCent","hCent;centrality bin;Number of Events",200,0,200);
+  hCent = fs->make<TH1F>("hCent","hCent;centrality bin;Number of Events",200,0,200);
   hCent->Sumw2();
 
-  hPileUp = new TH1F("hPileUp","Number of Primary Vertices;n_{PV};counts", 50, 0, 50);
+  //hPileUp = new TH1F("hPileUp","Number of Primary Vertices;n_{PV};counts", 50, 0, 50);
+  hPileUp = fs->make<TH1F>("hPileUp","Number of Primary Vertices;n_{PV};counts", 50, 0, 50);
   hPileUp->Sumw2();
 
-  hZVtx = new TH1F("hZVtx","Primary z-vertex distribution;z_{vtx} [cm];counts", 120, -30, 30);
+  //hZVtx = new TH1F("hZVtx","Primary z-vertex distribution;z_{vtx} [cm];counts", 120, -30, 30);
+  hZVtx = fs->make<TH1F>("hZVtx","Primary z-vertex distribution;z_{vtx} [cm];counts", 120, -30, 30);
   hZVtx->Sumw2();
 
   return;
@@ -2070,7 +2072,7 @@ void
 HiOniaAnalyzer::endJob() {
   std::cout << "Total number of events = " << nEvents << std::endl;
   std::cout << "Total number of passed candidates = " << passedCandidates << std::endl;
-
+  /*
   fOut->cd();
   hStats->Write();
   hCent->Write();
@@ -2082,9 +2084,7 @@ HiOniaAnalyzer::endJob() {
 
   hGoodMuonsNoTrig->Write();
   hGoodMuons->Write();
-  hL1DoubleMuOpen->Write();
-  hL2DoubleMu3->Write();
-  hL3Mu12->Write();
+  hL1DoubleMu0->Write();
 
   if (_fillHistos) {
     // muons
@@ -2104,7 +2104,7 @@ HiOniaAnalyzer::endJob() {
       myRecoJpsiTrkTrkHistos->Write(fOut);
     }
   }
-
+  */
   return;
 }
 

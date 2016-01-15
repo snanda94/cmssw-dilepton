@@ -32,6 +32,7 @@ print( "[INFO] isPromptDATA  = " + ("True" if isPromptDATA else "False") )
 print( "[INFO] isPromptMC    = " + ("True" if isPromptMC else "False") ) 
 print( "[INFO] useExtraColl  = " + ("True" if useExtraColl else "False") ) 
 print( "[INFO] applyEventSel = " + ("True" if applyEventSel else "False") )  
+print( "[INFO] applyMuonCuts = " + ("True" if applyMuonCuts else "False") ) 
 print( "[INFO] muonSelection = " + muonSelection )  
 print( "[INFO] genPDG        = " + str(genPDG) )  
 print( " " ) 
@@ -54,32 +55,13 @@ options.parseArguments()
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
+
 # Global Tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
-if isMC:
-  if isPbPb:
-    process.GlobalTag = GlobalTag(process.GlobalTag, '75X_mcRun2_HeavyIon_v12', '')
-  else:
-    process.GlobalTag = GlobalTag(process.GlobalTag, '75X_mcRun2_asymptotic_ppAt5TeV_v3', '')
-else:  
-  if isPromptDATA:
-    if isPbPb:
-      process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_PromptHI_v3', '')
-    else:
-      process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_Prompt_ppAt5TeV_v1', '')
-  else:
-    if isPbPb:
-      process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_ExpressHI_v2', '')
-    else:
-      process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_Express_ppAt5TeV_v0', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_Express_ppAt5TeV_v0', '')
 process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
 
-
-#Centrality Tags for CMSSW 7_5_X:               
-# Only use if the centrality info is not present or need to apply new calibration
-# process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi")
-# process.newCentralityBin = process.centralityBin.clone()
 
 HLTProName = "HLT"
 
@@ -311,6 +293,9 @@ if applyEventSel:
 process.source    = cms.Source("PoolSource",
                                fileNames = cms.untracked.vstring( options.inputFiles )
                                )
+process.TFileService = cms.Service("TFileService", 
+                                   fileName = cms.string( options.outputFile )
+                                   )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxEvents) )
 process.options   = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.p         = cms.Path(process.oniaSequence)
