@@ -253,7 +253,7 @@ else:
                                                      "hltHIDimuonOpenOSm2p5to4p5L3Filter",
                                                      "hltHIDimuonOpenOSm7to14L3Filter")
                                 
-  process.hionia.sglTriggerFilterNames = cms.vstring("hltHIL2Mu3N10HitQL2Filtered",
+  process.hionia.sglTriggerFilterNames = cms.vstring("hltHIL2Mu3N10HitQForPPRefL2Filtered", 
                                                      "hltHISingleMu3NHit15L3Filtered",
                                                      "hltHIL2Mu5N10HitQL2Filtered",
                                                      "hltHISingleMu5NHit15L3Filtered",
