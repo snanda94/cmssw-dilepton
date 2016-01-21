@@ -709,9 +709,9 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByToken(_evtPlaneTagToken,flatEvtPlanes);
     if(flatEvtPlanes.isValid()) {
       for (reco::EvtPlaneCollection::const_iterator rp = flatEvtPlanes->begin(); rp!=flatEvtPlanes->end(); rp++) {
-        rpAng[nEP] = rp->angle(0);   // Using Event Plane Level 0
-        rpSin[nEP] = rp->sumSin(0);  // Using Event Plane Level 0
-        rpCos[nEP] = rp->sumCos(0);  // Using Event Plane Level 0
+        rpAng[nEP] = rp->angle(2);   // Using Event Plane Level 2 -> Includes recentering and flattening. 
+        rpSin[nEP] = rp->sumSin(2);  // Using Event Plane Level 2 -> Includes recentering and flattening. 
+        rpCos[nEP] = rp->sumCos(2);  // Using Event Plane Level 2 -> Includes recentering and flattening. 
         nEP++;
       }
     } else if (!_isMC) {

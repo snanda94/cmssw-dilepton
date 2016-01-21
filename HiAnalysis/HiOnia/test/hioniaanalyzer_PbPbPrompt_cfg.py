@@ -64,6 +64,8 @@ process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
 
 #Centrality Tags for CMSSW 7_5_X:               
 # Only use if the centrality info is not present or need to apply new calibration
+process.load("RecoHI.HiEvtPlaneAlgos.HiEvtPlane_cfi")
+process.load("RecoHI.HiEvtPlaneAlgos.hiEvtPlaneFlat_cfi")
 process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi")
 process.centralityBin.Centrality = cms.InputTag("hiCentrality")
 process.centralityBin.centralityVariable = cms.string("HFtowers")
@@ -128,7 +130,7 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
 
 if isPbPb:           
   process.hionia.primaryVertexTag = cms.InputTag("hiSelectedVertex")
-  process.hionia.EvtPlane         = cms.InputTag("hiEvtPlane","")
+  process.hionia.EvtPlane         = cms.InputTag("hiEvtPlaneFlat","")
   process.hionia.CentralitySrc    = cms.InputTag("hiCentrality") 
   process.hionia.CentralityBinSrc = cms.InputTag("centralityBin","HFtowers")
   process.hionia.srcTracks        = cms.InputTag("hiGeneralTracks")
@@ -270,7 +272,7 @@ else:
                                                      "hltHIL3SingleMu20L3Filtered")
 
 
-process.oniaSequence = cms.Sequence(process.centralityBin*process.hionia)
+process.oniaSequence = cms.Sequence(process.centralityBin*process.hiEvtPlane*process.hiEvtPlaneFlat*process.hionia)
 
 
 ##### Event Selection
