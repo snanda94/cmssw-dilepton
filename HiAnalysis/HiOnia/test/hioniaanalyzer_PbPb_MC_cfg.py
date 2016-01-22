@@ -64,9 +64,11 @@ process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
 
 #Centrality Tags for CMSSW 7_5_X:               
 # Only use if the centrality info is not present or need to apply new calibration
-# process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi")
-# process.centralityBin.Centrality = cms.InputTag("hiCentrality")
-# process.centralityBin.centralityVariable = cms.string("HFtowers")
+process.load("RecoHI.HiEvtPlaneAlgos.HiEvtPlane_cfi")
+process.load("RecoHI.HiEvtPlaneAlgos.hiEvtPlaneFlat_cfi")
+process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi")
+process.centralityBin.Centrality = cms.InputTag("hiCentrality")
+process.centralityBin.centralityVariable = cms.string("HFtowers")
 
 HLTProName = "HLT"
 
@@ -128,7 +130,7 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
 
 if isPbPb:           
   process.hionia.primaryVertexTag = cms.InputTag("hiSelectedVertex")
-  process.hionia.EvtPlane         = cms.InputTag("hiEvtPlane","")
+  process.hionia.EvtPlane         = cms.InputTag("hiEvtPlaneFlat","")
   process.hionia.CentralitySrc    = cms.InputTag("hiCentrality") 
   process.hionia.CentralityBinSrc = cms.InputTag("centralityBin","HFtowers")
   process.hionia.srcTracks        = cms.InputTag("hiGeneralTracks")
@@ -258,7 +260,7 @@ else:
                                                      "hltHIDimuonOpenOSm2p5to4p5L3Filter",
                                                      "hltHIDimuonOpenOSm7to14L3Filter")
                                 
-  process.hionia.sglTriggerFilterNames = cms.vstring("hltHIL2Mu3N10HitQL2Filtered",
+  process.hionia.sglTriggerFilterNames = cms.vstring("hltHIL2Mu3N10HitQForPPRefL2Filtered",
                                                      "hltHISingleMu3NHit15L3Filtered",
                                                      "hltHIL2Mu5N10HitQL2Filtered",
                                                      "hltHISingleMu5NHit15L3Filtered",
@@ -269,7 +271,9 @@ else:
                                                      "hltHIL2Mu20L2Filtered",
                                                      "hltHIL3SingleMu20L3Filtered")
 
-process.oniaSequence = cms.Sequence(process.hionia)
+
+process.oniaSequence =  cms.Sequence(process.centralityBin*process.hiEvtPlane*process.hiEvtPlaneFlat*process.hionia)
+
 
 ##### Event Selection
 if applyEventSel:
