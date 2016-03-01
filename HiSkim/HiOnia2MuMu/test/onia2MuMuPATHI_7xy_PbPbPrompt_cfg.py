@@ -38,7 +38,7 @@ process = cms.Process("Onia2MuMuPAT")
 options = VarParsing.VarParsing ('analysis')
 
 # setup any defaults you want
-options.inputFiles =  '/store/hidata/HIRun2015/HIOniaL1DoubleMu0/AOD/PromptReco-v1/000/262/620/00000/8C63FDAB-5FA7-E511-A64A-02163E0144F6.root'
+options.inputFiles =  '/store/hidata/HIRun2015/HIOniaL1DoubleMu0/AOD/PromptReco-v1/000/263/333/00000/083414D0-9AA8-E511-B782-02163E012009.root'
 options.outputFile = 'onia2MuMuPAT_DATA_75X.root'
 
 options.maxEvents = -1 # -1 means all events
@@ -48,35 +48,18 @@ options.parseArguments()
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
+# load the Geometry and Magnetic Field for the TransientTrackBuilder
 process.load('Configuration.StandardSequences.Services_cff')
-process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
-process.load('FWCore.MessageService.MessageLogger_cfi')
-process.load('Configuration.EventContent.EventContentHeavyIons_cff')
-process.load('SimGeneral.MixingModule.mixNoPU_cfi')
+process.load("TrackingTools/TransientTrack/TransientTrackBuilder_cfi")
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.ReconstructionHeavyIons_cff')
-process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 
 # Global Tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
-if isMC:
-  if isPbPb:
-    process.GlobalTag = GlobalTag(process.GlobalTag, '75X_mcRun2_HeavyIon_v12', '')
-  else:
-    process.GlobalTag = GlobalTag(process.GlobalTag, '75X_mcRun2_asymptotic_ppAt5TeV_v3', '')
-else:  
-  if isPromptDATA:
-    if isPbPb:
-      process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_PromptHI_v3', '')
-    else:
-      process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_Prompt_ppAt5TeV_v1', '')
-  else:
-    if isPbPb:
-      process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_ExpressHI_v2', '')
-    else:
-      process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_Express_ppAt5TeV_v0', '')
-process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
+process.GlobalTag = GlobalTag(process.GlobalTag, '75X_dataRun2_v12', '')
+process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")  # Needed to avoid trigger prescale errors.
 
 
 HLTProName = "HLT"
