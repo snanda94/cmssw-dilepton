@@ -149,7 +149,7 @@ process.patTriggerFull.l1GtReadoutRecordInputTag = cms.InputTag("gtDigis","","RE
 
 ##### Onia2MuMuPAT input collections/options
 process.onia2MuMuPatGlbGlb.dimuonSelection          = cms.string("mass > 0")
-process.onia2MuMuPatGlbGlb.resolvePileUpAmbiguity   = False
+process.onia2MuMuPatGlbGlb.resolvePileUpAmbiguity   = True
 if isPbPb:
   process.onia2MuMuPatGlbGlb.srcTracks                = cms.InputTag("hiGeneralTracks")
   process.onia2MuMuPatGlbGlb.primaryVertexTag         = cms.InputTag("hiSelectedVertex")
