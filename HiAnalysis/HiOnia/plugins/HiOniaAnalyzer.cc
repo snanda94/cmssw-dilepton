@@ -1782,6 +1782,7 @@ HiOniaAnalyzer::InitTree()
   myTree->Branch("runNb",   &runNb,     "runNb/i");
   myTree->Branch("LS",      &lumiSection, "LS/i"); 
   myTree->Branch("zVtx",    &zVtx,        "zVtx/F"); 
+  myTree->Branch("nPV",    &nPV,        "nPV/F"); 
   myTree->Branch("Centrality", &centBin, "Centrality/I");
 
   myTree->Branch("nTrig", &nTrig, "nTrig/I");
