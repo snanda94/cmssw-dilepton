@@ -38,7 +38,7 @@ process = cms.Process("Onia2MuMuPAT")
 options = VarParsing.VarParsing ('analysis')
 
 # setup any defaults you want
-options.inputFiles = '/store/user/miheejo/JpsiMM_5p02TeV_TuneCUETP8M1/JpsiMM_5p02TeV_TuneCUETP8M1_RAW2DIGI_L1Reco_RECO/151216_201451/0000/JpsiMM_5p02TeV_TuneCUETP8M1_RECO_102.root'
+options.inputFiles = '/store/himc/HINppWinter16DR/JpsiMM_5p02TeV_TuneCUETP8M1/AODSIM/75X_mcRun2_asymptotic_ppAt5TeV_v3-v1/00000/08E261D6-D5E3-E511-90A5-00266CF253C4.root'
 options.outputFile = 'onia2MuMuPAT_DATA_75X.root'
 
 options.maxEvents = -1 # -1 means all events
@@ -150,7 +150,7 @@ process.patTriggerFull.l1GtReadoutRecordInputTag = cms.InputTag("gtDigis","","RE
 
 ##### Onia2MuMuPAT input collections/options
 process.onia2MuMuPatGlbGlb.dimuonSelection          = cms.string("mass > 0")
-process.onia2MuMuPatGlbGlb.resolvePileUpAmbiguity   = False
+process.onia2MuMuPatGlbGlb.resolvePileUpAmbiguity   = True
 if isPbPb:
   process.onia2MuMuPatGlbGlb.srcTracks                = cms.InputTag("hiGeneralTracks")
   process.onia2MuMuPatGlbGlb.primaryVertexTag         = cms.InputTag("hiSelectedVertex")
