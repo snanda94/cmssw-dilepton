@@ -113,6 +113,8 @@ private:
   void beginRun(const edm::Run &, const edm::EventSetup &);  
 
   TLorentzVector lorentzMomentum(const reco::Candidate::LorentzVector& p);
+  int muonIDmask(const pat::Muon* muon);
+
   // ----------member data ---------------------------
   enum StatBins {
     BIN_nEvents = 0
@@ -216,6 +218,8 @@ private:
   bool Reco_QQ_mupl_TMOneStaTight[Max_QQ_size]; // Vector of TMOneStationTight for plus muon
   bool Reco_QQ_mumi_TMOneStaTight[Max_QQ_size]; // Vector of TMOneStationTight for minus muon
 
+  int Reco_QQ_mupl_SelectionType[Max_QQ_size];  
+  int Reco_QQ_mumi_SelectionType[Max_QQ_size];  
   int Reco_QQ_mupl_nPixValHits[Max_QQ_size];  // Number of valid pixel hits in plus sta muons
   int Reco_QQ_mumi_nPixValHits[Max_QQ_size];  // Number of valid pixel hits in minus sta muons
   int Reco_QQ_mupl_nMuValHits[Max_QQ_size];  // Number of valid muon hits in plus sta muons
@@ -250,7 +254,8 @@ private:
   float Reco_QQ_mumi_ptErr_global[Max_QQ_size];  // pT error for minus global muons
 
   int Reco_mu_size;           // Number of reconstructed muons
-  ULong64_t Reco_mu_trig[Max_mu_size];      // Vector of trigger bits matched to the muons
+  int Reco_mu_SelectionType[Max_mu_size];           
+  ULong64_t Reco_mu_trig[Max_mu_size];      // Vector of trigger bits matched to the muon
   int Reco_mu_charge[Max_mu_size];  // Vector of charge of muons
   int Reco_mu_type[Max_mu_size];  // Vector of type of muon (global=0, tracker=1, calo=2)  
 
@@ -806,6 +811,7 @@ HiOniaAnalyzer::fillTreeMuon(const pat::Muon* muon, int iType, ULong64_t trigBit
   reco::TrackRef iTrack = muon->innerTrack();
   
   if (!_theMinimumFlag) {
+    Reco_mu_SelectionType[Reco_mu_size] = muonIDmask(muon);
     Reco_mu_highPurity[Reco_mu_size] = iTrack->quality(reco::TrackBase::highPurity);
     Reco_mu_isGoodMuon[Reco_mu_size] = muon::isGoodMuon(*muon, muon::TMOneStationTight);
     Reco_mu_TrkMuArb[Reco_mu_size] = muon->muonID("TrackerMuonArbitrated");
@@ -904,6 +910,9 @@ HiOniaAnalyzer::fillTreeJpsi(int iSign, int count) {
     Reco_QQ_mupl_trig[Reco_QQ_size] = trigBits_mu1;
     Reco_QQ_mumi_trig[Reco_QQ_size] = trigBits_mu2;
 
+    Reco_QQ_mupl_SelectionType[Reco_QQ_size] = muonIDmask(muon1);
+    Reco_QQ_mumi_SelectionType[Reco_QQ_size] = muonIDmask(muon2);
+
     if (TVector2::Phi_mpi_pi(vMuon1.Phi() - vMuon2.Phi()) > 0) Reco_QQ_isCowboy[Reco_QQ_size] = true;
     else Reco_QQ_isCowboy[Reco_QQ_size] = false;
 
@@ -934,6 +943,9 @@ HiOniaAnalyzer::fillTreeJpsi(int iSign, int count) {
 
     Reco_QQ_mupl_trig[Reco_QQ_size] = trigBits_mu2;
     Reco_QQ_mumi_trig[Reco_QQ_size] = trigBits_mu1;
+
+    Reco_QQ_mupl_SelectionType[Reco_QQ_size] = muonIDmask(muon2);
+    Reco_QQ_mumi_SelectionType[Reco_QQ_size] = muonIDmask(muon1);
 
     if (TVector2::Phi_mpi_pi(vMuon2.Phi() - vMuon1.Phi()) > 0) Reco_QQ_isCowboy[Reco_QQ_size] = true;
     else Reco_QQ_isCowboy[Reco_QQ_size] = false;
@@ -1694,9 +1706,9 @@ HiOniaAnalyzer::fillRecoMuons(int iCent)
       }
       
       muType = -99;
-      if ( _muonSel==(std::string)("Glb")    && selGlobalMuon(muon) ) muType = Glb;
-      if ( _muonSel==(std::string)("GlbTrk") && selGlobalMuon(muon) ) muType = GlbTrk;
-      if ( _muonSel==(std::string)("Trk")    && selGlobalMuon(muon) ) muType = Trk; 
+      if ( _muonSel==(std::string)("Glb")    && selGlobalMuon(muon)  ) muType = Glb;
+      if ( _muonSel==(std::string)("GlbTrk") && selGlobalMuon(muon)  ) muType = GlbTrk;
+      if ( _muonSel==(std::string)("Trk")    && selTrackerMuon(muon) ) muType = Trk; 
       
       if ( muType==Glb || muType==GlbTrk || muType==Trk ) {
         nGoodMuons++;
@@ -1839,6 +1851,8 @@ HiOniaAnalyzer::InitTree()
   myTree->Branch("Reco_QQ_Ntrk", Reco_QQ_Ntrk, "Reco_QQ_Ntrk[Reco_QQ_size]/I");
 
   if (!_theMinimumFlag) {
+    myTree->Branch("Reco_QQ_mupl_SelectionType", Reco_QQ_mupl_SelectionType,   "Reco_QQ_mupl_SelectionType[Reco_QQ_size]/I");
+    myTree->Branch("Reco_QQ_mumi_SelectionType", Reco_QQ_mumi_SelectionType,   "Reco_QQ_mumi_SelectionType[Reco_QQ_size]/I");
     myTree->Branch("Reco_QQ_mupl_isGoodMuon", Reco_QQ_mupl_isGoodMuon,   "Reco_QQ_mupl_isGoodMuon[Reco_QQ_size]/O");
     myTree->Branch("Reco_QQ_mumi_isGoodMuon", Reco_QQ_mumi_isGoodMuon,   "Reco_QQ_mumi_isGoodMuon[Reco_QQ_size]/O");
     myTree->Branch("Reco_QQ_mupl_highPurity", Reco_QQ_mupl_highPurity,   "Reco_QQ_mupl_highPurity[Reco_QQ_size]/O");
@@ -1883,6 +1897,7 @@ HiOniaAnalyzer::InitTree()
 
   myTree->Branch("Reco_mu_size", &Reco_mu_size,  "Reco_mu_size/I");
   myTree->Branch("Reco_mu_type", Reco_mu_type,   "Reco_mu_type[Reco_mu_size]/I");
+  myTree->Branch("Reco_mu_SelectionType", Reco_mu_SelectionType,   "Reco_mu_SelectionType[Reco_mu_size]/I");
   myTree->Branch("Reco_mu_charge", Reco_mu_charge,   "Reco_mu_charge[Reco_mu_size]/I");
   myTree->Branch("Reco_mu_4mom", "TClonesArray", &Reco_mu_4mom, 32000, 0);
   myTree->Branch("Reco_mu_trig", Reco_mu_trig,   "Reco_mu_trig[Reco_mu_size]/l");
@@ -2297,6 +2312,16 @@ HiOniaAnalyzer::findGenMCInfo(const reco::GenParticle* genJpsi) {
 
 }
 
+int HiOniaAnalyzer::muonIDmask(const pat::Muon* muon)
+{
+   int mask = 0;
+   int type;
+   for (type=muon::All; type<=muon::RPCMuLoose; type++)
+      if (muon::isGoodMuon(*muon,(muon::SelectionType) type))
+         mask = mask | (int) pow(2, type);
+
+   return mask;
+}
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(HiOniaAnalyzer);
