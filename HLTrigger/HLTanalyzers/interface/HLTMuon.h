@@ -74,18 +74,9 @@ public:
 
   /** Analyze the Data */
   void analyze(const edm::Handle<reco::MuonCollection>                 & muon,
-	       const edm::Handle<reco::PFCandidateCollection>          & pfmuon,
 	       const edm::Handle<l1extra::L1MuonParticleCollection>    & mucands1, 
 	       const edm::Handle<reco::RecoChargedCandidateCollection> & mucands2,
-	       const edm::Handle<edm::ValueMap<bool> >                 & isoMap2,
 	       const edm::Handle<reco::RecoChargedCandidateCollection> & mucands3,
-	       const edm::Handle<edm::ValueMap<bool> >                 & isoMap3,
-	       const edm::Handle<edm::ValueMap<bool> >                 & isoTrk10Map3,
-               const edm::Handle<reco::RecoChargedCandidateCollection> & oniaPixelCands,
-               const edm::Handle<reco::RecoChargedCandidateCollection> & oniaTrackCands,
-	       const edm::Handle<reco::VertexCollection>               & dimuvtxcands3,
-	       const edm::Handle<reco::RecoChargedCandidateCollection> & munovtxcands2, 
-	       const edm::Handle<reco::MuonCollection>                 & trkmucands,
                //const reco::BeamSpot::Point & BSPosition,
 	       const edm::ESHandle<MagneticField> & theMagField,
                const edm::Handle<reco::BeamSpot> & recoBeamSpotHandle,
@@ -99,30 +90,17 @@ private:
   // Tree variables
   float *muonpt, *muonphi, *muoneta, *muonet, *muone, *muonchi2NDF, *muoncharge,
   *muonTrkIsoR03, *muonECalIsoR03, *muonHCalIsoR03, *muonD0;
-  float *pfmuonpt, *pfmuonphi, *pfmuoneta, *pfmuonet, *pfmuone, *pfmuoncharge;
   int *muontype, *muonNValidTrkHits, *muonNValidMuonHits;
   float *muonl2pt, *muonl2eta, *muonl2phi, *muonl2dr, *muonl2drsign, *muonl2dz, *muonl2vtxz;
   float *muonl3pt, *muonl3eta, *muonl3phi, *muonl3dr, *muonl3dz, *muonl3vtxz, *muonl3normchi2; 
   float *muonl3globalpt, *muonl3globaleta, *muonl3globalphi, *muonl3globaldr, *muonl3globaldrsign, *muonl3globaldz, *muonl3globalvtxz;
-  float *muonl2novtxpt, *muonl2novtxeta, *muonl2novtxphi, *muonl2novtxdr, *muonl2novtxdrsign, *muonl2novtxdz; 
-  float *muonl2pterr, *muonl3pterr, *muonl2novtxpterr;
-  int nmuon, nmu2cand, nmu3cand, nmu2novtxcand, ntrackermuoncand, npfmuon;
-  int *muonl2chg, *muonl2iso, *muonl2nhits, *muonl2nchambers, *muonl2nstat, *muonl2ndtcscstat, *muonl3chg, *muonl3iso, *muonl32idx, *muonl3nhits, *muonl21idx, *muonl2novtxchg, *muonl2novtxiso, *muonl2novtx1idx, *muonl2novtxnhits, *muonl2novtxnchambers, *muonl2novtxnstat, *muonl2novtxndtcscstat, *muonl3global2idx, *muonl3globalchg;
+  float *muonl2pterr, *muonl3pterr;
+  int nmuon, nmu2cand, nmu3cand;
+  int *muonl2chg, *muonl2iso, *muonl2nhits, *muonl2nchambers, *muonl2nstat, *muonl2ndtcscstat, *muonl3chg, *muonl3iso, *muonl32idx, *muonl3nhits, *muonl21idx, *muonl3global2idx, *muonl3globalchg;
   int *muonl3npixelhits, *muonl3ntrackerhits, *muonl3nmuonhits, *muonl3trk10iso;
-  float *trackermuonpt, *trackermuonphi, *trackermuoneta;
-  int *trackermuonchg, *trackermuonnhits;
-
-
-  int nOniaPixelCand, nOniaTrackCand;
-  float *oniaPixelpt, *oniaPixeleta, *oniaPixelphi, *oniaPixeldr, *oniaPixeldz, *oniaPixelNormChi2;
-  float *oniaTrackpt, *oniaTracketa, *oniaTrackphi, *oniaTrackdr, *oniaTrackdz, *oniaTrackNormChi2;
-  int *oniaPixelchg, *oniaTrackchg, *oniaPixelHits, *oniaTrackHits;
-  int nDiMu,nDiMuVtx;
+  int nDiMu;
   float *dimudca;
-  int *dimu1st,*dimu2nd,*dimuvtx1st,*dimuvtx2nd;
-  float *dimuvtxchi2,*dimuvtxr,*dimuvtxrsig,*dimuvtxroversig,*dimuvtxcosalpha;
-  float *dimuvtxmu2dipmax, *dimuvtxmu2dipmin, *dimuvtxmu2dipsigmax, *dimuvtxmu2dipsigmin;
- 	
+  int *dimu1st,*dimu2nd;
 
   // input variables
   bool _Monte,_Debug;
