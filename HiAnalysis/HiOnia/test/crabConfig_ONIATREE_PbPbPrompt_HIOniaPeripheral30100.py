@@ -2,7 +2,7 @@ from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
 config.section_('General')
-config.General.requestName = 'HIOniaL1DoubleMu0_HIRun2015-PromptReco-v1_GT_75X_dataRun2v12_ONIATREE_20160420_2015CUT'
+config.General.requestName = 'HIOniaPeripheral30100_HIRun2015-PromptReco-v1_GT_75XdataRun2v12_ONIATREE_20160420_2015CUT'
 config.General.workArea = 'crab_projects'
 config.General.transferOutputs = True
 config.General.transferLogs = True
@@ -14,9 +14,9 @@ config.JobType.maxMemoryMB = 2500
 config.JobType.outputFiles = ['OniaTree.root']
 
 config.section_('Data')
-config.Data.inputDataset = '/HIOniaL1DoubleMu0/anstahll-HIOniaL1DoubleMu0_HIRun2015-PromptReco-v1_Run_262548_263757_GT_75X_dataRun2_v12_ONIASKIM_v1-9bce861cf85679a873b858c6fe030a31/USER'
+config.Data.inputDataset = '/HIOniaPeripheral30100/anstahll-HIOniaPeripheral30100_HIRun2015-PromptReco-v1_Run_262548_263757_GT_75X_dataRun2_v12_ONIASKIM_v1-9bce861cf85679a873b858c6fe030a31/USER'
 config.Data.inputDBS = 'phys03'
-config.Data.unitsPerJob = 10
+config.Data.unitsPerJob = 20
 config.Data.splitting = 'LumiBased'
 config.Data.runRange = '262548-263757'
 config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/HI/Cert_262548-263757_PromptReco_HICollisions15_JSON_MuonPhys_v2.txt'

@@ -15,7 +15,7 @@ isPromptDATA   = True      # if input is Prompt RECO DATA: True or if it's Expre
 isPromptMC     = False     # if MC is Prompt Quarkonia: True or if it's Non Prompt Quarkonia: False
 useExtraColl   = False     # General Tracks + Stand Alone Muons + Converted Photon collections
 applyEventSel  = False     # Only apply Event Selection if the required collections are present 
-applyMuonCuts  = False     # Apply muon ID quality cuts
+applyMuonCuts  = True     # Apply muon ID quality cuts
 muonSelection  = "GlbTrk"  # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal&&isTracker), Trk(isTracker) are availale
 genPDG         = 443       # Generated Particle PDG ID (only needed for MC), Jpsi: 443 , Psi(2S): 100443, Upsilon(1S): 553 , Upsilon(2S): 100553 , Upsilon(2S): 200553
 
