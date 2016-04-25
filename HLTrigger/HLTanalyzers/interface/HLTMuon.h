@@ -55,6 +55,7 @@
 #include "DataFormats/GeometryVector/interface/GlobalPoint.h"
 #include "DataFormats/GeometryCommonDetAlgo/interface/GlobalError.h"
 #include "TMath.h"
+#include "TVector3.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 
 
@@ -88,6 +89,7 @@ private:
   int validChambers(const reco::TrackRef & track);
 
   // Tree variables
+  TVector3 hltOnlineBeamSpot;
   float *muonpt, *muonphi, *muoneta, *muonet, *muone, *muonchi2NDF, *muoncharge,
   *muonTrkIsoR03, *muonECalIsoR03, *muonHCalIsoR03, *muonD0;
   int *muontype, *muonNValidTrkHits, *muonNValidMuonHits;

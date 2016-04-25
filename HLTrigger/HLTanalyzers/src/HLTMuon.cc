@@ -31,6 +31,7 @@ void HLTMuon::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
     else if ( (*iParam) == "Debug" ) _Debug =  myEmParams.getParameter<bool>( *iParam );
   }
 
+  hltOnlineBeamSpot = TVector3(0.0,0.0,0.0);
   const int kMaxMuon = 10000;
   muonpt = new float[kMaxMuon];
   muonphi = new float[kMaxMuon];
@@ -89,6 +90,7 @@ void HLTMuon::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   dimu2nd = new int[kMaxDiMu];
 
   // Muon-specific branches of the tree 
+  HltTree->Branch("hltOnlineBeamSpot", "TVector3", &hltOnlineBeamSpot);
   HltTree->Branch("NrecoMuon",&nmuon,"NrecoMuon/I");
   HltTree->Branch("recoMuonPt",muonpt,"recoMuonPt[NrecoMuon]/F");
   HltTree->Branch("recoMuonPhi",muonphi,"recoMuonPhi[NrecoMuon]/F");
@@ -159,7 +161,8 @@ void HLTMuon::analyze(const edm::Handle<reco::MuonCollection>                 & 
 
   reco::BeamSpot::Point BSPosition(0,0,0);
   BSPosition = recoBeamSpotHandle->position();
-
+  hltOnlineBeamSpot.SetXYZ(BSPosition.x(),BSPosition.y(),BSPosition.z());
+ 
   //std::cout << " Beginning HLTMuon " << std::endl;
 
   if (Muon.isValid()) {
