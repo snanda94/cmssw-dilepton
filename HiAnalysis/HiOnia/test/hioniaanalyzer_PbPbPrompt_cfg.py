@@ -15,7 +15,7 @@ isPromptDATA   = True      # if input is Prompt RECO DATA: True or if it's Expre
 isPromptMC     = False     # if MC is Prompt Quarkonia: True or if it's Non Prompt Quarkonia: False
 useExtraColl   = False     # General Tracks + Stand Alone Muons + Converted Photon collections
 applyEventSel  = False     # Only apply Event Selection if the required collections are present 
-applyMuonCuts  = False     # Apply muon ID quality cuts
+applyMuonCuts  = True      # Apply muon ID quality cuts
 muonSelection  = "GlbTrk"  # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal&&isTracker), Trk(isTracker) are availale
 genPDG         = 443       # Generated Particle PDG ID (only needed for MC), Jpsi: 443 , Psi(2S): 100443, Upsilon(1S): 553 , Upsilon(2S): 100553 , Upsilon(2S): 200553
 
@@ -25,7 +25,7 @@ genPDG         = 443       # Generated Particle PDG ID (only needed for MC), Jps
 # Print Onia Skim settings:
 if (isPromptDATA and isMC): raise SystemExit("[ERROR] isMC and isPromptDATA can not be true at the same time, please fix your settings!.")
 print( " " ) 
-print( "[INFO] Settings used for ONIA TREE: " )  
+print( "[INFO] Settings used for ONIA TREE HIOniaL1DoubleMu0: " )  
 print( "[INFO] isPbPb        = " + ("True" if isPbPb else "False") )  
 print( "[INFO] isMC          = " + ("True" if isMC else "False") )  
 print( "[INFO] isPromptDATA  = " + ("True" if isPromptDATA else "False") )  
@@ -45,7 +45,7 @@ options = VarParsing.VarParsing ('analysis')
 # Input and Output File Names
 options.outputFile = "OniaTree.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
-options.inputFiles = 'file:onia2MuMuPAT_DATA_75X_PbPbPrompt.root'
+options.inputFiles = '/store/user/anstahll/HIPromptReco/HIOniaL1DoubleMu0_HIRun2015-PromptReco-v1_Run_262548_263757_GT_75X_dataRun2_v12_ONIASKIM_v1/HIOniaL1DoubleMu0/HIOniaL1DoubleMu0_HIRun2015-PromptReco-v1_Run_262548_263757_GT_75X_dataRun2_v12_ONIASKIM_v1/160206_173942/0000/onia2MuMuPAT_DATA_75X_numEvent100_1.root'
 
 options.maxEvents = -1 # -1 means all events
 
