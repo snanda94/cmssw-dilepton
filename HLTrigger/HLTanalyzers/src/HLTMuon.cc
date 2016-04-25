@@ -60,6 +60,7 @@ void HLTMuon::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   muonl21idx = new int[kMaxMuonL2];
   const int kMaxMuonL3 = 500;
   muonl3pt = new float[kMaxMuonL3];
+  muonl3ptLx = new float[kMaxMuonL3];
   muonl3phi = new float[kMaxMuonL3];
   muonl3eta = new float[kMaxMuonL3];
   muonl3dr = new float[kMaxMuonL3];
@@ -76,8 +77,8 @@ void HLTMuon::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   muonl3globalpt = new float[kMaxMuonL3]; 
   muonl3globaleta = new float[kMaxMuonL3];
   muonl3globalphi = new float[kMaxMuonL3];
-  muonl3globaldr = new float[kMaxMuonL3];
-  muonl3globaldrsign = new float[kMaxMuonL3];
+  muonl3globalDxy = new float[kMaxMuonL3];
+  muonl3globalDxySig = new float[kMaxMuonL3];
   muonl3globaldz = new float[kMaxMuonL3];
   muonl3globalvtxz = new float[kMaxMuonL3];
   muonl3globalchg = new int[kMaxMuonL3];
@@ -118,6 +119,7 @@ void HLTMuon::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   HltTree->Branch("ohMuL2L1idx",muonl21idx,"ohMuL2L1idx[NohMuL2]/I");   
   HltTree->Branch("NohMuL3",&nmu3cand,"NohMuL3/I");
   HltTree->Branch("ohMuL3Pt",muonl3pt,"ohMuL3Pt[NohMuL3]/F");
+  HltTree->Branch("ohMuL3PtLx",muonl3ptLx,"ohMuL3PtLx[NohMuL3]/F");
   HltTree->Branch("ohMuL3Phi",muonl3phi,"ohMuL3Phi[NohMuL3]/F");
   HltTree->Branch("ohMuL3Eta",muonl3eta,"ohMuL3Eta[NohMuL3]/F");
   HltTree->Branch("ohMuL3Chg",muonl3chg,"ohMuL3Chg[NohMuL3]/I");
@@ -134,8 +136,8 @@ void HLTMuon::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   HltTree->Branch("ohMuL3globalPt",muonl3globalpt,"ohMuL3globalPt[NohMuL3]/F");
   HltTree->Branch("ohMuL3globalEta",muonl3globaleta,"ohMuL3globalEta[NohMuL3]/F");
   HltTree->Branch("ohMuL3globalPhi",muonl3globalphi,"ohMuL3globalPhi[NohMuL3]/F");
-  HltTree->Branch("ohMuL3globalDr",muonl3globaldr,"ohMuL3globalDr[NohMuL3]/F");
-  HltTree->Branch("ohMuL3globalDrSign",muonl3globaldrsign,"ohMuL3globalDrSign[NohMuL3]/F");
+  HltTree->Branch("ohMuL3globalDxy",muonl3globalDxy,"ohMuL3globalDxy[NohMuL3]/F");
+  HltTree->Branch("ohMuL3globalDxySig",muonl3globalDxySig,"ohMuL3globalDxySig[NohMuL3]/F");
   HltTree->Branch("ohMuL3globalDz",muonl3globaldz,"ohMuL3globalDz[NohMuL3]/F");
   HltTree->Branch("ohMuL3globalVtxZ",muonl3globalvtxz,"ohMuL3globalVtxZ[NohMuL3]/F");
   HltTree->Branch("ohMuL3globalL2idx",muonl3global2idx,"ohMuL3globalL2idx[NohMuL3]/I");
@@ -311,8 +313,8 @@ void HLTMuon::analyze(const edm::Handle<reco::MuonCollection>                 & 
       int imu2idx = 0;
       if (MuCands2.isValid()) {
 	typedef reco::RecoChargedCandidateCollection::const_iterator candl2;
-	for (candl2 i=myMucands2.begin(); i!=myMucands2.end(); i++) {
-	  reco::TrackRef tkl2 = i->get<reco::TrackRef>();
+	for (candl2 i2=myMucands2.begin(); i2!=myMucands2.end(); i2++) {
+	  reco::TrackRef tkl2 = i2->get<reco::TrackRef>();
 	  if ( tkl2 == staTrack ) {break;}
 	  imu2idx++;
 	}
@@ -329,12 +331,13 @@ void HLTMuon::analyze(const edm::Handle<reco::MuonCollection>                 & 
       muonl3eta[imu3c] = candref->eta();
       muonl3phi[imu3c] = candref->phi();
 
+
       //       // Dr (transverse distance to (0,0,0))
       //       // For baseline triggers, we do no cut at L2 (|dr|<9999 cm)
       //       // However, we use |dr|<300 microns at L3, which it probably too tough for LHC startup
       muonl3dr[imu3c] = fabs( (- (candref->vx()-BSPosition.x()) * candref->py() + (candref->vy()-BSPosition.y()) * candref->px() ) / candref->pt() );
-      muonl3globaldr[imu3c] = fabs(tk->dxy(BSPosition));
-      muonl3globaldrsign[imu3c] = ( tk->dxyError() > 0. ? muonl3globaldr[imu3c] / tk->dxyError() : -999. );
+      muonl3globalDxy[imu3c] = fabs(tk->dxy(BSPosition));
+      muonl3globalDxySig[imu3c] = ( tk->dxyError() > 0. ? muonl3globalDxy[imu3c] / tk->dxyError() : -999. );
 
       //       // Dz (longitudinal distance to z=0 when at minimum transverse distance)
       //       // For baseline triggers, we do no cut (|dz|<9999 cm), neither at L2 nor at L3
@@ -376,6 +379,8 @@ void HLTMuon::analyze(const edm::Handle<reco::MuonCollection>                 & 
       muonl3npixelhits[imu3c] = tk->hitPattern().numberOfValidPixelHits();
       muonl3ntrackerhits[imu3c] = tk->hitPattern().numberOfValidTrackerHits();
       muonl3nmuonhits[imu3c] = tk->hitPattern().numberOfValidMuonHits();
+
+      muonl3ptLx[imu3c] = ( l3_abspar0>0 ? muonl3pt[imu3c]*(1.0 + muonl3pterr[imu3c]) : -999. );
 
       //Check DCA for muon combinations
       int imu3c2nd = imu3c + 1;// This will be the index in the hltTree for the 2nd muon of the dimuon combination
