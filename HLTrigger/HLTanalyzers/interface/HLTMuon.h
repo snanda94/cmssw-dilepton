@@ -52,12 +52,17 @@
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 #include "MagneticField/Engine/interface/MagneticField.h"
 
+
 #include "DataFormats/GeometryVector/interface/GlobalPoint.h"
 #include "DataFormats/GeometryCommonDetAlgo/interface/GlobalError.h"
 #include "TMath.h"
 #include "TVector3.h"
+#include "TClonesArray.h"
+#include "TMap.h"
+#include "TObjString.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 
+#include "DataFormats/HLTReco/interface/TriggerFilterObjectWithRefs.h"
 
 typedef std::vector<std::string> MyStrings;
 
@@ -74,11 +79,12 @@ public:
   void setup(const edm::ParameterSet& pSet, TTree* tree);
 
   /** Analyze the Data */
-  void analyze(const edm::Handle<reco::MuonCollection>                 & muon,
-	       const edm::Handle<l1extra::L1MuonParticleCollection>    & mucands1, 
-	       const edm::Handle<reco::RecoChargedCandidateCollection> & mucands2,
-	       const edm::Handle<reco::RecoChargedCandidateCollection> & mucands3,
-               //const reco::BeamSpot::Point & BSPosition,
+  void analyze(const edm::Event & event,
+               const edm::Handle<reco::MuonCollection>                      & muon,
+	       const edm::Handle<l1extra::L1MuonParticleCollection>         & mucands1, 
+	       const edm::Handle<reco::RecoChargedCandidateCollection>      & mucands2,
+	       const edm::Handle<reco::RecoChargedCandidateCollection>      & mucands3,
+               const std::vector< edm::Handle<trigger::TriggerFilterObjectWithRefs> > & muonFilterCollections,
 	       const edm::ESHandle<MagneticField> & theMagField,
                const edm::Handle<reco::BeamSpot> & recoBeamSpotHandle,
 	       TTree* tree);
@@ -90,19 +96,24 @@ private:
 
   // Tree variables
   TVector3 hltOnlineBeamSpot;
-  float *muonpt, *muonphi, *muoneta, *muonet, *muone, *muonchi2NDF, *muoncharge,
-  *muonTrkIsoR03, *muonECalIsoR03, *muonHCalIsoR03, *muonD0;
-  int *muontype, *muonNValidTrkHits, *muonNValidMuonHits;
-  float *muonl2pt, *muonl2eta, *muonl2phi, *muonl2dr, *muonl2drsign, *muonl2dz, *muonl2vtxz;
-  float *muonl3pt, *muonl3ptLx, *muonl3eta, *muonl3phi, *muonl3dr, *muonl3dz, *muonl3vtxz, *muonl3normchi2; 
-  float *muonl3globalpt, *muonl3globaleta, *muonl3globalphi, *muonl3globalDxy, *muonl3globalDxySig, *muonl3globaldz, *muonl3globalvtxz;
-  float *muonl2pterr, *muonl3pterr;
-  int nmuon, nmu2cand, nmu3cand;
-  int *muonl2chg, *muonl2iso, *muonl2nhits, *muonl2nchambers, *muonl2nstat, *muonl2ndtcscstat, *muonl3chg, *muonl3iso, *muonl32idx, *muonl3nhits, *muonl21idx, *muonl3global2idx, *muonl3globalchg;
-  int *muonl3npixelhits, *muonl3ntrackerhits, *muonl3nmuonhits, *muonl3trk10iso;
-  int nDiMu;
-  float *dimudca;
-  int *dimu1st,*dimu2nd;
+  float *muonReco_pt, *muonReco_phi, *muonReco_eta, *muonReco_et, *muonReco_e, *muonReco_chi2NDF, *muonReco_D0;
+  int   *muonReco_charge, *muonReco_type, *muonReco_NValidTrkHits, *muonReco_NValidMuonHits;
+  float *muonL1_pt, *muonL1_eta, *muonL1_phi;
+  int   *muonL1_charge, *muonL1_bx, *muonL1_GMTMuonQuality;
+  float *muonL2_pt, *muonL2_eta, *muonL2_phi, *muonL2_dr, *muonL2_drsign, *muonL2_dz, *muonL2_vtxz;
+  float *muonL2_L1dr;
+  float *muonL3_pt, *muonL3_ptLx, *muonL3_eta, *muonL3_phi, *muonL3_dr, *muonL3_dz, *muonL3_vtxz, *muonL3_normchi2; 
+  float *muonL3_globalpt, *muonL3_globaleta, *muonL3_globalphi, *muonL3_globalDxy, *muonL3_globalDxySig, *muonL3_globaldz, *muonL3_globalvtxz;
+  float *muonL2_pterr, *muonL3_pterr;
+  float *muonL3_L2dr, *muonL3_L1dr, *muonL3_TrackL2dr; 
+  int nmuonReco, nmuonL1, nmuonL2, nmuonL3;
+  int *muonL2_charge, *muonL2_iso, *muonL2_nhits, *muonL2_nchambers, *muonL2_nstat, *muonL2_ndtcscstat, *muonL3_charge, *muonL3_iso, *muonL3_L2idx, *muonL3_nhits, *muonL2_L1idx, *muonL3_global2idx, *muonL3_globalchg;
+  int *muonL3_npixelhits, *muonL3_ntrackerhits, *muonL3_nmuonhits, *muonL3_trk10iso;
+  int nDiMuon;
+  float *dimuon_dca;
+  int *dimuon_1st,*dimuon_2nd;
+
+  ULong64_t  *muonL1_trig, *muonL2_trig, *muonL3_trig; 
 
   // input variables
   bool _Monte,_Debug;

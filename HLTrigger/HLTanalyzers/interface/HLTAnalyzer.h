@@ -30,6 +30,7 @@
 
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 
+#include "DataFormats/HLTReco/interface/TriggerFilterObjectWithRefs.h"
 
 /** \class HLTAnalyzer
   *  
@@ -68,6 +69,7 @@ private:
   //
   // All tokens needed to access products in the event
   //
+  std::vector< edm::EDGetTokenT<trigger::TriggerFilterObjectWithRefs> >  muonFilterTokens_;
 
   edm::EDGetTokenT<reco::BeamSpot>                       BSProducerToken_;
   edm::EDGetTokenT<reco::CandidateView>                  mctruthToken_;
@@ -93,6 +95,7 @@ private:
   //
   // All input tags
   //
+  std::vector< edm::InputTag > muonFilterCollections_;
 
   edm::InputTag BSProducer_;
 

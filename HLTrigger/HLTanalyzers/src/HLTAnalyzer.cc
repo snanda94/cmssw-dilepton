@@ -32,6 +32,8 @@ HLTAnalyzer::HLTAnalyzer(edm::ParameterSet const& conf) :
     // variables. Example as follows:
     std::cout << " Beginning HLTAnalyzer Analysis " << std::endl;
 
+    muonFilterCollections_    = conf.getParameter< std::vector< edm::InputTag > > ("muonFilters");
+
     muon_               = conf.getParameter<edm::InputTag> ("muon");
     mctruth_            = conf.getParameter<edm::InputTag> ("mctruth");
     genEventInfo_       = conf.getParameter<edm::InputTag> ("genEventInfo");
@@ -84,6 +86,10 @@ HLTAnalyzer::HLTAnalyzer(edm::ParameterSet const& conf) :
     
 
     // Define all consumed products  
+
+    for (unsigned int i=0; i<muonFilterCollections_.size() ; i++) { 
+      muonFilterTokens_.push_back( consumes<trigger::TriggerFilterObjectWithRefs>( muonFilterCollections_.at(i) ) );
+    }
 
     BSProducer_ =  edm::InputTag("hltOnlineBeamSpot");
     BSProducerToken_ = consumes<reco::BeamSpot>(BSProducer_);
@@ -155,6 +161,9 @@ void HLTAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetu
     
     // These declarations create handles to the types of records that you want
     // to retrieve from event "iEvent".
+
+    std::vector< edm::Handle<trigger::TriggerFilterObjectWithRefs> > muonFilterCollections;
+
     edm::Handle<reco::CandidateView>                  mctruth;
     edm::Handle<GenEventInfoProduct>                  genEventInfo;
     edm::Handle<std::vector<SimTrack> >               simTracks;
@@ -184,6 +193,13 @@ void HLTAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetu
     // extract the collections from the event, check their validity and log which are missing
     std::vector<MissingCollectionInfo> missing;
     
+    
+    for (unsigned int i=0; i<muonFilterCollections_.size() ; i++) { 
+      edm::Handle<trigger::TriggerFilterObjectWithRefs> handle;
+      iEvent.getByToken(muonFilterTokens_.at(i), handle);
+      muonFilterCollections.push_back(handle);
+    }
+
     //get the BeamSpot
     getCollection( iEvent, missing, recoBeamSpotHandle,   BSProducer_ ,   BSProducerToken_ ,   "Beam Spot handle");
     // gets its position
@@ -212,9 +228,7 @@ void HLTAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetu
     getCollection( iEvent, missing, mucands3,        MuCandTag3_,        MuCandTag3Token_,        kMucands3 );
     getCollection( iEvent, missing, recoVertexsHLT,           VertexTagHLT_,              VertexHLTToken_,              kRecoVerticesHLT );
     getCollection( iEvent, missing, recoVertexsOffline0,      VertexTagOffline0_,         VertexOffline0Token_,         kRecoVerticesOffline0 );
-    
-    
-    
+    /*
     // print missing collections
     if (not missing.empty() and (errCnt < errMax())) {
         errCnt++;
@@ -226,12 +240,15 @@ void HLTAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetu
         if (errCnt == errMax())
             edm::LogWarning("OpenHLT") << "Maximum error count reached -- No more messages will be printed.";
     }
-    
+    */
+
     muon_analysis_.analyze(
+                           iEvent,
                            muon,
                            l1extmu,
                            mucands2,
                            mucands3,
+                           muonFilterCollections,
 			   theMagField,
                            recoBeamSpotHandle,
                            HltTree);
