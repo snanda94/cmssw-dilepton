@@ -71,6 +71,9 @@ HLTAnalyzer::HLTAnalyzer(edm::ParameterSet const& conf) :
     MuCandTag2_          = conf.getParameter<edm::InputTag> ("MuCandTag2");
     MuCandTag3_          = conf.getParameter<edm::InputTag> ("MuCandTag3");
 
+    L3TkTracksFromL2OIStateTag_  = conf.getParameter<edm::InputTag> ("L3TkTracksFromL2OIStateTag");
+    L3TkTracksFromL2OIHitTag_    = conf.getParameter<edm::InputTag> ("L3TkTracksFromL2OIHitTag");
+
     // Reco Vertex collection
     VertexTagHLT_                = conf.getParameter<edm::InputTag> ("PrimaryVertices");  
     VertexTagOffline0_           = conf.getParameter<edm::InputTag> ("OfflinePrimaryVertices0");
@@ -118,6 +121,9 @@ HLTAnalyzer::HLTAnalyzer(edm::ParameterSet const& conf) :
 
     MuCandTag2Token_ = consumes<reco::RecoChargedCandidateCollection>(MuCandTag2_);
     MuCandTag3Token_ = consumes<reco::RecoChargedCandidateCollection>(MuCandTag3_);
+
+    L3TkTracksFromL2OIStateToken_  = consumes<std::vector<reco::Track>>(L3TkTracksFromL2OIStateTag_);
+    L3TkTracksFromL2OIHitToken_    = consumes<std::vector<reco::Track>>(L3TkTracksFromL2OIHitTag_);
         
     VertexHLTToken_ = consumes<reco::VertexCollection>(VertexTagHLT_);
     VertexOffline0Token_ = consumes<reco::VertexCollection>(VertexTagOffline0_);
@@ -180,6 +186,7 @@ void HLTAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetu
     edm::Handle< L1GctHFRingEtSumsCollection >        gctRingSums ;
     
     edm::Handle<reco::RecoChargedCandidateCollection> mucands2, mucands3;
+    edm::Handle< std::vector<reco::Track> > L3TkTracksFromL2OIState, L3TkTracksFromL2OIHit;
     
     // Reco vertex collection
     edm::Handle<reco::VertexCollection> recoVertexsHLT;
@@ -205,7 +212,6 @@ void HLTAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetu
     // gets its position
     reco::BeamSpot::Point BSPosition(0,0,0);
     BSPosition = recoBeamSpotHandle->position();
-    
     getCollection( iEvent, missing, muon,            muon_,              muonToken_,              kMuon );
     getCollection( iEvent, missing, hltresults,      hltresults_,        hltresultsToken_,        kHltresults );
     getCollection( iEvent, missing, l1extemi,        m_l1extraemi,       l1extraemiToken_,        kL1extemi );
@@ -226,6 +232,8 @@ void HLTAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetu
     getCollection( iEvent, missing, genEventInfo,    genEventInfo_,      genEventInfoToken_,      kGenEventInfo );
     getCollection( iEvent, missing, mucands2,        MuCandTag2_,        MuCandTag2Token_,        kMucands2 );
     getCollection( iEvent, missing, mucands3,        MuCandTag3_,        MuCandTag3Token_,        kMucands3 );
+    getCollection( iEvent, missing, L3TkTracksFromL2OIState, L3TkTracksFromL2OIStateTag_, L3TkTracksFromL2OIStateToken_, "L3TkTracksFromL2OIState" );
+    getCollection( iEvent, missing, L3TkTracksFromL2OIHit, L3TkTracksFromL2OIHitTag_, L3TkTracksFromL2OIHitToken_, "L3TkTracksFromL2OIHit" );
     getCollection( iEvent, missing, recoVertexsHLT,           VertexTagHLT_,              VertexHLTToken_,              kRecoVerticesHLT );
     getCollection( iEvent, missing, recoVertexsOffline0,      VertexTagOffline0_,         VertexOffline0Token_,         kRecoVerticesOffline0 );
     /*
@@ -248,6 +256,8 @@ void HLTAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetu
                            l1extmu,
                            mucands2,
                            mucands3,
+                           L3TkTracksFromL2OIState,
+                           L3TkTracksFromL2OIHit,
                            muonFilterCollections,
 			   theMagField,
                            recoBeamSpotHandle,

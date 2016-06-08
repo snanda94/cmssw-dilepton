@@ -8,7 +8,7 @@ isData=1 # =1 running on real data, =0 running on MC
 
 OUTPUT_HIST='openhlt.root'
 NEVTS=-1
-MENU="HIon_RAWDATAREPACKER" # LUMI8e29 or LUMI1e31 for pre-38X MC, or GRun for data
+MENU="HIon_VRFIXUNPACKER_NODXYCUT" # LUMI8e29 or LUMI1e31 for pre-38X MC, or GRun for data
 isRelval=1 # =1 for running on MC RelVals, =0 for standard production MC, no effect for data 
 
 WhichHLTProcess="HLT"
@@ -56,7 +56,7 @@ if(isRaw):
     from RecoLuminosity.LumiProducer.lumiProducer_cff import *
     process.load('RecoLuminosity.LumiProducer.lumiProducer_cff')
 
-process.load("HLTrigger.HLTanalyzers.HLT_HIon_RAWDATAREPACKER_cff")
+process.load("HLTrigger.HLTanalyzers.HLT_HIon_VRFIXUNPACKER_NODXYCUTS_cff")
 
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load("Configuration.StandardSequences.MagneticField_cff")
@@ -67,7 +67,7 @@ process.load('Configuration/StandardSequences/SimL1Emulator_cff')
 
 # OpenHLT specificss
 # Define the HLT reco paths
-process.load("HLTrigger.HLTanalyzers.HI_HLTopen_RAWDATAREPACKER_cff")
+process.load("HLTrigger.HLTanalyzers.HI_HLTopen_VRFIXUNPACKER_NODXYCUTS_cff")
 
 # Remove the PrescaleService which, in 31X, it is expected once HLT_XXX_cff is imported
 # del process.PrescaleService ## ccla no longer needed in for releases in 33x+?
@@ -78,7 +78,7 @@ process.DQMStore = cms.Service( "DQMStore",)
 # AlCa OpenHLT specific settings
 
 # Define the analyzer modules
-process.load("HLTrigger.HLTanalyzers.HI_HLTAnalyser_RAWDATAREPACKER_cff")
+process.load("HLTrigger.HLTanalyzers.HI_HLTAnalyser_cff")
 process.analyzeThis = cms.Path( process.HLTBeginSequence 
     * process.hltanalysis
     )
@@ -156,6 +156,8 @@ process.hltanalysis.muon = cms.InputTag("muons")
 process.hltanalysis.l1extramu = cms.string("hltL1extraParticles")
 process.hltanalysis.MuCandTag2 = cms.InputTag("hltL2MuonCandidates")
 process.hltanalysis.MuCandTag3 = cms.InputTag("hltHIL3MuonCandidates")
+process.hltanalysis.L3TkTracksFromL2OIStateTag = cms.InputTag("hltHIL3TkTracksFromL2OIState")
+process.hltanalysis.L3TkTracksFromL2OIHitTag = cms.InputTag("hltHIL3TkTracksFromL2OIHit")
 process.hltanalysis.OfflinePrimaryVertices0 = cms.InputTag("hiSelectedVertex") # For pp use  cms.InputTag('offlinePrimaryVertices')
 process.hltanalysis.PrimaryVertices = cms.InputTag("hltHISelectedVertex") # For pp use  cms.InputTag('hltPixelVertices')
 
@@ -165,8 +167,8 @@ process.TFileService = cms.Service('TFileService',
     )
 
 # Schedule the whole thing
-if (MENU == "HIon_RAWDATAREPACKER"):
-    print "menu HIon RAWDATAREPACKER"
+if (MENU == "HIon_VRFIXUNPACKER_NODXYCUT"):
+    print "menu HIon VIRGIN RAW MODIFIED REGIONAL UNPACKER AND NO DXY CUTS"
     process.schedule = cms.Schedule(
         process.HLT_HIL2Mu3_NHitQ10_2HF_v1, 
         process.HLT_HIL2Mu3_NHitQ10_2HF0_v1, 
@@ -201,17 +203,6 @@ if (MENU == "HIon_RAWDATAREPACKER"):
 process.load('L1Trigger.GlobalCaloTrigger.gctDigis_cfi')
 process.gctDigis.writeInternalData = cms.bool(True)
 process.gctDigis.inputLabel = cms.InputTag("hltGctDigis")
-                                                                                                            
-        
-#########################################################################################
-from FWCore.ParameterSet import Mixins
-for module in process.__dict__.itervalues():
-    if isinstance(module, Mixins._Parameterizable):
-        for parameter in module.__dict__.itervalues():
-            if isinstance(parameter, cms.InputTag):
-                if parameter.moduleLabel == 'rawDataCollector':
-                    parameter.moduleLabel = 'source'
-
 
 
 # Automatic addition of the customisation function from Configuration.DataProcessing.RecoTLR

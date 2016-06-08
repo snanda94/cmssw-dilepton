@@ -87,6 +87,7 @@ private:
   edm::EDGetTokenT< L1GctHFRingEtSumsCollection >        gctRingSumsToken_;
     
   edm::EDGetTokenT<reco::RecoChargedCandidateCollection> MuCandTag2Token_, MuCandTag3Token_;
+  edm::EDGetTokenT<std::vector<reco::Track>> L3TkTracksFromL2OIStateToken_, L3TkTracksFromL2OIHitToken_;
               
     // Reco vertex collection
   edm::EDGetTokenT<reco::VertexCollection> VertexHLTToken_;
@@ -117,6 +118,7 @@ private:
   edm::InputTag gctBitCounts_,gctRingSums_;
 
   edm::InputTag MuCandTag2_,MuCandTag3_;
+  edm::InputTag L3TkTracksFromL2OIStateTag_, L3TkTracksFromL2OIHitTag_;
   
   // Reco vertex collection
   edm::InputTag VertexTagHLT_;

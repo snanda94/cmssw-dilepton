@@ -127,6 +127,36 @@ void HLTMuon::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   muonL3_global2idx = new int[kMaxMuonL3];
   muonL3_trig = new ULong64_t[kMaxMuonL3];
 
+  const int kMaxL3TkL2OIState = 10000;
+  L3TkL2OIState_pt = new float[kMaxL3TkL2OIState];
+  L3TkL2OIState_phi = new float[kMaxL3TkL2OIState];
+  L3TkL2OIState_eta = new float[kMaxL3TkL2OIState];
+  L3TkL2OIState_dr = new float[kMaxL3TkL2OIState];
+  L3TkL2OIState_drError = new float[kMaxL3TkL2OIState];
+  L3TkL2OIState_dz = new float[kMaxL3TkL2OIState];
+  L3TkL2OIState_charge = new int[kMaxL3TkL2OIState];
+  L3TkL2OIState_nhits = new int[kMaxL3TkL2OIState];
+  L3TkL2OIState_normchi2 = new float[kMaxL3TkL2OIState];
+  L3TkL2OIState_npixelhits = new int[kMaxL3TkL2OIState];
+  L3TkL2OIState_ntrackerhits = new int[kMaxL3TkL2OIState];
+  L3TkL2OIState_L3idx = new int[kMaxL3TkL2OIState];
+  L3TkL2OIState_L2idx = new int[kMaxL3TkL2OIState];
+
+  const int kMaxL3TkL2OIHit = 10000;
+  L3TkL2OIHit_pt = new float[kMaxL3TkL2OIHit];
+  L3TkL2OIHit_phi = new float[kMaxL3TkL2OIHit];
+  L3TkL2OIHit_eta = new float[kMaxL3TkL2OIHit];
+  L3TkL2OIHit_dr = new float[kMaxL3TkL2OIHit];
+  L3TkL2OIHit_drError = new float[kMaxL3TkL2OIHit];
+  L3TkL2OIHit_dz = new float[kMaxL3TkL2OIHit];
+  L3TkL2OIHit_charge = new int[kMaxL3TkL2OIHit];
+  L3TkL2OIHit_nhits = new int[kMaxL3TkL2OIHit];
+  L3TkL2OIHit_normchi2 = new float[kMaxL3TkL2OIHit];
+  L3TkL2OIHit_npixelhits = new int[kMaxL3TkL2OIHit];
+  L3TkL2OIHit_ntrackerhits = new int[kMaxL3TkL2OIHit];
+  L3TkL2OIHit_L3idx = new int[kMaxL3TkL2OIHit];
+  L3TkL2OIHit_L2idx = new int[kMaxL3TkL2OIHit];
+
   const int kMaxDiMu = 10000;
   dimuon_dca = new float[kMaxDiMu];
   dimuon_1st = new int[kMaxDiMu];
@@ -206,7 +236,38 @@ void HLTMuon::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   HltTree->Branch("DiMuon_N",  &nDiMuon,    "DiMuon_N/I");    
   HltTree->Branch("DiMuon_DCA", dimuon_dca, "DiMuon_DCA[DiMuon_N]/F");    
   HltTree->Branch("DiMuon_1st", dimuon_1st, "DiMuon_1st[DiMuon_N]/I");    
-  HltTree->Branch("DiMuon_2nd", dimuon_2nd, "DiMuon_2nd[DiMuon_N]/I");    
+  HltTree->Branch("DiMuon_2nd", dimuon_2nd, "DiMuon_2nd[DiMuon_N]/I");  
+
+  HltTree->Branch("L3TkL2OIHit_N",             &nL3TkL2OIHit,             "L3TkL2OIHit_N/I");
+  HltTree->Branch("L3TkL2OIHit_Pt",             L3TkL2OIHit_pt,           "L3TkL2OIHit_Pt[L3TkL2OIHit_N]/F");
+  HltTree->Branch("L3TkL2OIHit_Phi",            L3TkL2OIHit_phi,          "L3TkL2OIHit_Phi[L3TkL2OIHit_N]/F");
+  HltTree->Branch("L3TkL2OIHit_Eta",            L3TkL2OIHit_eta,          "L3TkL2OIHit_Eta[L3TkL2OIHit_N]/F");
+  HltTree->Branch("L3TkL2OIHit_Charge",         L3TkL2OIHit_charge,       "L3TkL2OIHit_Charge[L3TkL2OIHit_N]/I");
+  HltTree->Branch("L3TkL2OIHit_L3vsBS_Dr",      L3TkL2OIHit_dr,           "L3TkL2OIHit_L3vsBS_Dr[L3TkL2OIHit_N]/F");
+  HltTree->Branch("L3TkL2OIHit_L3vsBS_DrError", L3TkL2OIHit_drError,      "L3TkL2OIHit_L3vsBS_DrError[L3TkL2OIHit_N]/F");
+  HltTree->Branch("L3TkL2OIHit_Dz",             L3TkL2OIHit_dz,           "L3TkL2OIHit_Dz[L3TkL2OIHit_N]/F");
+  HltTree->Branch("L3TkL2OIHit_Nhits",          L3TkL2OIHit_nhits,        "L3TkL2OIHit_Nhits[L3TkL2OIHit_N]/I");    
+  HltTree->Branch("L3TkL2OIHit_NormChi2",       L3TkL2OIHit_normchi2,     "L3TkL2OIHit_NormChi2[L3TkL2OIHit_N]/F");
+  HltTree->Branch("L3TkL2OIHit_Npixelhits",     L3TkL2OIHit_npixelhits,   "L3TkL2OIHit_Npixelhits[L3TkL2OIHit_N]/I"); 
+  HltTree->Branch("L3TkL2OIHit_Ntrackerhits",   L3TkL2OIHit_ntrackerhits, "L3TkL2OIHit_Ntrackerhits[L3TkL2OIHit_N]/I");
+  HltTree->Branch("L3TkL2OIHit_L3idx",          L3TkL2OIHit_L3idx,        "L3TkL2OIHit_L3idx[L3TkL2OIHit_N]/I");
+  HltTree->Branch("L3TkL2OIHit_L2idx",          L3TkL2OIHit_L2idx,        "L3TkL2OIHit_L2idx[L3TkL2OIHit_N]/I");
+
+
+  HltTree->Branch("L3TkL2OIState_N",             &nL3TkL2OIState,             "L3TkL2OIState_N/I");
+  HltTree->Branch("L3TkL2OIState_Pt",             L3TkL2OIState_pt,           "L3TkL2OIState_Pt[L3TkL2OIState_N]/F");
+  HltTree->Branch("L3TkL2OIState_Phi",            L3TkL2OIState_phi,          "L3TkL2OIState_Phi[L3TkL2OIState_N]/F");
+  HltTree->Branch("L3TkL2OIState_Eta",            L3TkL2OIState_eta,          "L3TkL2OIState_Eta[L3TkL2OIState_N]/F");
+  HltTree->Branch("L3TkL2OIState_Charge",         L3TkL2OIState_charge,       "L3TkL2OIState_Charge[L3TkL2OIState_N]/I");
+  HltTree->Branch("L3TkL2OIState_L3vsBS_Dr",      L3TkL2OIState_dr,           "L3TkL2OIState_L3vsBS_Dr[L3TkL2OIState_N]/F");
+  HltTree->Branch("L3TkL2OIState_L3vsBS_DrError", L3TkL2OIState_drError,      "L3TkL2OIState_L3vsBS_DrError[L3TkL2OIState_N]/F");
+  HltTree->Branch("L3TkL2OIState_Dz",             L3TkL2OIState_dz,           "L3TkL2OIState_Dz[L3TkL2OIState_N]/F");
+  HltTree->Branch("L3TkL2OIState_Nhits",          L3TkL2OIState_nhits,        "L3TkL2OIState_Nhits[L3TkL2OIState_N]/I");    
+  HltTree->Branch("L3TkL2OIState_NormChi2",       L3TkL2OIState_normchi2,     "L3TkL2OIState_NormChi2[L3TkL2OIState_N]/F");
+  HltTree->Branch("L3TkL2OIState_Npixelhits",     L3TkL2OIState_npixelhits,   "L3TkL2OIState_Npixelhits[L3TkL2OIState_N]/I"); 
+  HltTree->Branch("L3TkL2OIState_Ntrackerhits",   L3TkL2OIState_ntrackerhits, "L3TkL2OIState_Ntrackerhits[L3TkL2OIState_N]/I");
+  HltTree->Branch("L3TkL2OIState_L3idx",          L3TkL2OIState_L3idx,        "L3TkL2OIState_L3idx[L3TkL2OIState_N]/I");
+  HltTree->Branch("L3TkL2OIState_L2idx",          L3TkL2OIState_L2idx,        "L3TkL2OIState_L2idx[L3TkL2OIState_N]/I");
 
 }
 
@@ -216,6 +277,8 @@ void HLTMuon::analyze(const edm::Event & event,
 		      const edm::Handle<l1extra::L1MuonParticleCollection>         & MuCands1, 
 		      const edm::Handle<reco::RecoChargedCandidateCollection>      & MuCands2,
 		      const edm::Handle<reco::RecoChargedCandidateCollection>      & MuCands3,
+                      const edm::Handle<std::vector<reco::Track>>                  & L3TkTracksFromL2OIState,
+                      const edm::Handle<std::vector<reco::Track>>                  & L3TkTracksFromL2OIHit,
                       const std::vector< edm::Handle<trigger::TriggerFilterObjectWithRefs> > & muonFilterCollections,
 		      const edm::ESHandle<MagneticField> & theMagField,
 		      const edm::Handle<reco::BeamSpot> & recoBeamSpotHandle,
@@ -269,6 +332,8 @@ void HLTMuon::analyze(const edm::Event & event,
   std::vector< edm::Handle<l1extra::L1MuonParticleCollection> >    MuCands1FilterCollection; 
   std::vector< edm::Handle<reco::RecoChargedCandidateCollection> > MuCands2FilterCollection;
   std::vector< edm::Handle<reco::RecoChargedCandidateCollection> > MuCands3FilterCollection;
+  std::vector< edm::Handle< std::vector< reco::Track > > >         L3TkTracksFromL2OIStateFilterCollection;
+  std::vector< edm::Handle< std::vector< reco::Track > > >         L3TkTracksFromL2OIHitFilterCollection;
 
   std::vector< std::string > filterNames;
   for (unsigned int i=0; i<muonFilterCollections.size(); i++) {
@@ -285,6 +350,7 @@ void HLTMuon::analyze(const edm::Event & event,
     edm::Handle<reco::RecoChargedCandidateCollection>   MuCands3Tmp; 
     getTriggerFilterObjects( event, muonFilterCollection, MuCands3Tmp, MuCands3);
     MuCands3FilterCollection.push_back(MuCands3Tmp);
+
   }
 
 
@@ -587,8 +653,150 @@ void HLTMuon::analyze(const edm::Event & event,
     }
     nDiMuon = idimuc;
   }
-
   else {nmuonL3 = 0;  nDiMuon = 0;}
+
+  // Dealing with L3 Tracker Tracks for L2IOHits
+  std::vector< reco::Track > myL3TkTracksFromL2OIHit;
+  if (L3TkTracksFromL2OIHit.isValid()) {
+    myL3TkTracksFromL2OIHit = * L3TkTracksFromL2OIHit;
+    std::sort(myL3TkTracksFromL2OIHit.begin(),myL3TkTracksFromL2OIHit.end(),PtGreater());
+    nL3TkL2OIHit = myL3TkTracksFromL2OIHit.size();
+    typedef std::vector<reco::Track>::const_iterator cand;
+    int iL3TkL2OIHit=0;
+    for (cand i=myL3TkTracksFromL2OIHit.begin(); i!=myL3TkTracksFromL2OIHit.end(); i++) {
+      reco::Track tk = *i;
+
+      L3TkL2OIHit_pt[iL3TkL2OIHit] = tk.pt();
+      L3TkL2OIHit_eta[iL3TkL2OIHit] = tk.eta();
+      L3TkL2OIHit_phi[iL3TkL2OIHit] = tk.phi();
+
+      bool canUseL3MTS = false;
+      // check the seedRef is non-null first; and then
+      if (tk.seedRef().isNonnull()){
+        const L3MuonTrajectorySeed* a = dynamic_cast<const L3MuonTrajectorySeed*>(tk.seedRef().get());
+        canUseL3MTS = a != nullptr;
+      }
+      if (canUseL3MTS){
+    	edm::Ref<L3MuonTrajectorySeedCollection> l3seedRef = tk.seedRef().castTo<edm::Ref<L3MuonTrajectorySeedCollection> >() ;
+    	reco::TrackRef staTrack = l3seedRef->l2Track();
+        int imu3idx = 0;
+        if (MuCands3.isValid()) {
+          typedef reco::RecoChargedCandidateCollection::const_iterator candl3;
+          for (candl3 i3=myMucands3.begin(); i3!=myMucands3.end(); i3++) {
+            reco::TrackRef tkl3 = i3->get<reco::TrackRef>();
+            reco::TrackRef staTrackL3 = tkl3->seedRef().castTo<edm::Ref< L3MuonTrajectorySeedCollection> >()->l2Track();
+            if ( staTrack == staTrackL3 ) {break;}
+            imu3idx++;
+          }
+        }
+        else {imu3idx = -999;}        
+        L3TkL2OIHit_L3idx[iL3TkL2OIHit] = imu3idx;
+        
+        int imu2idx = 0;
+        if (MuCands2.isValid()) {
+          typedef reco::RecoChargedCandidateCollection::const_iterator candl2;
+          for (candl2 i2=myMucands2.begin(); i2!=myMucands2.end(); i2++) {
+            reco::TrackRef tkl2 = i2->get<reco::TrackRef>();
+            if ( tkl2 == staTrack ) {break;}
+            imu2idx++;
+          }
+        }
+        else {imu2idx = -999;}
+        L3TkL2OIHit_L2idx[iL3TkL2OIHit] = imu2idx;
+      }
+      else { 
+        L3TkL2OIHit_L3idx[iL3TkL2OIHit] = -999; 
+        L3TkL2OIHit_L2idx[iL3TkL2OIHit] = -999;
+      }
+
+      L3TkL2OIHit_dr[iL3TkL2OIHit] = fabs(tk.dxy(BSPosition));
+      L3TkL2OIHit_drError[iL3TkL2OIHit] = tk.dxyError();
+      L3TkL2OIHit_dz[iL3TkL2OIHit] = fabs(tk.dz(BSPosition));
+        
+      L3TkL2OIHit_normchi2[iL3TkL2OIHit] = tk.normalizedChi2();
+      L3TkL2OIHit_npixelhits[iL3TkL2OIHit] = tk.hitPattern().numberOfValidPixelHits();
+      L3TkL2OIHit_ntrackerhits[iL3TkL2OIHit] = tk.hitPattern().numberOfValidTrackerHits();
+
+      L3TkL2OIHit_nhits[iL3TkL2OIHit] = tk.numberOfValidHits();  
+
+      L3TkL2OIHit_charge[iL3TkL2OIHit] = tk.charge();
+
+      iL3TkL2OIHit++;
+    }
+  }
+  else {nL3TkL2OIHit = 0;}
+
+
+  // Dealing with L3 Tracker Tracks for L2IOStates
+  std::vector< reco::Track > myL3TkTracksFromL2OIState;
+  if (L3TkTracksFromL2OIState.isValid()) {
+    myL3TkTracksFromL2OIState = * L3TkTracksFromL2OIState;
+    std::sort(myL3TkTracksFromL2OIState.begin(),myL3TkTracksFromL2OIState.end(),PtGreater());
+    nL3TkL2OIState = myL3TkTracksFromL2OIState.size();
+    typedef std::vector<reco::Track>::const_iterator cand;
+    int iL3TkL2OIState=0;
+    for (cand i=myL3TkTracksFromL2OIState.begin(); i!=myL3TkTracksFromL2OIState.end(); i++) {
+      reco::Track tk = *i;
+
+      L3TkL2OIState_pt[iL3TkL2OIState] = tk.pt();
+      L3TkL2OIState_eta[iL3TkL2OIState] = tk.eta();
+      L3TkL2OIState_phi[iL3TkL2OIState] = tk.phi();
+
+      bool canUseL3MTS = false;
+      // check the seedRef is non-null first; and then
+      if (tk.seedRef().isNonnull()){
+        const L3MuonTrajectorySeed* a = dynamic_cast<const L3MuonTrajectorySeed*>(tk.seedRef().get());
+        canUseL3MTS = a != nullptr;
+      }
+      if (canUseL3MTS){
+    	edm::Ref<L3MuonTrajectorySeedCollection> l3seedRef = tk.seedRef().castTo<edm::Ref<L3MuonTrajectorySeedCollection> >() ;
+    	reco::TrackRef staTrack = l3seedRef->l2Track();
+        int imu3idx = 0;
+        if (MuCands3.isValid()) {
+          typedef reco::RecoChargedCandidateCollection::const_iterator candl3;
+          for (candl3 i3=myMucands3.begin(); i3!=myMucands3.end(); i3++) {
+            reco::TrackRef tkl3 = i3->get<reco::TrackRef>();
+            reco::TrackRef staTrackL3 = tkl3->seedRef().castTo<edm::Ref< L3MuonTrajectorySeedCollection> >()->l2Track();
+            if ( staTrack == staTrackL3 ) {break;}
+            imu3idx++;
+          }
+        }
+        else {imu3idx = -999;}        
+        L3TkL2OIState_L3idx[iL3TkL2OIState] = imu3idx;
+        
+        int imu2idx = 0;
+        if (MuCands2.isValid()) {
+          typedef reco::RecoChargedCandidateCollection::const_iterator candl2;
+          for (candl2 i2=myMucands2.begin(); i2!=myMucands2.end(); i2++) {
+            reco::TrackRef tkl2 = i2->get<reco::TrackRef>();
+            if ( tkl2 == staTrack ) {break;}
+            imu2idx++;
+          }
+        }
+        else {imu2idx = -999;}
+        L3TkL2OIState_L2idx[iL3TkL2OIState] = imu2idx;
+      }
+      else { 
+        L3TkL2OIState_L3idx[iL3TkL2OIState] = -999; 
+        L3TkL2OIState_L2idx[iL3TkL2OIState] = -999;
+      }
+
+      L3TkL2OIState_dr[iL3TkL2OIState] = fabs(tk.dxy(BSPosition));
+      L3TkL2OIState_drError[iL3TkL2OIState] = tk.dxyError();
+      L3TkL2OIState_dz[iL3TkL2OIState] = fabs(tk.dz(BSPosition));
+        
+      L3TkL2OIState_normchi2[iL3TkL2OIState] = tk.normalizedChi2();
+      L3TkL2OIState_npixelhits[iL3TkL2OIState] = tk.hitPattern().numberOfValidPixelHits();
+      L3TkL2OIState_ntrackerhits[iL3TkL2OIState] = tk.hitPattern().numberOfValidTrackerHits();
+
+      L3TkL2OIState_nhits[iL3TkL2OIState] = tk.numberOfValidHits();  
+
+      L3TkL2OIState_charge[iL3TkL2OIState] = tk.charge();
+
+      iL3TkL2OIState++;
+    }
+  }
+  else {nL3TkL2OIState = 0;}
 
 }
 
