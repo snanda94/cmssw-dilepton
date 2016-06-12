@@ -220,7 +220,7 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
                 if( thePrimaryV.originalTrack(*itRefittedTrack).key() == rmu2->track().key() ) continue;
 
                 const reco::Track & recoTrack = *(thePrimaryV.originalTrack(*itRefittedTrack));
-                muonLess.push_back(*(thePrimaryV.originalTrack(*itRefittedTrack)));
+                muonLess.push_back(recoTrack);
               }
             }// PV has refitted tracks
             else 
