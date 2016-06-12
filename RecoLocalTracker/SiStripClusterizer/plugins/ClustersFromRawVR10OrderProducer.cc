@@ -42,7 +42,7 @@
 
 
 namespace {
-  sistrip::FEDBuffer*fillBufferOrder(int fedId, const FEDRawDataCollection& rawColl) {
+  sistrip::FEDBuffer*fillBufferVR10Order(int fedId, const FEDRawDataCollection& rawColl) {
     sistrip::FEDBuffer* buffer=nullptr;
     
     // Retrieve FED raw data for given FED
@@ -101,9 +101,9 @@ namespace {
   }
   
   
-  class ClusterFillerOrder final : public StripClusterizerAlgorithm::output_t::Getter {
+  class ClusterFillerVR10Order final : public StripClusterizerAlgorithm::output_t::Getter {
   public:
-    ClusterFillerOrder(const FEDRawDataCollection& irawColl,
+    ClusterFillerVR10Order(const FEDRawDataCollection& irawColl,
 		  StripClusterizerAlgorithm & iclusterizer,
 		  SiStripRawProcessingAlgorithms & irawAlgos,
 		  bool idoAPVEmulatorCheck):
@@ -115,7 +115,7 @@ namespace {
       }
     
     
-    ~ClusterFillerOrder() { printStat();}
+    ~ClusterFillerVR10Order() { printStat();}
     
     void fill(StripClusterizerAlgorithm::output_t::FastFiller & record) override;
     
@@ -173,11 +173,11 @@ namespace {
 
 
 
-class SiStripClusterizerFromRawOrder final : public edm::stream::EDProducer<>  {
+class SiStripClusterizerFromRawVR10Order final : public edm::stream::EDProducer<>  {
   
  public:
   
-  explicit SiStripClusterizerFromRawOrder(const edm::ParameterSet& conf) :
+  explicit SiStripClusterizerFromRawVR10Order(const edm::ParameterSet& conf) :
     onDemand(conf.getParameter<bool>("onDemand")),
     cabling_(nullptr),
     clusterizer_(StripClusterizerAlgorithmFactory::create(conf.getParameter<edm::ParameterSet>("Clusterizer"))),
@@ -207,7 +207,7 @@ class SiStripClusterizerFromRawOrder final : public edm::stream::EDProducer<>  {
     
     std::auto_ptr< edmNew::DetSetVector<SiStripCluster> > 
       output( onDemand ?
-	      new edmNew::DetSetVector<SiStripCluster>(std::shared_ptr<edmNew::DetSetVector<SiStripCluster>::Getter>(std::make_shared<ClusterFillerOrder>(*rawData, *clusterizer_, 
+	      new edmNew::DetSetVector<SiStripCluster>(std::shared_ptr<edmNew::DetSetVector<SiStripCluster>::Getter>(std::make_shared<ClusterFillerVR10Order>(*rawData, *clusterizer_, 
 																	 *rawAlgos_, doAPVEmulatorCheck_)
 														       ), 
 						       clusterizer_->allDetIds())
@@ -255,12 +255,12 @@ private:
 };
 
 #include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(SiStripClusterizerFromRawOrder);
+DEFINE_FWK_MODULE(SiStripClusterizerFromRawVR10Order);
 
 
 
 
-void SiStripClusterizerFromRawOrder::initialize(const edm::EventSetup& es) {
+void SiStripClusterizerFromRawVR10Order::initialize(const edm::EventSetup& es) {
                                                                         
   (*clusterizer_).initialize(es);
   cabling_ = (*clusterizer_).cabling();
@@ -268,10 +268,10 @@ void SiStripClusterizerFromRawOrder::initialize(const edm::EventSetup& es) {
 
 }
 
-void SiStripClusterizerFromRawOrder::run(const FEDRawDataCollection& rawColl,
+void SiStripClusterizerFromRawVR10Order::run(const FEDRawDataCollection& rawColl,
 				     edmNew::DetSetVector<SiStripCluster> & output) {
   
-  ClusterFillerOrder filler(rawColl, *clusterizer_, *rawAlgos_, doAPVEmulatorCheck_);
+  ClusterFillerVR10Order filler(rawColl, *clusterizer_, *rawAlgos_, doAPVEmulatorCheck_);
   
   // loop over good det in cabling
   for ( auto idet : clusterizer_->allDetIds()) {
@@ -285,7 +285,7 @@ void SiStripClusterizerFromRawOrder::run(const FEDRawDataCollection& rawColl,
   } // end loop over dets
 }
 
-void ClusterFillerOrder::fill(StripClusterizerAlgorithm::output_t::FastFiller & record) {
+void ClusterFillerVR10Order::fill(StripClusterizerAlgorithm::output_t::FastFiller & record) {
 try {
   incReady();
 
@@ -308,7 +308,7 @@ try {
     
 
     // If Fed hasnt already been initialised, extract data and initialise
-    if (!done[fedId]) { buffers[fedId].reset(fillBufferOrder(fedId, rawColl)); done[fedId]=true;}
+    if (!done[fedId]) { buffers[fedId].reset(fillBufferVR10Order(fedId, rawColl)); done[fedId]=true;}
     auto buffer = buffers[fedId].get();
     if unlikely(!buffer) continue;
     
@@ -402,7 +402,9 @@ try {
       } else if (mode == sistrip::READOUT_MODE_VIRGIN_RAW ) {
 	
 	// create unpacker
-	sistrip::FEDRawChannelUnpacker unpacker = sistrip::FEDRawChannelUnpacker::virginRawModeUnpacker(buffer->channel(fedCh));
+        //	sistrip::FEDRawChannelUnpacker unpacker = sistrip::FEDRawChannelUnpacker::virginRawModeUnpacker(buffer->channel(fedCh));
+
+        sistrip::FEDBSChannelUnpacker unpacker = sistrip::FEDBSChannelUnpacker::virginRawModeUnpacker(buffer->channel(fedCh), 10);
 	
 	// unpack
 	std::vector<int16_t> digis;

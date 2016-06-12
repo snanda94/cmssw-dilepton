@@ -57,7 +57,7 @@ HLTAnalyzer::HLTAnalyzer(edm::ParameterSet const& conf) :
     m_l1extraemn      = edm::InputTag(l1extramc_, "NonIsolated");
     m_l1extrajetc     = edm::InputTag(l1extramc_, "Central");
     m_l1extrajetf     = edm::InputTag(l1extramc_, "Forward");
-    m_l1extrajet      = edm::InputTag("gctInternJetProducer","Internal","ANALYSIS");
+    m_l1extrajet      = edm::InputTag("gctInternJetProducer","Internal","reHLT");
     m_l1extrataujet   = edm::InputTag(l1extramc_, "Tau");
     m_l1extramet      = edm::InputTag(l1extramc_, "MET");
     m_l1extramht      = edm::InputTag(l1extramc_, "MHT");
@@ -143,7 +143,7 @@ HLTAnalyzer::HLTAnalyzer(edm::ParameterSet const& conf) :
     // Setup the different analysis
     muon_analysis_.setup(conf, HltTree);
     hlt_analysis_.setup(conf, HltTree);
-    vrt_analysisHLT_.setup(conf, HltTree, "HLT");
+    vrt_analysisHLT_.setup(conf, HltTree, "reHLT");
     vrt_analysisOffline0_.setup(conf, HltTree, "Offline0");
     evt_header_.setup(consumesCollector(), HltTree);
 }
@@ -236,7 +236,7 @@ void HLTAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetu
     getCollection( iEvent, missing, L3TkTracksFromL2OIHit, L3TkTracksFromL2OIHitTag_, L3TkTracksFromL2OIHitToken_, "L3TkTracksFromL2OIHit" );
     getCollection( iEvent, missing, recoVertexsHLT,           VertexTagHLT_,              VertexHLTToken_,              kRecoVerticesHLT );
     getCollection( iEvent, missing, recoVertexsOffline0,      VertexTagOffline0_,         VertexOffline0Token_,         kRecoVerticesOffline0 );
-    /*
+    
     // print missing collections
     if (not missing.empty() and (errCnt < errMax())) {
         errCnt++;
@@ -248,7 +248,7 @@ void HLTAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetu
         if (errCnt == errMax())
             edm::LogWarning("OpenHLT") << "Maximum error count reached -- No more messages will be printed.";
     }
-    */
+    
 
     muon_analysis_.analyze(
                            iEvent,

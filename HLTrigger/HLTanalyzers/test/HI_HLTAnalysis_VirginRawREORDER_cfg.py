@@ -8,10 +8,10 @@ isData=1 # =1 running on real data, =0 running on MC
 
 OUTPUT_HIST='openhlt.root'
 NEVTS=-1
-MENU="HIon_VRFIXUNPACKER_NODXYCUT" # LUMI8e29 or LUMI1e31 for pre-38X MC, or GRun for data
+MENU="HIon" # LUMI8e29 or LUMI1e31 for pre-38X MC, or GRun for data
 isRelval=1 # =1 for running on MC RelVals, =0 for standard production MC, no effect for data 
 
-WhichHLTProcess="HLT"
+WhichHLTProcess="reHLT"
 isRaw=1
 
 #####  Global Tag ###############################################
@@ -42,8 +42,7 @@ process.options = cms.untracked.PSet(
 )
 
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring(
-        'root://cms-xrd-global.cern.ch//eos/cms/tier0/store/hidata/HIRun2015/HITrackerVirginRaw/RAW/v1/000/262/921/00000/724293FF-AB98-E511-9ADA-02163E014262.root'
+    fileNames = cms.untracked.vstring( 'root://cms-xrd-global.cern.ch//store/user/anstahll/HLTStudy/reHLT_HITrackerVirginRaw_RAW_VIRGINRAW_GLBUNPACKER_160604/HITrackerVirginRaw/reHLT_HITrackerVirginRaw_RAW_VIRGINRAW_GLBUNPACKER_160604/160605_164527/0000/step2_HiHLT_new_101.root'
     )
 )
 
@@ -56,7 +55,7 @@ if(isRaw):
     from RecoLuminosity.LumiProducer.lumiProducer_cff import *
     process.load('RecoLuminosity.LumiProducer.lumiProducer_cff')
 
-process.load("HLTrigger.HLTanalyzers.HLT_HIon_VRFIXUNPACKER_NODXYCUTS_cff")
+process.load("HLTrigger.HLTanalyzers.HLT_HIon_REORDER_cff")
 
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load("Configuration.StandardSequences.MagneticField_cff")
@@ -67,7 +66,7 @@ process.load('Configuration/StandardSequences/SimL1Emulator_cff')
 
 # OpenHLT specificss
 # Define the HLT reco paths
-process.load("HLTrigger.HLTanalyzers.HI_HLTopen_VRFIXUNPACKER_NODXYCUTS_cff")
+process.load("HLTrigger.HLTanalyzers.HI_HLTopen_REORDER_cff")
 
 # Remove the PrescaleService which, in 31X, it is expected once HLT_XXX_cff is imported
 # del process.PrescaleService ## ccla no longer needed in for releases in 33x+?
@@ -93,9 +92,12 @@ else:
 process.hltanalysis.RunParameters.HistogramFile = cms.untracked.string(OUTPUT_HIST)
 process.hltanalysis.xSection=1.0
 process.hltanalysis.filterEff=1.0
-process.hltanalysis.l1GtReadoutRecord = cms.InputTag( 'hltGtDigis','',process.name_() ) # get gtDigis extract from the RAW
+process.hltanalysis.l1GtReadoutRecord = cms.InputTag( 'hltGtDigis','',WhichHLTProcess ) 
+process.hltanalysis.l1GtObjectMapRecord = cms.InputTag( 'hltL1GtObjectMap','',WhichHLTProcess )
 process.hltanalysis.hltresults = cms.InputTag( 'TriggerResults','',WhichHLTProcess)
 process.hltanalysis.HLTProcessName = cms.string(WhichHLTProcess)
+process.hltTrigReport.HLTriggerResults = cms.InputTag( 'TriggerResults', '', WhichHLTProcess )
+
 
 process.hltanalysis.muonFilters = cms.VInputTag( 
     cms.InputTag("hltL1sL1SingleMu3MinBiasHF1AND",""),     # 0
@@ -161,40 +163,18 @@ process.hltanalysis.L3TkTracksFromL2OIHitTag = cms.InputTag("hltHIL3TkTracksFrom
 process.hltanalysis.OfflinePrimaryVertices0 = cms.InputTag("hiSelectedVertex") # For pp use  cms.InputTag('offlinePrimaryVertices')
 process.hltanalysis.PrimaryVertices = cms.InputTag("hltHISelectedVertex") # For pp use  cms.InputTag('hltPixelVertices')
 
+
 # TFile service output
 process.TFileService = cms.Service('TFileService',
     fileName = cms.string("hltana.root")
     )
 
+
 # Schedule the whole thing
-if (MENU == "HIon_VRFIXUNPACKER_NODXYCUT"):
-    print "menu HIon VIRGIN RAW MODIFIED REGIONAL UNPACKER AND NO DXY CUTS"
+if (MENU == "HIon"):
+    print "menu HIon Virgin Raw Original REORDER Unpacker"
     process.schedule = cms.Schedule(
-        process.HLT_HIL2Mu3_NHitQ10_2HF_v1, 
-        process.HLT_HIL2Mu3_NHitQ10_2HF0_v1, 
-        process.HLT_HIL3Mu3_NHitQ15_2HF_v1,
-        process.HLT_HIL3Mu3_NHitQ15_2HF0_v1, 
-        process.HLT_HIL2Mu5_NHitQ10_2HF_v1, 
-        process.HLT_HIL2Mu5_NHitQ10_2HF0_v1, 
-        process.HLT_HIL3Mu5_NHitQ15_2HF_v1, 
-        process.HLT_HIL3Mu5_NHitQ15_2HF0_v1, 
-        process.HLT_HIL2Mu7_NHitQ10_2HF_v1, 
-        process.HLT_HIL2Mu7_NHitQ10_2HF0_v1,
-        process.HLT_HIL3Mu7_NHitQ15_2HF_v1, 
-        process.HLT_HIL3Mu7_NHitQ15_2HF0_v1, 
-        process.HLT_HIL2Mu15_v2, 
-        process.HLT_HIL2Mu15_2HF_v1, 
-        process.HLT_HIL2Mu15_2HF0_v1,
-        process.HLT_HIL3Mu15_v1, 
-        process.HLT_HIL3Mu15_2HF_v1,
-        process.HLT_HIL3Mu15_2HF0_v1,
-        process.HLT_HIL2Mu20_v1, 
-        process.HLT_HIL2Mu20_2HF_v1, 
-        process.HLT_HIL2Mu20_2HF0_v1, 
-        process.HLT_HIL3Mu20_v1, 
-        process.HLT_HIL3Mu20_2HF_v1,
-        process.HLT_HIL3Mu20_2HF0_v1,
-        process.DoHLTHIMuon, 
+        process.DoHLTHIMuon,
         process.analyzeThis
         )
 
@@ -202,10 +182,11 @@ if (MENU == "HIon_VRFIXUNPACKER_NODXYCUT"):
 # to run the emulator on the output of the unpacker (which we run as part of HLTBeginSequence, independant of the emulator per se)
 process.load('L1Trigger.GlobalCaloTrigger.gctDigis_cfi')
 process.gctDigis.writeInternalData = cms.bool(True)
-process.gctDigis.inputLabel = cms.InputTag("hltGctDigis")
+process.gctDigis.inputLabel = cms.InputTag("hltGctDigis",'',WhichHLTProcess)
 
 
 # Automatic addition of the customisation function from Configuration.DataProcessing.RecoTLR
 from Configuration.DataProcessing.RecoTLR import customiseRun2CommonHI 
 #call to customisation function customiseRun2CommonHI imported from Configuration.DataProcessing.RecoTLR
 process = customiseRun2CommonHI(process)
+    

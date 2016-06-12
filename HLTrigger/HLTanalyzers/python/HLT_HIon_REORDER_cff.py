@@ -11569,8 +11569,8 @@ hltTrigReport = cms.EDAnalyzer( "HLTrigReport",
     ReferenceRate = cms.untracked.double( 100.0 ),
     serviceBy = cms.untracked.string( "never" ),
     resetBy = cms.untracked.string( "never" ),
-    reportBy = cms.untracked.string( "job" ),
-    HLTriggerResults = cms.InputTag( 'TriggerResults','','HLT' )
+    reportBy = cms.untracked.string( "never" ),
+    HLTriggerResults = cms.InputTag( 'TriggerResults','','ANALYSIS' )
 )
 
 HLTL1UnpackerSequence = cms.Sequence( hltGtDigis + hltCaloStage1Digis + hltCaloStage1LegacyFormatDigis + hltL1GtObjectMap + hltL1extraParticles )
