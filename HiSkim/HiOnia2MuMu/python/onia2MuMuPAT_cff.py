@@ -20,9 +20,8 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True):
     process.genMuons = cms.EDProducer("GenParticlePruner",
         src = cms.InputTag("genParticles"),
         select = cms.vstring(
-            "drop  *  ",                     # this is the default
-            "++keep abs(pdgId) = 13",        # keep muons and their parents
-            "drop pdgId == 21 && status = 2" # remove intermediate qcd spam carrying no flavour info
+            "drop  *  ",                      # this is the default
+            "++keep abs(pdgId) = 13"          # keep muons and their parents
         )
     )
 
@@ -54,10 +53,19 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True):
     process.muonMatchHLTL1.matchedCuts = cms.string('coll("hltGmtStage2Digis:Muon")')
     process.muonMatchHLTL3.matchedCuts = cms.string('coll("hltL3MuonCandidates")')
 
+    process.patTrigger.collections.append("hltL1extraParticles")
+    process.muonMatchHLTL1T = process.muonMatchL1.clone(matchedCuts = cms.string('coll("hltL1extraParticles")'))
+    process.muonMatchHLTL1T.maxDeltaR = 0.3
+    process.muonMatchHLTL1T.fallbackToME1 = True
+    process.patMuonsWithTriggerSequence.replace(process.muonMatchHLTL1, process.muonMatchHLTL1 + process.muonMatchHLTL1T)
+    getattr(process,"patMuonsWithTrigger").matches += [ cms.InputTag('muonMatchHLTL1T'), cms.InputTag('muonMatchHLTL1T','propagatedReco') ]
+    process.muonMatchHLTL1T.resolveAmbiguities = False
+
     process.patTrigger.collections.append("hltHIL3MuonCandidates") 
     process.muonMatchHLTL3T.maxDeltaR = 0.1
     process.muonMatchHLTL3T.maxDPtRel = 10.0
     process.muonMatchHLTL3T.matchedCuts = cms.string('coll("hltHIL3MuonCandidates")') 
+    process.muonMatchHLTL3T.resolveAmbiguities = False
       
     # Make a sequence
     process.patMuonSequence = cms.Sequence(

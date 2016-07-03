@@ -1518,16 +1518,27 @@ HiOniaAnalyzer::InitEvent()
 reco::GenParticleRef  
 HiOniaAnalyzer::findDaughterRef(reco::GenParticleRef GenParticleDaughter, int GenParticlePDG) {
 
-  reco::GenParticleRef GenParticleTmp = GenParticleDaughter;   
+  reco::GenParticleRef GenParticleTmp = GenParticleDaughter;
+  bool foundFirstDaughter = false;
   for(int j=0; j<1000; ++j) { 
-    if (GenParticleTmp.isNonnull() && ((GenParticleTmp->pdgId()==GenParticlePDG) || (GenParticleTmp->pdgId()==GenParticleDaughter->pdgId())) && GenParticleTmp->numberOfDaughters()>0) { 
-      GenParticleDaughter = GenParticleTmp;
-      GenParticleTmp      = GenParticleDaughter->daughterRef(0);
-    } else break;
+    if ( GenParticleTmp.isNonnull() && GenParticleTmp->numberOfDaughters()>0 ) 
+      {
+        if ( GenParticleTmp->pdgId()==GenParticlePDG || GenParticleTmp->daughterRef(0)->pdgId()==GenParticlePDG )
+          {
+            GenParticleTmp = GenParticleTmp->daughterRef(0); 
+          }
+        else if ( !foundFirstDaughter ) 
+          {
+            foundFirstDaughter = true;
+            GenParticlePDG = GenParticleTmp->pdgId();
+          } 
+      }
+    else break;
   }
-  if (GenParticleTmp.isNonnull() && (GenParticleTmp->pdgId()==GenParticleDaughter->pdgId())) {
+  if (GenParticleTmp.isNonnull() && (GenParticleTmp->pdgId()==GenParticlePDG)) {
     GenParticleDaughter = GenParticleTmp;
-  }   
+  }
+
   return GenParticleDaughter;
 
 }
@@ -1560,8 +1571,9 @@ HiOniaAnalyzer::fillGenInfo()
 
         if ( abs(genMuon1->pdgId()) == 13 &&
              abs(genMuon2->pdgId()) == 13 &&
-             genMuon1->status() == 1 &&
-             genMuon2->status() == 1 ) {
+             ( genMuon1->status() == 1 || genMuon1->status() == 2 ) &&
+             ( genMuon2->status() == 1 || genMuon2->status() == 2 )
+             ) {
           
           Gen_QQ_type[Gen_QQ_size] = _isPromptMC ? 0 : 1; // prompt: 0, non-prompt: 1
           std::pair<int, std::pair<float, float> > MCinfo = findGenMCInfo(gen);
@@ -1583,7 +1595,6 @@ HiOniaAnalyzer::fillGenInfo()
             new((*Gen_QQ_mupl_4mom)[Gen_QQ_size])TLorentzVector(vMuon2);
             new((*Gen_QQ_mumi_4mom)[Gen_QQ_size])TLorentzVector(vMuon1);
           }
-
           Gen_QQ_size++;
         }
       }
@@ -2196,7 +2207,7 @@ HiOniaAnalyzer::hltReport(const edm::Event &iEvent ,const edm::EventSetup& iSetu
               std::cout << "[HiOniaAnalyzer::hltReport] --- Need to define a proper way to compute the total L1 prescale, default L1 prescale value set to 1 "  << std::endl;
             }
             else {
-              std::cout << "[HiOniaAnalyzer::hltReport] --- L1 prescale was NOT found for TriggerName " << triggerPathName  << " , default L1 prescale value set to 1 " <<  std::endl;
+              //std::cout << "[HiOniaAnalyzer::hltReport] --- L1 prescale was NOT found for TriggerName " << triggerPathName  << " , default L1 prescale value set to 1 " <<  std::endl;
             }
             //compute the total prescale = HLT prescale * L1 prescale
             mapTriggerNameToPrescaleFac_[triggerPathName] = hltPrescale * l1Prescale;
