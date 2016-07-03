@@ -17,6 +17,7 @@
 #include "DataFormats/L1Trigger/interface/L1EmParticleFwd.h"
 #include "DataFormats/L1Trigger/interface/L1MuonParticle.h"
 #include "DataFormats/L1Trigger/interface/L1MuonParticleFwd.h"
+#include "DataFormats/L1Trigger/interface/Muon.h"
 #include "DataFormats/L1Trigger/interface/L1JetParticle.h"
 #include "DataFormats/L1Trigger/interface/L1JetParticleFwd.h"
 #include "DataFormats/L1Trigger/interface/L1EtMissParticle.h"
@@ -35,15 +36,6 @@
 //ccla
 #include "FWCore/Framework/interface/EventPrincipal.h"
 #include "FWCore/Common/interface/Provenance.h"
-
-/* #include "CalibFormats/CaloTPG/interface/CaloTPGTranscoder.h" */
-/* #include "CalibFormats/CaloTPG/interface/CaloTPGRecord.h" */
-/* #include "CondFormats/L1TObjects/interface/L1CaloEtScale.h" */
-/* #include "CondFormats/DataRecord/interface/L1EmEtScaleRcd.h" */
-/* #include "CondFormats/L1TObjects/interface/L1RCTParameters.h" */
-/* #include "CondFormats/DataRecord/interface/L1RCTParametersRcd.h" */
-/* #include "L1Trigger/RegionalCaloTrigger/interface/L1RCT.h" */
-/* #include "L1Trigger/RegionalCaloTrigger/interface/L1RCTLookupTables.h"  */
 
 #include "HLTrigger/HLTanalyzers/interface/JetUtil.h"
 #include "DataFormats/METReco/interface/CaloMETCollection.h"
@@ -89,16 +81,7 @@ public:
 
   /** Analyze the Data */
   void analyze(const edm::Handle<edm::TriggerResults>                 & hltresults,
-	       const edm::Handle<l1extra::L1EmParticleCollection>     & l1extemi,
-	       const edm::Handle<l1extra::L1EmParticleCollection>     & l1extemn,
-	       const edm::Handle<l1extra::L1MuonParticleCollection>   & l1extmu,
-	       const edm::Handle<l1extra::L1JetParticleCollection>    & l1extjetc,
-	       const edm::Handle<l1extra::L1JetParticleCollection>    & l1extjetf,
-	       const edm::Handle<l1extra::L1JetParticleCollection>    & l1extjet,
-	       const edm::Handle<l1extra::L1JetParticleCollection>    & l1exttaujet,
-	       const edm::Handle<l1extra::L1EtMissParticleCollection> & l1extmet,
-	       const edm::Handle<l1extra::L1EtMissParticleCollection> & l1extmht,
-	       //const edm::Handle<l1extra::L1ParticleMapCollection>    & l1mapcoll,
+	       const edm::Handle< BXVector<l1t::Muon> >               & l1extmu,
 	       const edm::Handle<L1GlobalTriggerReadoutRecord>        & l1GTRR,
 	       const edm::Handle<L1GctHFBitCountsCollection>          & gctBitCounts,
 	       const edm::Handle<L1GctHFRingEtSumsCollection>         & gctRingSums,	       
@@ -112,24 +95,11 @@ private:
 
   // Tree variables
   float *hltppt, *hltpeta;
-  float *l1extiemet, *l1extieme, *l1extiemeta, *l1extiemphi;
-  float *l1extnemet, *l1extneme, *l1extnemeta, *l1extnemphi;
   float *l1extmupt, *l1extmue, *l1extmueta, *l1extmuphi;
   int *l1extmuchg;
-  float *l1extjtcet, *l1extjtce, *l1extjtceta, *l1extjtcphi;
-  float *l1extjtfet, *l1extjtfe, *l1extjtfeta, *l1extjtfphi;
-  float *l1extjtet, *l1extjte, *l1extjteta, *l1extjtphi;
-  float *l1exttauet, *l1exttaue, *l1exttaueta, *l1exttauphi;
-  float met, metphi, ettot;
-  float mht, mhtphi, ethad;
-  int L1EvtCnt,HltEvtCnt,nhltpart,nl1extiem,nl1extnem,nl1extmu,nl1extjetc,nl1extjetf,nl1extjet,nl1extjt,nl1exttau;
-  //int L1EvtCnt,HltEvtCnt,nhltpart,nl1extiem,nl1extnem,nl1extmu,nl1extjetc,nl1extjetf,nl1extjt,nl1exttau;
+  int L1EvtCnt,HltEvtCnt,nl1extmu;
   int *trigflag, *l1flag, *l1flag5Bx, *l1techflag, *l1techflag5Bx, *l1extmuiso, *l1extmumip, *l1extmufor, *l1extmurpc, *l1extmuqul;
   int *trigPrescl, *l1Prescl, *l1techPrescl; 
-  int l1hfRing1EtSumNegativeEta,l1hfRing2EtSumNegativeEta;
-  int l1hfRing1EtSumPositiveEta,l1hfRing2EtSumPositiveEta;
-  int l1hfTowerCountPositiveEtaRing1,l1hfTowerCountNegativeEtaRing1;
-  int l1hfTowerCountPositiveEtaRing2,l1hfTowerCountNegativeEtaRing2;
 
   TString * algoBitToName;
   TString * techBitToName;

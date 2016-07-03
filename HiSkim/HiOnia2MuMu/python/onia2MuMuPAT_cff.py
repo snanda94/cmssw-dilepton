@@ -41,9 +41,8 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True):
     addHLTL1Passthrough(process)
     #useL1MatchingWindowForSinglets(process)
 
-    process.patTrigger.collections.remove("hltL3MuonCandidates")
-    process.patTrigger.collections.append("hltHIL3MuonCandidates")
-
+    process.patTrigger.collections.append("hltGmtStage2Digis:Muon")
+   
     process.muonL1Info.maxDeltaR = 0.3
     process.muonL1Info.fallbackToME1 = True
     process.muonMatchHLTL1.maxDeltaR = 0.3
@@ -52,12 +51,14 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True):
     process.muonMatchHLTL2.maxDPtRel = 10.0
     process.muonMatchHLTL3.maxDeltaR = 0.1
     process.muonMatchHLTL3.maxDPtRel = 10.0
-    process.muonMatchHLTCtfTrack.maxDeltaR = 0.1
-    process.muonMatchHLTCtfTrack.maxDPtRel = 10.0
-    process.muonMatchHLTTrackMu.maxDeltaR = 0.1
-    process.muonMatchHLTTrackMu.maxDPtRel = 10.0
-    process.muonMatchHLTL3.matchedCuts = cms.string('coll("hltHIL3MuonCandidates")')
-        
+    process.muonMatchHLTL1.matchedCuts = cms.string('coll("hltGmtStage2Digis:Muon")')
+    process.muonMatchHLTL3.matchedCuts = cms.string('coll("hltL3MuonCandidates")')
+
+    process.patTrigger.collections.append("hltHIL3MuonCandidates") 
+    process.muonMatchHLTL3T.maxDeltaR = 0.1
+    process.muonMatchHLTL3T.maxDPtRel = 10.0
+    process.muonMatchHLTL3T.matchedCuts = cms.string('coll("hltHIL3MuonCandidates")') 
+      
     # Make a sequence
     process.patMuonSequence = cms.Sequence(
         process.hltOniaHI *
@@ -71,8 +72,8 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True):
     process.onia2MuMuPatGlbGlb = cms.EDProducer('HiOnia2MuMuPAT',
         muons                    = cms.InputTag("patMuonsWithTrigger"),
         beamSpotTag              = cms.InputTag("offlineBeamSpot"),
-        primaryVertexTag         = cms.InputTag("hiSelectedVertex"),
-        srcTracks                = cms.InputTag("hiGeneralTracks"),
+        primaryVertexTag         = cms.InputTag("offlinePrimaryVertices"),
+        srcTracks                = cms.InputTag("generalTracks"),
         genParticles             = cms.InputTag("genParticles"),
         # At least one muon must pass this selection
         higherPuritySelection    = cms.string("((isGlobalMuon && isTrackerMuon) || (innerTrack.isNonnull && genParticleRef(0).isNonnull)) && abs(innerTrack.dxy)<4 && abs(innerTrack.dz)<35"),
@@ -98,10 +99,6 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True):
         process.onia2MuMuPatGlbGlbFilter
     )
 
-    # output
-    process.load('Configuration.EventContent.EventContent_cff')
-    process.load("Configuration.EventContent.EventContentHeavyIons_cff")
-
     process.outOnia2MuMu = cms.OutputModule("PoolOutputModule",
         fileName = cms.untracked.string('onia2MuMuPAT.root'),
         outputCommands =  cms.untracked.vstring(
@@ -114,15 +111,10 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True):
             'keep *_offlinePrimaryVertices_*_*',                   # Primary vertices: you want these to compute impact parameters
             'keep *_offlineBeamSpot_*_*',                          # Beam spot: you want this for the same reason                                   
             'keep edmTriggerResults_TriggerResults_*_*',           # HLT info, per path (cheap)
-            'keep l1extraL1MuonParticles_hltL1extraParticles_*_*', # L1 info (cheap)
-            'keep l1extraL1MuonParticles_l1extraParticles_*_*',    # L1 info (cheap)
+            'keep *_hltGmtStage2Digis_*_*',                        # Stage2 L1 Muon info
             'keep L1GlobalTriggerReadoutRecord_*_*_*',             # For HLT and L1 prescales (cheap) 
             'keep L1GlobalTriggerRecord_*_*_*',                    # For HLT and L1 prescales (cheap)        
             'keep L1GtTriggerMenu_*_*_*',                          # L1 prescales 
-            'keep *_hiEvtPlane_*_*',                               # Event Plane collection
-            'keep *_hiSelectedVertex_*_*',                         # HI Primary vertices
-            'keep *_centralityBin_*_*',                            # Centrality bin collection
-            'keep *_hiCentrality_*_*'                              # HI Centrality collection
             ),
         SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('Onia2MuMuPAT') ) if Filter else cms.untracked.PSet()
     )

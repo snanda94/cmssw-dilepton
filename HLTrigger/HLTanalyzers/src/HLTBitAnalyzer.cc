@@ -141,6 +141,7 @@ void HLTBitAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iS
     if (errCnt == errMax())
       edm::LogWarning("OpenHLT") << "Maximum error count reached -- No more messages will be printed.";
   }
+  /*
 
   // run the analysis, passing required event fragments
   hlt_analysis_.analyze(
@@ -160,7 +161,7 @@ void HLTBitAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iS
     iSetup,
     iEvent,
     HltTree);
-
+  */
   evt_header_.analyze(iEvent, HltTree);
 
   // std::cout << " Ending Event Analysis" << std::endl;

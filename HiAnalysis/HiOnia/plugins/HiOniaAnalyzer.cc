@@ -553,15 +553,15 @@ HiOniaAnalyzer::HiOniaAnalyzer(const edm::ParameterSet& iConfig):
   JpsiMassMax = 3.5;
 
   JpsiPtMin = _ptbinranges[0];
-  std::cout << "Pt min = " << JpsiPtMin << std::endl;
+  //std::cout << "Pt min = " << JpsiPtMin << std::endl;
   JpsiPtMax = _ptbinranges[_ptbinranges.size()-1];
-  std::cout << "Pt max = " << JpsiPtMax << std::endl;
+  //std::cout << "Pt max = " << JpsiPtMax << std::endl;
 
      
   JpsiRapMin = _etabinranges[0];
-  std::cout << "Rap min = " << JpsiRapMin << std::endl;
+  //std::cout << "Rap min = " << JpsiRapMin << std::endl;
   JpsiRapMax = _etabinranges[_etabinranges.size()-1];
-  std::cout << "Rap max = " << JpsiRapMax << std::endl;
+  //std::cout << "Rap max = " << JpsiRapMax << std::endl;
   
 
   for(std::vector<std::string>::iterator it = theTriggerNames.begin(); it != theTriggerNames.end(); ++it){
@@ -2034,12 +2034,12 @@ HiOniaAnalyzer::beginJob()
       }
     }
   }
-
+  /*
   if (_combineCategories)
     myRecoMuonHistos->Print();
   else
     myRecoGlbMuonHistos->Print();
-
+  */
   //hStats = new TH1F("hStats","hStats;;Number of Events",2*NTRIGGERS+1,0,2*NTRIGGERS+1);
   hStats = fs->make<TH1F>("hStats","hStats;;Number of Events",2*NTRIGGERS+1,0,2*NTRIGGERS+1);
   hStats->GetXaxis()->SetBinLabel(1,"All");
@@ -2178,25 +2178,29 @@ HiOniaAnalyzer::hltReport(const edm::Event &iEvent ,const edm::EventSetup& iSetu
         if (collTriggerResults->accept( mapTriggernameToHLTbit[triggerPathName] ) ){
           mapTriggerNameToIntFired_[triggerPathName] = 3;
         }
-        //-------prescale factor------------
-        if ( hltPrescaleInit && hltPrescaleProvider.prescaleSet(iEvent,iSetup)>=0 ) {
-          std::pair<std::vector<std::pair<std::string,int> >,int> detailedPrescaleInfo = hltPrescaleProvider.prescaleValuesInDetail(iEvent, iSetup, triggerPathName);
-          //get HLT prescale info from hltPrescaleProvider     
-          const int hltPrescale = detailedPrescaleInfo.second;
-          //get L1 prescale info from hltPrescaleProvider
-          int l1Prescale = 1;     
-          if (detailedPrescaleInfo.first.size()==1) {
-            l1Prescale = detailedPrescaleInfo.first.at(0).second;
+        if (_isMC) {
+          mapTriggerNameToPrescaleFac_[triggerPathName] = 1;
+        } else {
+          //-------prescale factor------------
+          if ( hltPrescaleInit && hltPrescaleProvider.prescaleSet(iEvent,iSetup)>=0 ) {
+            std::pair<std::vector<std::pair<std::string,int> >,int> detailedPrescaleInfo = hltPrescaleProvider.prescaleValuesInDetail(iEvent, iSetup, triggerPathName);
+            //get HLT prescale info from hltPrescaleProvider     
+            const int hltPrescale = detailedPrescaleInfo.second;
+            //get L1 prescale info from hltPrescaleProvider
+            int l1Prescale = 1;     
+            if (detailedPrescaleInfo.first.size()==1) {
+              l1Prescale = detailedPrescaleInfo.first.at(0).second;
+            }
+            else if (detailedPrescaleInfo.first.size()>1) {
+              std::cout << "[HiOniaAnalyzer::hltReport] --- TriggerName " << triggerPathName << " has complex L1 seed " << hltConfig.hltL1GTSeeds(triggerPathName).at(0).second << std::endl;
+              std::cout << "[HiOniaAnalyzer::hltReport] --- Need to define a proper way to compute the total L1 prescale, default L1 prescale value set to 1 "  << std::endl;
+            }
+            else {
+              std::cout << "[HiOniaAnalyzer::hltReport] --- L1 prescale was NOT found for TriggerName " << triggerPathName  << " , default L1 prescale value set to 1 " <<  std::endl;
+            }
+            //compute the total prescale = HLT prescale * L1 prescale
+            mapTriggerNameToPrescaleFac_[triggerPathName] = hltPrescale * l1Prescale;
           }
-          else if (detailedPrescaleInfo.first.size()>1) {
-            std::cout << "[HiOniaAnalyzer::hltReport] --- TriggerName " << triggerPathName << " has complex L1 seed " << hltConfig.hltL1GTSeeds(triggerPathName).at(0).second << std::endl;
-            std::cout << "[HiOniaAnalyzer::hltReport] --- Need to define a proper way to compute the total L1 prescale, default L1 prescale value set to 1 "  << std::endl;
-          }
-          else {
-            std::cout << "[HiOniaAnalyzer::hltReport] --- L1 prescale was NOT found for TriggerName " << triggerPathName  << " , default L1 prescale value set to 1 " <<  std::endl;
-          }
-          //compute the total prescale = HLT prescale * L1 prescale
-          mapTriggerNameToPrescaleFac_[triggerPathName] = hltPrescale * l1Prescale;
         }
       }
     }
