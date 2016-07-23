@@ -847,7 +847,7 @@ void HLTAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetu
 			    pixelfedsize,
 			    pixelclusters,
                             HltTree); 
-
+    /*
     hlt_analysis_.analyze(
                           hltresults,
                           l1extemi,
@@ -865,7 +865,7 @@ void HLTAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetu
                           iSetup,
                           iEvent,
                           HltTree);
-
+    */
     bjet_analysis_.analyze(
                            hRawBJets, 
                            hCorrectedBJets,

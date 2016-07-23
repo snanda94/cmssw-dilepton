@@ -32,45 +32,26 @@ HLTBitAnalyzer::HLTBitAnalyzer(edm::ParameterSet const& conf)  :
   // If your module takes parameters, here is where you would define
   // their names and types, and access them to initialize internal
   // variables. Example as follows:
-  std::cout << " Beginning HLTBitAnalyzer Analysis " << std::endl;
-
-  l1extramu_        = conf.getParameter<std::string>   ("l1extramu");
-  m_l1extramu       = edm::InputTag(l1extramu_, "");
+  std::cout << " Beginning Stage2 HLTBitAnalyzer Analysis " << std::endl;
 
   // read the L1Extra collection name, and add the instance names as needed
-  l1extramc_        = conf.getParameter<std::string>   ("l1extramc");
-  m_l1extraemi      = edm::InputTag(l1extramc_, "Isolated");
-  m_l1extraemn      = edm::InputTag(l1extramc_, "NonIsolated");
-  m_l1extrajetc     = edm::InputTag(l1extramc_, "Central");
-  m_l1extrajetf     = edm::InputTag(l1extramc_, "Forward");
-  m_l1extrajet      = edm::InputTag("gctInternJetProducer","Internal","ANALYSIS");
-  m_l1extrataujet   = edm::InputTag(l1extramc_, "Tau");
-  m_l1extramet      = edm::InputTag(l1extramc_, "MET");
-  m_l1extramht      = edm::InputTag(l1extramc_, "MHT");
+
+  m_l1stage2mu      = edm::InputTag("hltGmtStage2Digis",  "Muon");
+  m_l1stage2eg      = edm::InputTag("hltCaloStage2Digis", "EGamma");
+  m_l1stage2jet     = edm::InputTag("hltCaloStage2Digis", "Jet");
+  m_l1stage2tau     = edm::InputTag("hltCaloStage2Digis", "Tau");
+  m_l1stage2ets     = edm::InputTag("hltCaloStage2Digis", "EtSum");
+  m_l1stage2ct      = edm::InputTag("hltCaloStage2Digis", "CaloTower");
 
   hltresults_       = conf.getParameter<edm::InputTag> ("hltresults");
-  gtReadoutRecord_  = conf.getParameter<edm::InputTag> ("l1GtReadoutRecord");
-  gtObjectMap_      = conf.getParameter<edm::InputTag> ("l1GtObjectMapRecord");
 
-  gctBitCounts_        = edm::InputTag( conf.getParameter<edm::InputTag>("l1GctHFBitCounts").label(), "" );
-  gctRingSums_         = edm::InputTag( conf.getParameter<edm::InputTag>("l1GctHFRingSums").label(), "" );
-
-  hltresultsToken_ = consumes<edm::TriggerResults>(hltresults_);
-  genEventInfoToken_ = consumes<GenEventInfoProduct>(genEventInfo_);
-  l1extramuToken_ = consumes<l1extra::L1MuonParticleCollection>(m_l1extramu);
-  l1extraemiToken_ = consumes<l1extra::L1EmParticleCollection>(m_l1extraemi);
-  l1extraemnToken_ = consumes<l1extra::L1EmParticleCollection>(m_l1extraemn);
-  
-  l1extrajetcToken_ = consumes<l1extra::L1JetParticleCollection>(m_l1extrajetc);
-  l1extrajetfToken_ = consumes<l1extra::L1JetParticleCollection>(m_l1extrajetf);
-  l1extrajetToken_ = consumes<l1extra::L1JetParticleCollection>(m_l1extrajet);
-  l1extrataujetToken_ = consumes<l1extra::L1JetParticleCollection>(m_l1extrataujet);
-  l1extrametToken_ = consumes<l1extra::L1EtMissParticleCollection>(m_l1extramet);
-  l1extramhtToken_ = consumes<l1extra::L1EtMissParticleCollection>(m_l1extramht);
-  gtReadoutRecordToken_ = consumes<L1GlobalTriggerReadoutRecord>(gtReadoutRecord_);
-  gtObjectMapToken_ = consumes<L1GlobalTriggerObjectMapRecord>(gtObjectMap_);
-  gctBitCountsToken_ = consumes<L1GctHFBitCountsCollection>(gctBitCounts_);
-  gctRingSumsToken_ = consumes<L1GctHFRingEtSumsCollection>(gctRingSums_);
+  hltresultsToken_   = consumes<edm::TriggerResults>(hltresults_);
+  l1stage2muToken_   = consumes< BXVector<l1t::Muon> >(m_l1stage2mu);
+  l1stage2egToken_   = consumes< BXVector<l1t::EGamma> >(m_l1stage2eg);
+  l1stage2jetToken_  = consumes< BXVector<l1t::Jet> >(m_l1stage2jet);
+  l1stage2tauToken_  = consumes< BXVector<l1t::Tau> >(m_l1stage2tau);
+  l1stage2etsToken_  = consumes< BXVector<l1t::EtSum> >(m_l1stage2ets);
+  l1stage2ctToken_   = consumes< BXVector<l1t::CaloTower> >(m_l1stage2ct);
   
   _UseTFileService = conf.getUntrackedParameter<bool>("UseTFileService",false);
 	
@@ -101,62 +82,46 @@ HLTBitAnalyzer::HLTBitAnalyzer(edm::ParameterSet const& conf)  :
 void HLTBitAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetup) {
 
   edm::Handle<edm::TriggerResults>                  hltresults;
-  edm::Handle<l1extra::L1EmParticleCollection>      l1extemi, l1extemn;
-  edm::Handle<l1extra::L1MuonParticleCollection>    l1extmu;
-  edm::Handle<l1extra::L1JetParticleCollection>     l1extjetc, l1extjetf, l1extjet, l1exttaujet;
-  edm::Handle<l1extra::L1EtMissParticleCollection>  l1extmet,l1extmht;
-  edm::Handle<L1GlobalTriggerReadoutRecord>         l1GtRR;
-  edm::Handle<L1GlobalTriggerObjectMapRecord>       l1GtOMRec;
-  edm::Handle<L1GlobalTriggerObjectMap>             l1GtOM;
-  edm::Handle< L1GctHFBitCountsCollection >         gctBitCounts ;
-  edm::Handle< L1GctHFRingEtSumsCollection >        gctRingSums ;
+  edm::Handle< BXVector<l1t::EGamma> >              l1stage2eg;
+  edm::Handle< BXVector<l1t::Muon> >                l1stage2mu;
+  edm::Handle< BXVector<l1t::Jet> >                 l1stage2jet;
+  edm::Handle< BXVector<l1t::Tau> >                 l1stage2tau;
+  edm::Handle< BXVector<l1t::EtSum> >               l1stage2ets;
+  edm::Handle< BXVector<l1t::CaloTower> >           l1stage2ct;
 
   // extract the collections from the event, check their validity and log which are missing
   std::vector<MissingCollectionInfo> missing;
 
   getCollection( iEvent, missing, hltresults,      hltresults_,        hltresultsToken_,      kHltresults );
-  getCollection( iEvent, missing, l1extemi,        m_l1extraemi,       l1extraemiToken_,      kL1extemi );
-  getCollection( iEvent, missing, l1extemn,        m_l1extraemn,       l1extraemnToken_,      kL1extemn );
-  getCollection( iEvent, missing, l1extmu,         m_l1extramu,        l1extramuToken_,       kL1extmu );
-  getCollection( iEvent, missing, l1extjetc,       m_l1extrajetc,      l1extrajetcToken_,     kL1extjetc );
-  getCollection( iEvent, missing, l1extjetf,       m_l1extrajetf,      l1extrajetfToken_,     kL1extjetf );
-  getCollection( iEvent, missing, l1extjet,        m_l1extrajet,       l1extrajetToken_,      kL1extjet );
-  getCollection( iEvent, missing, l1exttaujet,     m_l1extrataujet,    l1extrataujetToken_,   kL1exttaujet );
-  getCollection( iEvent, missing, l1extmet,        m_l1extramet,       l1extrametToken_,      kL1extmet );
-  getCollection( iEvent, missing, l1extmht,        m_l1extramht,       l1extramhtToken_,      kL1extmht );
-  getCollection( iEvent, missing, l1GtRR,          gtReadoutRecord_,   gtReadoutRecordToken_, kL1GtRR );
-  getCollection( iEvent, missing, l1GtOMRec,       gtObjectMap_,       gtObjectMapToken_,     kL1GtOMRec );
-  getCollection( iEvent, missing, gctBitCounts,    gctBitCounts_,      gctBitCountsToken_,    kL1GctBitCounts );
-  getCollection( iEvent, missing, gctRingSums,     gctRingSums_,       gctRingSumsToken_,     kL1GctRingSums );
+  getCollection( iEvent, missing, l1stage2eg,      m_l1stage2eg,       l1stage2egToken_,      "L1 Stage2 EGamma objects" );
+  getCollection( iEvent, missing, l1stage2mu,      m_l1stage2mu,       l1stage2muToken_,      "L1 Stage2 Muon objects" );
+  getCollection( iEvent, missing, l1stage2jet,     m_l1stage2jet,      l1stage2jetToken_,     "L1 Stage2 Jet objects" );
+  getCollection( iEvent, missing, l1stage2tau,     m_l1stage2tau,      l1stage2tauToken_,     "L1 Stage2 Tau objects" );
+  getCollection( iEvent, missing, l1stage2ets,     m_l1stage2ets,      l1stage2etsToken_,     "L1 Stage2 EtSum objects" );
+  getCollection( iEvent, missing, l1stage2ct,      m_l1stage2ct,       l1stage2ctToken_,      "L1 Stage2 CaloTower objects" );
 
 
   // print missing collections
   if (not missing.empty() and (errCnt < errMax())) {
     errCnt++;
     std::stringstream out;       
-    out <<  "OpenHLT analyser - missing collections:";
+    out <<  "OpenHLT Stage2 analyser - missing collections:";
     BOOST_FOREACH(const MissingCollectionInfo & entry, missing)
       out << "\n\t" << entry.first << ": " << entry.second->encode();
     edm::LogPrint("OpenHLT") << out.str() << std::endl; 
     if (errCnt == errMax())
       edm::LogWarning("OpenHLT") << "Maximum error count reached -- No more messages will be printed.";
   }
-
+  
   // run the analysis, passing required event fragments
   hlt_analysis_.analyze(
     hltresults,
-    l1extemi,
-    l1extemn,
-    l1extmu,
-    l1extjetc,
-    l1extjetf,
-    l1extjet,
-    l1exttaujet,
-    l1extmet,
-    l1extmht,
-    l1GtRR,
-    gctBitCounts,
-    gctRingSums,
+    l1stage2eg,
+    l1stage2mu,
+    l1stage2jet,
+    l1stage2tau,
+    l1stage2ets,
+    l1stage2ct,
     iSetup,
     iEvent,
     HltTree);

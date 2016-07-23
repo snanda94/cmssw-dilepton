@@ -13,20 +13,14 @@
 #include "FWCore/Common/interface/TriggerNames.h"
 
 // L1 related
-#include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
-#include "L1Trigger/GlobalTriggerAnalyzer/interface/L1GtUtils.h"
-#include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
-#include "CondFormats/DataRecord/interface/L1GtTriggerMenuRcd.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetup.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
+#include "L1Trigger/L1TGlobal/interface/L1TGlobalUtil.h"
+#include "CondFormats/L1TObjects/interface/L1TUtmTriggerMenu.h"
+#include "CondFormats/DataRecord/interface/L1TUtmTriggerMenuRcd.h"
 
 HLTInfo::HLTInfo() {
 
   //set parameter defaults 
   _Debug=false;
-  _OR_BXes=false;
-  UnpackBxInEvent=1;
 }
 
 void HLTInfo::beginRun(const edm::Run& run, const edm::EventSetup& c){ 
@@ -63,142 +57,110 @@ void HLTInfo::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   }
 
   dummyBranches_ = pSet.getUntrackedParameter<std::vector<std::string> >("dummyBranches",std::vector<std::string>(0));
-
+  
   HltEvtCnt = 0;
   const int kMaxTrigFlag = 10000;
   trigflag = new int[kMaxTrigFlag];
   trigPrescl = new int[kMaxTrigFlag];
-  L1EvtCnt = 0;
-  const int kMaxL1Flag = 10000;
-  l1flag = new int[kMaxL1Flag];
-  l1flag5Bx = new int[kMaxTrigFlag];
-  l1Prescl = new int[kMaxL1Flag];
-  l1techflag = new int[kMaxL1Flag];
-  l1techflag5Bx = new int[kMaxTrigFlag];
-  l1techPrescl = new int[kMaxTrigFlag];
+  L1TEvtCnt = 0;
+  const int kMaxL1TFlag = 10000;
+  l1TFinalFlag = new int[kMaxL1TFlag];
+  l1TPrescl = new int[kMaxL1TFlag];
   const int kMaxHLTPart = 10000;
   hltppt = new float[kMaxHLTPart];
   hltpeta = new float[kMaxHLTPart];
-  const int kMaxL1ExtEmI = 10000;
-  l1extiemet = new float[kMaxL1ExtEmI];
-  l1extieme = new float[kMaxL1ExtEmI];
-  l1extiemeta = new float[kMaxL1ExtEmI];
-  l1extiemphi = new float[kMaxL1ExtEmI];
-  const int kMaxL1ExtEmN = 10000;
-  l1extnemet = new float[kMaxL1ExtEmN];
-  l1extneme = new float[kMaxL1ExtEmN];
-  l1extnemeta = new float[kMaxL1ExtEmN];
-  l1extnemphi = new float[kMaxL1ExtEmN];
-  const int kMaxL1ExtMu = 10000;
-  l1extmupt = new float[kMaxL1ExtMu];
-  l1extmue = new float[kMaxL1ExtMu];
-  l1extmueta = new float[kMaxL1ExtMu];
-  l1extmuphi = new float[kMaxL1ExtMu];
-  l1extmuiso = new int[kMaxL1ExtMu];
-  l1extmumip = new int[kMaxL1ExtMu];
-  l1extmufor = new int[kMaxL1ExtMu];
-  l1extmurpc = new int[kMaxL1ExtMu];
-  l1extmuqul = new int[kMaxL1ExtMu];
-  l1extmuchg = new int[kMaxL1ExtMu];
-  const int kMaxL1ExtJtC = 10000;
-  l1extjtcet = new float[kMaxL1ExtJtC];
-  l1extjtce = new float[kMaxL1ExtJtC];
-  l1extjtceta = new float[kMaxL1ExtJtC];
-  l1extjtcphi = new float[kMaxL1ExtJtC];
-  const int kMaxL1ExtJtF = 10000;
-  l1extjtfet = new float[kMaxL1ExtJtF];
-  l1extjtfe = new float[kMaxL1ExtJtF];
-  l1extjtfeta = new float[kMaxL1ExtJtF];
-  l1extjtfphi = new float[kMaxL1ExtJtF];
-  const int kMaxL1ExtJt = 10000;
-  l1extjtet = new float[kMaxL1ExtJt];
-  l1extjte = new float[kMaxL1ExtJt];
-  l1extjteta = new float[kMaxL1ExtJt];
-  l1extjtphi = new float[kMaxL1ExtJt];
-  const int kMaxL1ExtTau = 10000;
-  l1exttauet = new float[kMaxL1ExtTau];
-  l1exttaue = new float[kMaxL1ExtTau];
-  l1exttaueta = new float[kMaxL1ExtTau];
-  l1exttauphi = new float[kMaxL1ExtTau];
+  const int kMaxL1Stage2EG = 10000;
+  l1stage2eget = new float[kMaxL1Stage2EG];
+  l1stage2ege = new float[kMaxL1Stage2EG];
+  l1stage2egeta = new float[kMaxL1Stage2EG];
+  l1stage2egphi = new float[kMaxL1Stage2EG];
+  l1stage2egbx = new int[kMaxL1Stage2EG];
+  const int kMaxL1Stage2Mu = 10000;
+  l1stage2mupt = new float[kMaxL1Stage2Mu];
+  l1stage2mue = new float[kMaxL1Stage2Mu];
+  l1stage2mueta = new float[kMaxL1Stage2Mu];
+  l1stage2muphi = new float[kMaxL1Stage2Mu];
+  l1stage2muiso = new int[kMaxL1Stage2Mu];
+  l1stage2muqul = new int[kMaxL1Stage2Mu];
+  l1stage2muchg = new int[kMaxL1Stage2Mu];
+  l1stage2mubx = new int[kMaxL1Stage2Mu];
+  const int kMaxL1Stage2Jt = 10000;
+  l1stage2jtet = new float[kMaxL1Stage2Jt];
+  l1stage2jte = new float[kMaxL1Stage2Jt];
+  l1stage2jteta = new float[kMaxL1Stage2Jt];
+  l1stage2jtphi = new float[kMaxL1Stage2Jt];
+  l1stage2jtbx = new int[kMaxL1Stage2Jt];
+  const int kMaxL1Stage2Tau = 10000;
+  l1stage2tauet = new float[kMaxL1Stage2Tau];
+  l1stage2taue = new float[kMaxL1Stage2Tau];
+  l1stage2taueta = new float[kMaxL1Stage2Tau];
+  l1stage2tauphi = new float[kMaxL1Stage2Tau];
+  l1stage2taubx = new int[kMaxL1Stage2Tau];
+  const int kMaxL1Stage2EtS = 10000;
+  l1stage2etset = new int[kMaxL1Stage2EtS];
+  l1stage2etsphi = new int[kMaxL1Stage2EtS];
+  l1stage2etstype = new int[kMaxL1Stage2EtS];
+  l1stage2etsbx = new int[kMaxL1Stage2EtS];
+  const int kMaxL1Stage2CT = 10000;
+  l1stage2ctetem = new int[kMaxL1Stage2CT];
+  l1stage2cteth = new int[kMaxL1Stage2CT];
+  l1stage2ctetc = new int[kMaxL1Stage2CT];
+  l1stage2cteta = new int[kMaxL1Stage2CT];
+  l1stage2ctphi = new int[kMaxL1Stage2CT];
+  l1stage2ctbx = new int[kMaxL1Stage2CT];
 
-  algoBitToName = new TString[128];
-  techBitToName = new TString[128];
+  algoBitToName.clear();
+  
+  HltTree->Branch("NL1EGamma",&nl1stage2eg,"NL1Stage2EGamma/I");
+  HltTree->Branch("L1Stage2EGammaEt",l1stage2eget,"L1Stage2EGammaEt[NL1Stage2EGamma]/F");
+  HltTree->Branch("L1Stage2EGammaE",l1stage2ege,"L1Stage2EGammaE[NL1Stage2EGamma]/F");
+  HltTree->Branch("L1Stage2EGammaEta",l1stage2egeta,"L1Stage2EGammaEta[NL1Stage2EGamma]/F");
+  HltTree->Branch("L1Stage2EGammaPhi",l1stage2egphi,"L1Stage2EGammaPhi[NL1Stage2EGamma]/F");
+  HltTree->Branch("L1Stage2EGammaBx",l1stage2egbx,"L1Stage2EGammaBx[NL1Stage2EGamma]/I");
+  HltTree->Branch("NL1Stage2Muon",&nl1stage2mu,"NL1Stage2Muon/I");
+  HltTree->Branch("L1Stage2MuonPt",l1stage2mupt,"L1Stage2MuonPt[NL1Stage2Muon]/F");
+  HltTree->Branch("L1Stage2MuonE",l1stage2mue,"L1Stage2MuonE[NL1Stage2Muon]/F");
+  HltTree->Branch("L1Stage2MuonEta",l1stage2mueta,"L1Stage2MuonEta[NL1Stage2Muon]/F");
+  HltTree->Branch("L1Stage2MuonPhi",l1stage2muphi,"L1Stage2MuonPhi[NL1Stage2Muon]/F");
+  HltTree->Branch("L1Stage2MuonIsol",l1stage2muiso,"L1Stage2MuonIsol[NL1Stage2Muon]/I");
+  HltTree->Branch("L1Stage2MuonQual",l1stage2muqul,"L1Stage2MuonQual[NL1Stage2Muon]/I");
+  HltTree->Branch("L1Stage2MuonChg",l1stage2muchg,"L1Stage2MuonChg[NL1Stage2Muon]/I");
+  HltTree->Branch("L1Stage2MuonBx",l1stage2mubx,"L1Stage2MuonBx[NL1Stage2Muon]/I");
+  HltTree->Branch("NL1Stage2Jet",&nl1stage2jet,"NL1Stage2Jet/I");
+  HltTree->Branch("L1Stage2JetEt",l1stage2jtet,"L1Stage2JetEt[NL1Stage2Jet]/F");
+  HltTree->Branch("L1Stage2JetE",l1stage2jte,"L1Stage2JetE[NL1Stage2Jet]/F");
+  HltTree->Branch("L1Stage2JetEta",l1stage2jteta,"L1Stage2JetEta[NL1Stage2Jet]/F");
+  HltTree->Branch("L1Stage2JetPhi",l1stage2jtphi,"L1Stage2JetPhi[NL1Stage2Jet]/F");
+  HltTree->Branch("L1Stage2JetBx",l1stage2jtbx,"L1Stage2JetBx[NL1Stage2Jet]/I");
+  HltTree->Branch("NL1Stage2Tau",&nl1stage2tau,"NL1Stage2Tau/I");
+  HltTree->Branch("L1Stage2TauEt",l1stage2tauet,"L1Stage2TauEt[NL1Stage2Tau]/F");
+  HltTree->Branch("L1Stage2TauE",l1stage2taue,"L1Stage2TauE[NL1Stage2Tau]/F");
+  HltTree->Branch("L1Stage2TauEta",l1stage2taueta,"L1Stage2TauEta[NL1Stage2Tau]/F");
+  HltTree->Branch("L1Stage2TauPhi",l1stage2tauphi,"L1Stage2TauPhi[NL1Stage2Tau]/F");
+  HltTree->Branch("L1Stage2TauBx",l1stage2taubx,"L1Stage2TauBx[NL1Stage2Tau]/I");
+  HltTree->Branch("NL1Stage2EtSum",&nl1stage2ets,"NL1Stage2EtSum/I");
+  HltTree->Branch("L1Stage2EtSumEt",l1stage2etset,"L1Stage2EtSumEt[NL1Stage2EtSum]/I");
+  HltTree->Branch("L1Stage2EtSumPhi",l1stage2etsphi,"L1Stage2EtSumPhi[NL1Stage2EtSum]/I");
+  HltTree->Branch("L1Stage2EtSumType",l1stage2etstype,"L1Stage2EtSumType[NL1Stage2EtSum]/I");
+  HltTree->Branch("L1Stage2EtSumBx",l1stage2etsbx,"L1Stage2EtSumBx[NL1Stage2EtSum]/I");
+  HltTree->Branch("NL1Stage2CaloTower",&nl1stage2ct,"NL1Stage2CaloTower/I");
+  HltTree->Branch("L1Stage2CaloTowerEtEM",l1stage2ctetem,"L1Stage2CaloTowerEtEM[NL1Stage2CaloTower]/I");
+  HltTree->Branch("L1Stage2CaloTowerEtHad",l1stage2cteth,"L1Stage2CaloTowerEtHad[NL1Stage2CaloTower]/I");
+  HltTree->Branch("L1Stage2CaloTowerEtCalo",l1stage2ctetc,"L1Stage2CaloTowerEtCalo[NL1Stage2CaloTower]/I");
+  HltTree->Branch("L1Stage2CaloTowerEta",l1stage2cteta,"L1Stage2CaloTowerEta[NL1Stage2CaloTower]/I");
+  HltTree->Branch("L1Stage2CaloTowerPhi",l1stage2ctphi,"L1Stage2CaloTowerPhi[NL1Stage2CaloTower]/I");
+  HltTree->Branch("L1Stage2CaloTowerBx",l1stage2ctbx,"L1Stage2CaloTowerBx[NL1Stage2CaloTower]/I");
 
-  HltTree->Branch("NL1IsolEm",&nl1extiem,"NL1IsolEm/I");
-  HltTree->Branch("L1IsolEmEt",l1extiemet,"L1IsolEmEt[NL1IsolEm]/F");
-  HltTree->Branch("L1IsolEmE",l1extieme,"L1IsolEmE[NL1IsolEm]/F");
-  HltTree->Branch("L1IsolEmEta",l1extiemeta,"L1IsolEmEta[NL1IsolEm]/F");
-  HltTree->Branch("L1IsolEmPhi",l1extiemphi,"L1IsolEmPhi[NL1IsolEm]/F");
-  HltTree->Branch("NL1NIsolEm",&nl1extnem,"NL1NIsolEm/I");
-  HltTree->Branch("L1NIsolEmEt",l1extnemet,"L1NIsolEmEt[NL1NIsolEm]/F");
-  HltTree->Branch("L1NIsolEmE",l1extneme,"L1NIsolEmE[NL1NIsolEm]/F");
-  HltTree->Branch("L1NIsolEmEta",l1extnemeta,"L1NIsolEmEta[NL1NIsolEm]/F");
-  HltTree->Branch("L1NIsolEmPhi",l1extnemphi,"L1NIsolEmPhi[NL1NIsolEm]/F");
-  HltTree->Branch("NL1Mu",&nl1extmu,"NL1Mu/I");
-  HltTree->Branch("L1MuPt",l1extmupt,"L1MuPt[NL1Mu]/F");
-  HltTree->Branch("L1MuE",l1extmue,"L1MuE[NL1Mu]/F");
-  HltTree->Branch("L1MuEta",l1extmueta,"L1MuEta[NL1Mu]/F");
-  HltTree->Branch("L1MuPhi",l1extmuphi,"L1MuPhi[NL1Mu]/F");
-  HltTree->Branch("L1MuIsol",l1extmuiso,"L1MuIsol[NL1Mu]/I");
-  HltTree->Branch("L1MuMip",l1extmumip,"L1MuMip[NL1Mu]/I");
-  HltTree->Branch("L1MuFor",l1extmufor,"L1MuFor[NL1Mu]/I");
-  HltTree->Branch("L1MuRPC",l1extmurpc,"L1MuRPC[NL1Mu]/I");
-  HltTree->Branch("L1MuQal",l1extmuqul,"L1MuQal[NL1Mu]/I");
-  HltTree->Branch("L1MuChg",l1extmuchg,"L1MuChg[NL1Mu]/I");
-  HltTree->Branch("NL1CenJet",&nl1extjetc,"NL1CenJet/I");
-  HltTree->Branch("L1CenJetEt",l1extjtcet,"L1CenJetEt[NL1CenJet]/F");
-  HltTree->Branch("L1CenJetE",l1extjtce,"L1CenJetE[NL1CenJet]/F");
-  HltTree->Branch("L1CenJetEta",l1extjtceta,"L1CenJetEta[NL1CenJet]/F");
-  HltTree->Branch("L1CenJetPhi",l1extjtcphi,"L1CenJetPhi[NL1CenJet]/F");
-  HltTree->Branch("NL1ForJet",&nl1extjetf,"NL1ForJet/I");
-  HltTree->Branch("L1ForJetEt",l1extjtfet,"L1ForJetEt[NL1ForJet]/F");
-  HltTree->Branch("L1ForJetE",l1extjtfe,"L1ForJetE[NL1ForJet]/F");
-  HltTree->Branch("L1ForJetEta",l1extjtfeta,"L1ForJetEta[NL1ForJet]/F");
-  HltTree->Branch("L1ForJetPhi",l1extjtfphi,"L1ForJetPhi[NL1ForJet]/F");
-  /*
-  HltTree->Branch("NL1Jet",&nl1extjet,"NL1Jet/I");
-  HltTree->Branch("L1JetEt",l1extjtet,"L1JetEt[NL1Jet]/F");
-  HltTree->Branch("L1JetE",l1extjte,"L1JetE[NL1Jet]/F");
-  HltTree->Branch("L1JetEta",l1extjteta,"L1JetEta[NL1Jet]/F");
-  HltTree->Branch("L1JetPhi",l1extjtphi,"L1JetPhi[NL1Jet]/F");
-  */
-  HltTree->Branch("NL1Tau",&nl1exttau,"NL1Tau/I");
-  HltTree->Branch("L1TauEt",l1exttauet,"L1TauEt[NL1Tau]/F");
-  HltTree->Branch("L1TauE",l1exttaue,"L1TauE[NL1Tau]/F");
-  HltTree->Branch("L1TauEta",l1exttaueta,"L1TauEta[NL1Tau]/F");
-  HltTree->Branch("L1TauPhi",l1exttauphi,"L1TauPhi[NL1Tau]/F");
-  HltTree->Branch("L1Met",&met,"L1Met/F");
-  HltTree->Branch("L1MetPhi",&metphi,"L1MetPhi/F");
-  HltTree->Branch("L1EtTot",&ettot,"L1EtTot/F");
-  HltTree->Branch("L1Mht",&mht,"L1Mht/F");
-  HltTree->Branch("L1MhtPhi",&mhtphi,"L1MhtPhi/F");
-  HltTree->Branch("L1EtHad",&ethad,"L1EtHad/F");
-
-  // L1GctJetCounts
-  HltTree->Branch("L1HfRing1EtSumPositiveEta",&l1hfRing1EtSumPositiveEta,"L1HfRing1EtSumPositiveEta/I");
-  HltTree->Branch("L1HfRing2EtSumPositiveEta",&l1hfRing2EtSumPositiveEta,"L1HfRing2EtSumPositiveEta/I");
-  HltTree->Branch("L1HfRing1EtSumNegativeEta",&l1hfRing1EtSumNegativeEta,"L1HfRing1EtSumNegativeEta/I");
-  HltTree->Branch("L1HfRing2EtSumNegativeEta",&l1hfRing2EtSumNegativeEta,"L1HfRing2EtSumNegativeEta/I");
-  HltTree->Branch("L1HfTowerCountPositiveEtaRing1",&l1hfTowerCountPositiveEtaRing1,"L1HfTowerCountPositiveEtaRing1/I");
-  HltTree->Branch("L1HfTowerCountNegativeEtaRing1",&l1hfTowerCountNegativeEtaRing1,"L1HfTowerCountNegativeEtaRing1/I");
-  HltTree->Branch("L1HfTowerCountPositiveEtaRing2",&l1hfTowerCountPositiveEtaRing2,"L1HfTowerCountPositiveEtaRing2/I");
-  HltTree->Branch("L1HfTowerCountNegativeEtaRing2",&l1hfTowerCountNegativeEtaRing2,"L1HfTowerCountNegativeEtaRing2/I");
 }
 
 /* **Analyze the event** */
 void HLTInfo::analyze(const edm::Handle<edm::TriggerResults>                 & hltresults,
-                      const edm::Handle<l1extra::L1EmParticleCollection>     & L1ExtEmIsol,
-                      const edm::Handle<l1extra::L1EmParticleCollection>     & L1ExtEmNIsol,
-                      const edm::Handle<l1extra::L1MuonParticleCollection>   & L1ExtMu,
-                      const edm::Handle<l1extra::L1JetParticleCollection>    & L1ExtJetC,
-                      const edm::Handle<l1extra::L1JetParticleCollection>    & L1ExtJetF,
-		      const edm::Handle<l1extra::L1JetParticleCollection>    & L1ExtJet,
-                      const edm::Handle<l1extra::L1JetParticleCollection>    & L1ExtTau,
-                      const edm::Handle<l1extra::L1EtMissParticleCollection> & L1ExtMet,
-                      const edm::Handle<l1extra::L1EtMissParticleCollection> & L1ExtMht,
-                      const edm::Handle<L1GlobalTriggerReadoutRecord>        & L1GTRR,
-		      const edm::Handle<L1GctHFBitCountsCollection>          & gctBitCounts,
-		      const edm::Handle<L1GctHFRingEtSumsCollection>         & gctRingSums,
+                      const edm::Handle< BXVector<l1t::EGamma> >             & L1Stage2EGamma,
+                      const edm::Handle< BXVector<l1t::Muon> >               & L1Stage2Muon,
+                      const edm::Handle< BXVector<l1t::Jet> >                & L1Stage2Jet,
+                      const edm::Handle< BXVector<l1t::Tau> >                & L1Stage2Tau,
+                      const edm::Handle< BXVector<l1t::EtSum> >              & L1Stage2EtSum,
+                      const edm::Handle< BXVector<l1t::CaloTower> >          & L1Stage2CaloTower,
 		      edm::EventSetup const& eventSetup,
 		      edm::Event const& iEvent,
                       TTree* HltTree) {
@@ -241,12 +203,6 @@ void HLTInfo::analyze(const edm::Handle<edm::TriggerResults>                 & h
       HltEvtCnt++;
     }
     // ...Fill the corresponding accepts in branch-variables
-    //HLTConfigProvider const&  hltConfig = hltPrescaleProvider_->hltConfigProvider();
-    //std::cout << "Number of prescale sets: " << hltConfig.prescaleSize() << std::endl;
-    //std::cout << "Number of HLT paths: " << hltConfig.size() << std::endl;
-    //int presclSet = hltPrescaleProvider_->prescaleSet(iEvent, eventSetup);
-    //std::cout<<"\tPrescale set number: "<< presclSet <<std::endl; 
-
     for (int itrig = 0; itrig != ntrigs; ++itrig){
 
       std::string trigName=triggerNames.triggerName(itrig);
@@ -265,418 +221,163 @@ void HLTInfo::analyze(const edm::Handle<edm::TriggerResults>                 & h
     }
   }
   else { if (_Debug) std::cout << "%HLTInfo -- No Trigger Result" << std::endl;}
-
-  /////////// Analyzing L1Extra objects //////////
-
-  const int maxL1EmIsol = 4;
-  for (int i=0; i!=maxL1EmIsol; ++i){
-    l1extiemet[i] = -999.;
-    l1extieme[i] = -999.;
-    l1extiemeta[i] = -999.;
-    l1extiemphi[i] = -999.;
-  }
-  if (L1ExtEmIsol.isValid()) {
-    nl1extiem = maxL1EmIsol;
-    l1extra::L1EmParticleCollection myl1iems;
-    myl1iems = * L1ExtEmIsol;
-    std::sort(myl1iems.begin(),myl1iems.end(),EtGreater());
-    int il1exem = 0;
-    for (l1extra::L1EmParticleCollection::const_iterator emItr = myl1iems.begin(); emItr != myl1iems.end(); ++emItr) {
-      l1extiemet[il1exem] = emItr->et();
-      l1extieme[il1exem] = emItr->energy();
-      l1extiemeta[il1exem] = emItr->eta();
-      l1extiemphi[il1exem] = emItr->phi();
-      il1exem++;
-    }
-  }
-  else {
-    nl1extiem = 0;
-    if (_Debug) std::cout << "%HLTInfo -- No Isolated L1 EM object" << std::endl;
-  }
-
-  const int maxL1EmNIsol = 4;
-  for (int i=0; i!=maxL1EmNIsol; ++i){
-    l1extnemet[i] = -999.;
-    l1extneme[i] = -999.;
-    l1extnemeta[i] = -999.;
-    l1extnemphi[i] = -999.;
-  }
-  if (L1ExtEmNIsol.isValid()) {
-    nl1extnem = maxL1EmNIsol;
-    l1extra::L1EmParticleCollection myl1nems;
-    myl1nems = * L1ExtEmNIsol;
-    std::sort(myl1nems.begin(),myl1nems.end(),EtGreater());
-    int il1exem = 0;
-    for (l1extra::L1EmParticleCollection::const_iterator emItr = myl1nems.begin(); emItr != myl1nems.end(); ++emItr) {
-      l1extnemet[il1exem] = emItr->et();
-      l1extneme[il1exem] = emItr->energy();
-      l1extnemeta[il1exem] = emItr->eta();
-      l1extnemphi[il1exem] = emItr->phi();
-      il1exem++;
-    }
-  }
-  else {
-    nl1extnem = 0;
-    if (_Debug) std::cout << "%HLTInfo -- No Non-Isolated L1 EM object" << std::endl;
-  }
-
-  const int maxL1Mu = 4;
-  for (int i=0; i!=maxL1Mu; ++i){
-    l1extmupt[i] = -999.;
-    l1extmue[i] = -999.;
-    l1extmueta[i] = -999.;
-    l1extmuphi[i] = -999.;
-    l1extmuiso[i] = -999;
-    l1extmumip[i] = -999;
-    l1extmufor[i] = -999;
-    l1extmurpc[i] = -999;
-    l1extmuqul[i] = -999;
-    l1extmuchg[i] = -999;
-  }
-  if (L1ExtMu.isValid()) {
-    nl1extmu = maxL1Mu;
-    l1extra::L1MuonParticleCollection myl1mus;
-    myl1mus = * L1ExtMu;
-    std::sort(myl1mus.begin(),myl1mus.end(),PtGreater());
-    int il1exmu = 0;
-    for (l1extra::L1MuonParticleCollection::const_iterator muItr = myl1mus.begin(); muItr != myl1mus.end(); ++muItr) {
-      l1extmupt[il1exmu] = muItr->pt();
-      l1extmue[il1exmu] = muItr->energy();
-      l1extmueta[il1exmu] = muItr->eta();
-      l1extmuphi[il1exmu] = muItr->phi();
-      l1extmuiso[il1exmu] = muItr->isIsolated(); // = 1 for Isolated ?
-      l1extmumip[il1exmu] = muItr->isMip(); // = 1 for Mip ?
-      l1extmufor[il1exmu] = muItr->isForward();
-      l1extmurpc[il1exmu] = muItr->isRPC();
-      l1extmuchg[il1exmu] = muItr->charge();
-      L1MuGMTExtendedCand gmtCand = muItr->gmtMuonCand();
-      l1extmuqul[il1exmu] = gmtCand.quality(); // Muon quality as defined in the GT
-      il1exmu++;
-    }
-  }
-  else {
-    nl1extmu = 0;
-    if (_Debug) std::cout << "%HLTInfo -- No L1 MU object" << std::endl;
-  }
-
-  const int maxL1CenJet = 4;
-  for (int i=0; i!=maxL1CenJet; ++i){
-    l1extjtcet[i] = -999.;
-    l1extjtce[i] = -999.;
-    l1extjtceta[i] = -999.;
-    l1extjtcphi[i] = -999.;
-  }
-  if (L1ExtJetC.isValid()) {
-    nl1extjetc = maxL1CenJet;
-    l1extra::L1JetParticleCollection myl1jetsc;
-    myl1jetsc = * L1ExtJetC;
-    std::sort(myl1jetsc.begin(),myl1jetsc.end(),EtGreater());
-    int il1exjt = 0;
-    for (l1extra::L1JetParticleCollection::const_iterator jtItr = myl1jetsc.begin(); jtItr != myl1jetsc.end(); ++jtItr) {
-      l1extjtcet[il1exjt] = jtItr->et();
-      l1extjtce[il1exjt] = jtItr->energy();
-      l1extjtceta[il1exjt] = jtItr->eta();
-      l1extjtcphi[il1exjt] = jtItr->phi();
-      il1exjt++;
-    }
-  }
-  else {
-    nl1extjetc = 0;
-    if (_Debug) std::cout << "%HLTInfo -- No L1 Central JET object" << std::endl;
-  }
-
-  const int maxL1ForJet = 4;
-  for (int i=0; i!=maxL1ForJet; ++i){
-    l1extjtfet[i] = -999.;
-    l1extjtfe[i] = -999.;
-    l1extjtfeta[i] = -999.;
-    l1extjtfphi[i] = -999.;
-  }
-  if (L1ExtJetF.isValid()) {
-    nl1extjetf = maxL1ForJet;
-    l1extra::L1JetParticleCollection myl1jetsf;
-    myl1jetsf = * L1ExtJetF;
-    std::sort(myl1jetsf.begin(),myl1jetsf.end(),EtGreater());
-    int il1exjt = 0;
-    for (l1extra::L1JetParticleCollection::const_iterator jtItr = myl1jetsf.begin(); jtItr != myl1jetsf.end(); ++jtItr) {
-      l1extjtfet[il1exjt] = jtItr->et();
-      l1extjtfe[il1exjt] = jtItr->energy();
-      l1extjtfeta[il1exjt] = jtItr->eta();
-      l1extjtfphi[il1exjt] = jtItr->phi();
-      il1exjt++;
-    }
-  }
-  else {
-    nl1extjetf = 0;
-    if (_Debug) std::cout << "%HLTInfo -- No L1 Forward JET object" << std::endl;
-  }
-
-  const int maxL1Jet = 324;
-  for (int i=0; i!=maxL1Jet; ++i){
-    l1extjtet[i] = -999.;
-    l1extjte[i] = -999.;
-    l1extjteta[i] = -999.;
-    l1extjtphi[i] = -999.;
-  }
-  if (L1ExtJet.isValid()) {
-    if (_Debug) std::cout << "%HLTInfo -- Found L1 JET object" << std::endl;
-    nl1extjet = maxL1Jet;
-    l1extra::L1JetParticleCollection myl1jets;
-    myl1jets = * L1ExtJet;
-    std::sort(myl1jets.begin(),myl1jets.end(),EtGreater());
-    int il1exjt = 0;
-    for (l1extra::L1JetParticleCollection::const_iterator jtItr = myl1jets.begin(); jtItr != myl1jets.end(); ++jtItr) {
-      l1extjtet[il1exjt] = jtItr->et();
-      l1extjte[il1exjt] = jtItr->energy();
-      l1extjteta[il1exjt] = jtItr->eta();
-      l1extjtphi[il1exjt] = jtItr->phi();
-      il1exjt++;
-    }
-  }
-  else {
-    //    nl1extjetf = 0;
-    if (_Debug) std::cout << "%HLTInfo -- No L1 JET object" << std::endl;
-  }
-
-
-  const int maxL1TauJet = 4;
-  for (int i=0; i!=maxL1TauJet; ++i){
-    l1exttauet[i] = -999.;
-    l1exttaue[i] = -999.;
-    l1exttaueta[i] = -999.;
-    l1exttauphi[i] = -999.;
-  }
-  if (L1ExtTau.isValid()) {
-    nl1exttau = maxL1TauJet;
-    l1extra::L1JetParticleCollection myl1taus;
-    myl1taus = * L1ExtTau;
-    std::sort(myl1taus.begin(),myl1taus.end(),EtGreater());
-    int il1extau = 0;
-    for (l1extra::L1JetParticleCollection::const_iterator tauItr = myl1taus.begin(); tauItr != myl1taus.end(); ++tauItr) {
-      l1exttauet[il1extau] = tauItr->et();
-      l1exttaue[il1extau] = tauItr->energy();
-      l1exttaueta[il1extau] = tauItr->eta();
-      l1exttauphi[il1extau] = tauItr->phi();
-      il1extau++;
-    }
-  }
-  else {
-    nl1exttau = 0;
-    if (_Debug) std::cout << "%HLTInfo -- No L1 TAU object" << std::endl;
-  }
-
-  if (L1ExtMet.isValid()) {
-    met    = L1ExtMet->begin()->etMiss();
-    metphi = L1ExtMet->begin()->phi();
-    ettot  = L1ExtMet->begin()->etTotal();
-  }
-  else {
-    if (_Debug) std::cout << "%HLTInfo -- No L1 MET object" << std::endl;
-  }
-
-  if (L1ExtMht.isValid()) {
-    mht    = L1ExtMht->begin()->etMiss();
-    mhtphi = L1ExtMht->begin()->phi();
-    ethad  = L1ExtMht->begin()->etTotal();
-  }
-  else {
-    if (_Debug) std::cout << "%HLTInfo -- No L1 MHT object" << std::endl;
-  }
-
-  //==============L1 information=======================================
-
-  // L1 Triggers from Menu
-  L1GtUtils const& l1GtUtils = hltPrescaleProvider_->l1GtUtils();
-
-  edm::ESHandle<L1GtTriggerMenu> menuRcd;
-  eventSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
-  const L1GtTriggerMenu* menu = menuRcd.product();
-
-  int iErrorCode = -1;
-  L1GtUtils::TriggerCategory trigCategory = L1GtUtils::AlgorithmTrigger;
-  const int pfSetIndexAlgorithmTrigger = l1GtUtils.prescaleFactorSetIndex(
-             iEvent, trigCategory, iErrorCode);
-  if (iErrorCode == 0) {
-    if (_Debug) std::cout << "%Prescale set index: " << pfSetIndexAlgorithmTrigger  << std::endl;
-  }else{
-    std::cout << "%Could not extract Prescale set index from event record. Error code: " << iErrorCode << std::endl;
-  }
-
-  // 1st event : Book as many branches as trigger paths provided in the input...
-  if (L1GTRR.isValid()) {  
-
-    DecisionWord gtDecisionWord = L1GTRR->decisionWord();
-    const unsigned int numberTriggerBits(gtDecisionWord.size());
-    const TechnicalTriggerWord&  technicalTriggerWordBeforeMask = L1GTRR->technicalTriggerWord();
-    const unsigned int numberTechnicalTriggerBits(technicalTriggerWordBeforeMask.size());
-
-    // 1st event : Book as many branches as trigger paths provided in the input...
-    if (L1EvtCnt==0){
-
- 
-      //ccla determine if more than 1 bx was unpacked in event; add OR all bx's if so
-      const edm::Provenance& prov = iEvent.getProvenance(L1GTRR.id());
-      //const string& procName = prov.processName();
-      //std::cout << "procName:" << procName << std::endl;
-      //std::cout << "provinfo:" << prov << std::endl;
-      //std::cout << "setid:" << setId << std::endl;
-      edm::ParameterSet pSet=parameterSet(prov);
-      //std::cout << "pset:" << pSet << std::endl;
-      if (pSet.exists("UnpackBxInEvent")){
-	UnpackBxInEvent = pSet.getParameter<int>("UnpackBxInEvent");
-      }
-      if (_Debug) std::cout << "Number of beam crossings unpacked by GT: " << UnpackBxInEvent << std::endl;
-      if (UnpackBxInEvent == 5) _OR_BXes = true;
-
-      // get L1 menu from event setup
-      for (CItAlgo algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) {
-	if (_Debug) std::cout << "Name: " << (algo->second).algoName() << " Alias: " << (algo->second).algoAlias() << std::endl;
-        int itrig = (algo->second).algoBitNumber();
-	//        algoBitToName[itrig] = TString( (algo->second).algoName() );
-	algoBitToName[itrig] = TString( (algo->second).algoAlias() );
-        HltTree->Branch(algoBitToName[itrig],l1flag+itrig,algoBitToName[itrig]+"/I");
-        HltTree->Branch(algoBitToName[itrig]+"_Prescl",l1Prescl+itrig,algoBitToName[itrig]+"_Prescl/I");
-	if (_OR_BXes)
-	  HltTree->Branch(algoBitToName[itrig]+"_5bx",l1flag5Bx+itrig,algoBitToName[itrig]+"_5bx/I");
-      }
-
-      // Book branches for tech bits
-      for (CItAlgo techTrig = menu->gtTechnicalTriggerMap().begin(); techTrig != menu->gtTechnicalTriggerMap().end(); ++techTrig) {
-        int itrig = (techTrig->second).algoBitNumber();
-	techBitToName[itrig] = TString( (techTrig->second).algoName() );
-	if (_Debug) std::cout << "tech bit " << itrig << ": " << techBitToName[itrig] << " " << std::endl;
-	HltTree->Branch(techBitToName[itrig],l1techflag+itrig,techBitToName[itrig]+"/I");
-        HltTree->Branch(techBitToName[itrig]+"_Prescl",l1techPrescl+itrig,techBitToName[itrig]+"_Prescl/I");
-	if (_OR_BXes)
-	  HltTree->Branch(techBitToName[itrig]+"_5bx",l1techflag5Bx+itrig,techBitToName[itrig]+"_5bx/I");
-      }
-    }
-
-    std::string triggerAlgTechTrig = "PhysicsAlgorithms";
-    for (unsigned int iBit = 0; iBit < numberTriggerBits; ++iBit) {     
-      // ...Fill the corresponding accepts in branch-variables
-      l1flag[iBit] = gtDecisionWord[iBit];
-
-      std::string l1triggername= std::string (algoBitToName[iBit]);
-      l1Prescl[iBit] = l1GtUtils.prescaleFactor(iEvent, 
-					       l1triggername,
-					       iErrorCode);
-      
-      if (_Debug) std::cout << "L1 TD: "<<iBit<<" "<<algoBitToName[iBit]<<" "
-			    << gtDecisionWord[iBit]<<" "
-			    << l1Prescl[iBit] << std::endl;
-
-    }
-
-    triggerAlgTechTrig = "TechnicalTriggers";
-    for (unsigned int iBit = 0; iBit < numberTechnicalTriggerBits; ++iBit) {
-      l1techflag[iBit] = (int) technicalTriggerWordBeforeMask.at(iBit);
-
-      std::string l1triggername= std::string (techBitToName[iBit]);
-      l1techPrescl[iBit] = l1GtUtils.prescaleFactor(iEvent, 
-					       l1triggername,
-					       iErrorCode);
-
-      if (_Debug) std::cout << "L1 TD: "<<iBit<<" "<<techBitToName[iBit]<<" "
-			    << l1techflag[iBit]<<" "
-			    << l1Prescl[iBit] << std::endl;
-
-    }
-
-    if (_OR_BXes){
-      // look at all 5 bx window in case gt timing is off
-      // get Field Decision Logic
-      std::vector<DecisionWord> m_gtDecisionWord5Bx;
-      std::vector<TechnicalTriggerWord> m_gtTechDecisionWord5Bx;
-      std::vector<int> m_ibxn;
-
-      const std::vector<L1GtFdlWord> &m_gtFdlWord(L1GTRR->gtFdlVector());
-      for (std::vector<L1GtFdlWord>::const_iterator itBx = m_gtFdlWord.begin();
-	   itBx != m_gtFdlWord.end(); ++itBx) {
-	if (_Debug && L1EvtCnt==0) std::cout << "bx: " << (*itBx).bxInEvent() << " ";
-	m_gtDecisionWord5Bx.push_back((*itBx).gtDecisionWord());
-	m_gtTechDecisionWord5Bx.push_back((*itBx).gtTechnicalTriggerWord());
-      }
-      // --- Fill algo bits ---
-      for (unsigned int iBit = 0; iBit < numberTriggerBits; ++iBit) {     
-	// ...Fill the corresponding accepts in branch-variables
-	if (_Debug) std::cout << std::endl << " L1 TD: "<<iBit<<" "<<algoBitToName[iBit]<<" ";
-	int result=0;
-	int bitword=0; 
-	for (unsigned int jbx=0; jbx<m_gtDecisionWord5Bx.size(); ++jbx) {
-	  if (_Debug) std::cout << m_gtDecisionWord5Bx[jbx][iBit]<< " ";
-	  result += m_gtDecisionWord5Bx[jbx][iBit];
-	  if (m_gtDecisionWord5Bx[jbx][iBit]>0) bitword |= 1 << jbx;
-	}
-	if (_Debug && result>1) {std::cout << "5BxOr=" << result << "  Bitword= "<< bitword <<std::endl;
-	  std::cout << "Unpacking: " ;
-	  for (int i = 0; i<UnpackBxInEvent ; ++i){
-	    bool bitOn=bitword & (1 << i);
-	    std::cout << bitOn << " ";
-	  }
-	  std::cout << "\n";
-	}
-	l1flag5Bx[iBit] = bitword;
-      }
-      // --- Fill tech bits ---
-      for (unsigned int iBit = 0; iBit < m_gtTechDecisionWord5Bx[2].size(); ++iBit) {     
-	// ...Fill the corresponding accepts in branch-variables
-	if (_Debug) std::cout << std::endl << " L1 TD: "<<iBit<<" "<<techBitToName[iBit]<<" ";
-	int result=0;
-	int bitword=0;       
-	for (unsigned int jbx=0; jbx<m_gtTechDecisionWord5Bx.size(); ++jbx) {
-	  if (_Debug) std::cout << m_gtTechDecisionWord5Bx[jbx][iBit]<< " ";
-	  result += m_gtTechDecisionWord5Bx[jbx][iBit];
-	  if (m_gtTechDecisionWord5Bx[jbx][iBit]>0) bitword |= 1 << jbx;
-	}
-	if (_Debug && result>1) {std::cout << "5BxOr=" << result << "  Bitword= "<< bitword  << std::endl;
-	  std::cout << "Unpacking: " ;
-	  for (int i = 0; i<UnpackBxInEvent ; ++i){
-	    bool bitOn=bitword & (1 << i);
-	    std::cout << bitOn << " ";
-	  }
-	  std::cout << "\n";
-	}
-	l1techflag5Bx[iBit] = bitword;
-      }
-    } // end of OR_BX
-
-    L1EvtCnt++;
-  }
-  else {
-    if (_Debug) std::cout << "%HLTInfo -- No L1 GT ReadoutRecord " << std::endl;
-  }
-
-  //
-  // LSB for feature bits = 0.125 GeV.
-  // The default LSB for the ring sums is 0.5 GeV.
   
-  if (gctBitCounts.isValid()) {
-    L1GctHFBitCountsCollection::const_iterator bitCountItr;
-    for (bitCountItr=gctBitCounts->begin(); bitCountItr!=gctBitCounts->end(); ++bitCountItr) { 
-      if (bitCountItr->bx()==0){ // select in-time beam crossing
-	l1hfTowerCountPositiveEtaRing1=bitCountItr->bitCount(0);
-	l1hfTowerCountNegativeEtaRing1=bitCountItr->bitCount(1);
-	l1hfTowerCountPositiveEtaRing2=bitCountItr->bitCount(2);
-	l1hfTowerCountNegativeEtaRing2=bitCountItr->bitCount(3);
+  /////////// Analyzing L1 Stage2 objects //////////
+
+  if (L1Stage2EGamma.isValid()) {
+    int il1stage2eg = 0;
+    typedef std::vector<l1t::EGamma>::const_iterator l1cand;
+    for(int iBx = L1Stage2EGamma->getFirstBX(); iBx <= L1Stage2EGamma->getLastBX(); ++iBx) { 
+      for (l1cand egItr=L1Stage2EGamma->begin(iBx); egItr!=L1Stage2EGamma->end(iBx); ++egItr) {
+        l1stage2eget[il1stage2eg]  = egItr->et();
+        l1stage2ege[il1stage2eg]   = egItr->energy();
+        l1stage2egeta[il1stage2eg] = egItr->eta();
+        l1stage2egphi[il1stage2eg] = egItr->phi();
+        l1stage2egbx[il1stage2eg]  = iBx;
+        il1stage2eg++;
       }
     }
-  } else {
-    if (_Debug) std::cout << "%HLTInfo -- No L1 Gct HF BitCounts" << std::endl;
+    nl1stage2eg = il1stage2eg;
+  }
+  else {
+    nl1stage2eg = 0;
+    if (_Debug) std::cout << "%HLTInfo -- No L1 Stage2 EGamma object" << std::endl;
   }
 
-  if (gctRingSums.isValid()) {
-    L1GctHFRingEtSumsCollection::const_iterator ringSumsItr;
-    for (ringSumsItr=gctRingSums->begin(); ringSumsItr!=gctRingSums->end(); ++ringSumsItr) { 
-      if (ringSumsItr->bx()==0){ // select in-time beam crossing
-	l1hfRing1EtSumPositiveEta=ringSumsItr->etSum(0);
-	l1hfRing1EtSumNegativeEta=ringSumsItr->etSum(1);
-	l1hfRing2EtSumPositiveEta=ringSumsItr->etSum(2);
-	l1hfRing2EtSumNegativeEta=ringSumsItr->etSum(3);
+  if (L1Stage2Muon.isValid()) {
+    int il1stage2mu = 0;
+    typedef std::vector<l1t::Muon>::const_iterator l1cand;
+    for(int iBx = L1Stage2Muon->getFirstBX(); iBx <= L1Stage2Muon->getLastBX(); ++iBx) { 
+      for (l1cand muItr=L1Stage2Muon->begin(iBx); muItr!=L1Stage2Muon->end(iBx); ++muItr) {
+        l1stage2mupt[il1stage2mu]  = muItr->pt();
+        l1stage2mue[il1stage2mu]   = muItr->energy();
+        l1stage2mueta[il1stage2mu] = muItr->eta();
+        l1stage2muphi[il1stage2mu] = muItr->phi();
+        l1stage2muiso[il1stage2mu] = muItr->hwIso();
+        l1stage2muchg[il1stage2mu] = muItr->charge();
+        l1stage2muqul[il1stage2mu] = muItr->hwQual(); // Muon quality at hardware level
+        l1stage2mubx[il1stage2mu]  = iBx;
+        il1stage2mu++;
       }
     }
-  } else {
-    if (_Debug) std::cout << "%HLTInfo -- No L1 Gct HF RingSums" << std::endl;
+    nl1stage2mu = il1stage2mu;
+  }
+  else {
+    nl1stage2mu = 0;
+    if (_Debug) std::cout << "%HLTInfo -- No L1 Stage2 Muon object" << std::endl;
+  }
+
+  if (L1Stage2Jet.isValid()) {
+    int il1stage2jt = 0;
+    typedef std::vector<l1t::Jet>::const_iterator l1cand;
+    for(int iBx = L1Stage2Jet->getFirstBX(); iBx <= L1Stage2Jet->getLastBX(); ++iBx) { 
+      for (l1cand jtItr=L1Stage2Jet->begin(iBx); jtItr!=L1Stage2Jet->end(iBx); ++jtItr) {
+        l1stage2jtet[il1stage2jt]  = jtItr->et();
+        l1stage2jte[il1stage2jt]   = jtItr->energy();
+        l1stage2jteta[il1stage2jt] = jtItr->eta();
+        l1stage2jtphi[il1stage2jt] = jtItr->phi();
+        l1stage2jtbx[il1stage2jt]  = iBx;
+        il1stage2jt++;
+      }
+    }
+    nl1stage2jet = il1stage2jt;
+  }
+  else {
+    nl1stage2jet = 0;
+    if (_Debug) std::cout << "%HLTInfo -- No L1 Stage2 Jet object" << std::endl;
+  }
+
+  if (L1Stage2Tau.isValid()) {
+    int il1stage2tau = 0;
+    typedef std::vector<l1t::Tau>::const_iterator l1cand;
+    for(int iBx = L1Stage2Tau->getFirstBX(); iBx <= L1Stage2Tau->getLastBX(); ++iBx) { 
+      for (l1cand tauItr=L1Stage2Tau->begin(iBx); tauItr!=L1Stage2Tau->end(iBx); ++tauItr) {
+        l1stage2tauet[il1stage2tau]  = tauItr->et();
+        l1stage2taue[il1stage2tau]   = tauItr->energy();
+        l1stage2taueta[il1stage2tau] = tauItr->eta();
+        l1stage2tauphi[il1stage2tau] = tauItr->phi();
+        l1stage2taubx[il1stage2tau]  = iBx;
+        il1stage2tau++;
+      }
+    }
+    nl1stage2tau = il1stage2tau;
+  }
+  else {
+    nl1stage2tau = 0;
+    if (_Debug) std::cout << "%HLTInfo -- No L1 Stage2 Tau object" << std::endl;
+  }
+
+  if (L1Stage2EtSum.isValid()) {
+    int il1stage2ets = 0;
+    typedef std::vector<l1t::EtSum>::const_iterator l1cand;
+    for(int iBx = L1Stage2EtSum->getFirstBX(); iBx <= L1Stage2EtSum->getLastBX(); ++iBx) { 
+      for (l1cand etsItr=L1Stage2EtSum->begin(iBx); etsItr!=L1Stage2EtSum->end(iBx); ++etsItr) {
+        l1stage2etset[il1stage2ets]   = etsItr->hwPt();
+        l1stage2etsphi[il1stage2ets]  = etsItr->hwPhi();
+        l1stage2etstype[il1stage2ets] = etsItr->getType();
+        l1stage2etsbx[il1stage2ets]   = iBx;
+        il1stage2ets++;
+      }
+    }
+    nl1stage2ets = il1stage2ets;
+  }
+  else {
+    nl1stage2ets = 0;
+    if (_Debug) std::cout << "%HLTInfo -- No L1 Stage2 EtSum object" << std::endl;
+  }
+
+  if (L1Stage2CaloTower.isValid()) {
+    int il1stage2ct = 0;
+    typedef std::vector<l1t::CaloTower>::const_iterator l1cand;
+    for(int iBx = L1Stage2CaloTower->getFirstBX(); iBx <= L1Stage2CaloTower->getLastBX(); ++iBx) { 
+      for (l1cand ctItr=L1Stage2CaloTower->begin(iBx); ctItr!=L1Stage2CaloTower->end(iBx); ++ctItr) {
+        l1stage2ctetem[il1stage2ct] = ctItr->hwEtEm();
+        l1stage2cteth[il1stage2ct]  = ctItr->hwEtHad();
+        l1stage2ctetc[il1stage2ct]  = ctItr->hwPt();
+        l1stage2cteta[il1stage2ct]  = ctItr->hwEta();
+        l1stage2ctphi[il1stage2ct]  = ctItr->hwPhi();
+        l1stage2ctbx[il1stage2ct]   = iBx;
+        il1stage2ct++;
+      }
+    }
+    nl1stage2ct = il1stage2ct;
+  }
+  else {
+    nl1stage2ets = 0;
+    if (_Debug) std::cout << "%HLTInfo -- No L1 Stage2 EtSum object" << std::endl;
+  }
+  
+  //==============L1 Stage2 information=======================================
+  // L1 Triggers from Menu
+  l1t::L1TGlobalUtil const& l1tGlbUtil = hltPrescaleProvider_->l1tGlobalUtil();
+
+  if (&l1tGlbUtil) {
+    // 1st event : Book as many branches as trigger paths provided in the input...
+    if (L1TEvtCnt==0){
+      // Get the stage2 menu from the setup
+      edm::ESHandle<L1TUtmTriggerMenu> stage2Menu;
+      eventSetup.get<L1TUtmTriggerMenuRcd>().get(stage2Menu);
+      // Book branches for algo bits
+      for (auto const & algo: stage2Menu->getAlgorithmMap()) {
+	int itrig = algo.second.getIndex();
+	algoBitToName[itrig] = TString( algo.second.getName() );
+        HltTree->Branch(algoBitToName[itrig],l1TFinalFlag+itrig,algoBitToName[itrig]+"/I");
+        HltTree->Branch(algoBitToName[itrig]+"_Prescl",l1TPrescl+itrig,algoBitToName[itrig]+"_Prescl/I");
+      }
+    }
+    // ...Fill the corresponding accepts in branch-variables
+    std::map< int, TString >::iterator iL1Trig = algoBitToName.begin();
+    for (; iL1Trig!=algoBitToName.end(); ++iL1Trig) {
+      std::string name = iL1Trig->second.Data();
+      int iBit = iL1Trig->first;
+      bool des = false;
+      if ( !l1tGlbUtil.getFinalDecisionByName(name, des) ) continue;
+      l1TFinalFlag[iBit] = des;
+      int pres = -1;
+      l1tGlbUtil.getPrescaleByName(name, pres);
+      l1TPrescl[iBit] = pres;
+    }
+    L1TEvtCnt++;
   }
 
   if (_Debug) std::cout << "%HLTInfo -- Done with routine" << std::endl;
