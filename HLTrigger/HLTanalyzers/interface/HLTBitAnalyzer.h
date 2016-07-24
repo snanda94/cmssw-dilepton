@@ -12,6 +12,9 @@
 
 #include "DataFormats/Common/interface/Handle.h"
 
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
+
 /** \class HLTBitAnalyzer
   *  
   * $Date: November 2006
@@ -43,6 +46,7 @@ private:
   HLTInfo     hlt_analysis_;
 
   edm::InputTag hltresults_;
+  edm::InputTag gtReadoutRecord_;
   edm::InputTag m_l1stage2mu;
   edm::InputTag m_l1stage2eg;
   edm::InputTag m_l1stage2jet;
@@ -51,6 +55,7 @@ private:
   edm::InputTag m_l1stage2ct;
 
   edm::EDGetTokenT<edm::TriggerResults>                  hltresultsToken_;
+  edm::EDGetTokenT<L1GlobalTriggerReadoutRecord>         gtReadoutRecordToken_;
   edm::EDGetTokenT< BXVector<l1t::Muon> >                l1stage2muToken_;
   edm::EDGetTokenT< BXVector<l1t::EGamma> >              l1stage2egToken_;
   edm::EDGetTokenT< BXVector<l1t::Jet> >                 l1stage2jetToken_; 

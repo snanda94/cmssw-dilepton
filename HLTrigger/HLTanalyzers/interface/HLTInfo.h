@@ -65,6 +65,7 @@ public:
 
   /** Analyze the Data */
   void analyze(const edm::Handle<edm::TriggerResults>                 & hltresults,
+               const edm::Handle<L1GlobalTriggerReadoutRecord>        & L1GTRR,
                const edm::Handle< BXVector<l1t::EGamma> >             & L1Stage2EGamma,
                const edm::Handle< BXVector<l1t::Muon> >               & L1Stage2Muon,
                const edm::Handle< BXVector<l1t::Jet> >                & L1Stage2Jet,
@@ -91,9 +92,10 @@ private:
   int   *l1stage2etstype;
   int   *l1stage2egbx, *l1stage2mubx, *l1stage2jtbx, *l1stage2taubx, *l1stage2etsbx, *l1stage2ctbx;
   int   L1TEvtCnt,L1EvtCnt,HltEvtCnt,nhltpart,nl1stage2eg,nl1stage2mu,nl1stage2jet,nl1stage2tau,nl1stage2ets,nl1stage2ct;
-  int   *trigflag, *l1TFinalFlag;
-  int   *trigPrescl, *l1TPrescl; 
+  int   *trigflag, *l1TFinalFlag, *l1flag, *l1techflag;
+  int   *trigPrescl, *l1TPrescl, *l1Prescl, *l1techPrescl; 
 
+  std::map<int,TString> techBitToName;
   std::map<int,TString> algoBitToName;
   std::vector<std::string> dummyBranches_;
 

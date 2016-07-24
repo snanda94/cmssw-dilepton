@@ -44,6 +44,7 @@ HLTBitAnalyzer::HLTBitAnalyzer(edm::ParameterSet const& conf)  :
   m_l1stage2ct      = edm::InputTag("hltCaloStage2Digis", "CaloTower");
 
   hltresults_       = conf.getParameter<edm::InputTag> ("hltresults");
+  gtReadoutRecord_  = conf.getParameter<edm::InputTag> ("l1GtReadoutRecord");
 
   hltresultsToken_   = consumes<edm::TriggerResults>(hltresults_);
   l1stage2muToken_   = consumes< BXVector<l1t::Muon> >(m_l1stage2mu);
@@ -52,6 +53,7 @@ HLTBitAnalyzer::HLTBitAnalyzer(edm::ParameterSet const& conf)  :
   l1stage2tauToken_  = consumes< BXVector<l1t::Tau> >(m_l1stage2tau);
   l1stage2etsToken_  = consumes< BXVector<l1t::EtSum> >(m_l1stage2ets);
   l1stage2ctToken_   = consumes< BXVector<l1t::CaloTower> >(m_l1stage2ct);
+  gtReadoutRecordToken_ = consumes<L1GlobalTriggerReadoutRecord>(gtReadoutRecord_);
   
   _UseTFileService = conf.getUntrackedParameter<bool>("UseTFileService",false);
 	
@@ -82,6 +84,7 @@ HLTBitAnalyzer::HLTBitAnalyzer(edm::ParameterSet const& conf)  :
 void HLTBitAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetup) {
 
   edm::Handle<edm::TriggerResults>                  hltresults;
+  edm::Handle<L1GlobalTriggerReadoutRecord>         l1GtRR;
   edm::Handle< BXVector<l1t::EGamma> >              l1stage2eg;
   edm::Handle< BXVector<l1t::Muon> >                l1stage2mu;
   edm::Handle< BXVector<l1t::Jet> >                 l1stage2jet;
@@ -99,7 +102,7 @@ void HLTBitAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iS
   getCollection( iEvent, missing, l1stage2tau,     m_l1stage2tau,      l1stage2tauToken_,     "L1 Stage2 Tau objects" );
   getCollection( iEvent, missing, l1stage2ets,     m_l1stage2ets,      l1stage2etsToken_,     "L1 Stage2 EtSum objects" );
   getCollection( iEvent, missing, l1stage2ct,      m_l1stage2ct,       l1stage2ctToken_,      "L1 Stage2 CaloTower objects" );
-
+  iEvent.getByToken(gtReadoutRecordToken_, l1GtRR); // kept for legacy support
 
   // print missing collections
   if (not missing.empty() and (errCnt < errMax())) {
@@ -116,6 +119,7 @@ void HLTBitAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iS
   // run the analysis, passing required event fragments
   hlt_analysis_.analyze(
     hltresults,
+    l1GtRR,
     l1stage2eg,
     l1stage2mu,
     l1stage2jet,
