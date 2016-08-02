@@ -1562,8 +1562,8 @@ HiOniaAnalyzer::fillGenInfo()
     for(std::vector<reco::GenParticle>::const_iterator it=collGenParticles->begin();
         it!=collGenParticles->end();++it) {
       const reco::GenParticle* gen = &(*it);
-
-      if (abs(gen->pdgId()) == _oniaPDG  && gen->status() == 2 &&
+      
+      if (abs(gen->pdgId()) == _oniaPDG  && (gen->status() == 2 || gen->status() == 62)  &&
           gen->numberOfDaughters() >= 2) {
 
         reco::GenParticleRef genMuon1 = findDaughterRef(gen->daughterRef(0), gen->pdgId());
@@ -1571,8 +1571,8 @@ HiOniaAnalyzer::fillGenInfo()
 
         if ( abs(genMuon1->pdgId()) == 13 &&
              abs(genMuon2->pdgId()) == 13 &&
-             ( genMuon1->status() == 1 || genMuon1->status() == 2 ) &&
-             ( genMuon2->status() == 1 || genMuon2->status() == 2 )
+             ( genMuon1->status() == 1 ) &&
+             ( genMuon2->status() == 1 )
              ) {
           
           Gen_QQ_type[Gen_QQ_size] = _isPromptMC ? 0 : 1; // prompt: 0, non-prompt: 1
@@ -2089,7 +2089,7 @@ HiOniaAnalyzer::beginRun(const edm::Run& iRun, const edm::EventSetup& iSetup) {
   if( hltConfig.init(iRun, iSetup, pro, changed) ) hltConfigInit = true;
 
   hltPrescaleInit = false;
-  if( hltPrescaleProvider.init(iRun, iSetup, pro, changed) ) hltPrescaleInit = true;
+  //  if( hltPrescaleProvider.init(iRun, iSetup, pro, changed) ) hltPrescaleInit = true;
 
   return;
 }
@@ -2192,6 +2192,7 @@ HiOniaAnalyzer::hltReport(const edm::Event &iEvent ,const edm::EventSetup& iSetu
         if (_isMC) {
           mapTriggerNameToPrescaleFac_[triggerPathName] = 1;
         } else {
+          /*
           //-------prescale factor------------
           if ( hltPrescaleInit && hltPrescaleProvider.prescaleSet(iEvent,iSetup)>=0 ) {
             std::pair<std::vector<std::pair<std::string,int> >,int> detailedPrescaleInfo = hltPrescaleProvider.prescaleValuesInDetail(iEvent, iSetup, triggerPathName);
@@ -2212,6 +2213,7 @@ HiOniaAnalyzer::hltReport(const edm::Event &iEvent ,const edm::EventSetup& iSetu
             //compute the total prescale = HLT prescale * L1 prescale
             mapTriggerNameToPrescaleFac_[triggerPathName] = hltPrescale * l1Prescale;
           }
+          */
         }
       }
     }

@@ -20,7 +20,7 @@ options = VarParsing.VarParsing ('analysis')
 # Input and Output File Names
 options.outputFile = "OniaTree.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
-options.inputFiles =  '/store/user/anstahll/TriggerStudy2016/MC/JpsiMuMuPt040_pythia6Gun_RECO_20160701/JpsiMuMuGun/JpsiMuMuPt040_pythia6Gun_RECO_20160701/160701_235327/0000/JpsiMuMuPt40_RAW2DIGI_L1Reco_RECO_1.root'
+options.inputFiles =  '/store/user/anstahll/TriggerStudy2016/MC/JpsiMuMuPt040_Pythia8_5p02TeV_TuneCUETP8M1_RECO_20160730/JpsiMuMuPythia8/JpsiMuMuPt040_Pythia8_5p02TeV_TuneCUETP8M1_RECO_20160730/160731_154459/0000/step4_JpsiMuMuPt040_Pythia8_5p02TeV_TuneCUETP8M1_RAW2DIGI_L1Reco_RECO_1.root'
 options.maxEvents = -1 # -1 means all events
 
 # Get and parse the command line arguments
@@ -29,6 +29,8 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 process.MessageLogger.categories.extend(["GetManyWithoutRegistration","GetByLabelWithoutRegistration"])
 process.MessageLogger.destinations = ['cout', 'cerr']
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.categories.extend(["HiOnia2MuMuPAT_muonLessSizeORpvTrkSize"])
+process.MessageLogger.cerr.HiOnia2MuMuPAT_muonLessSizeORpvTrkSize = cms.untracked.PSet( limit = cms.untracked.int32(5) )
 
 # load the Geometry and Magnetic Field for the TransientTrackBuilder
 
@@ -52,7 +54,7 @@ HLTProName = "TEST"
 # HLT Dimuon Triggers
 import HLTrigger.HLTfilters.hltHighLevel_cfi
 process.hltOniaHI = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
-# HLT pPb TEST MENU:  /users/anstahll/PA2016/HIDileptonPA2016/V10
+# HLT pPb TEST MENU:  /users/anstahll/PA2016/HIDileptonPA2016/V16
 process.hltOniaHI.HLTPaths =  [
   "HLT_PAL1DoubleMu0_MassGT1_v1",
   "HLT_PAL1DoubleMuOpen_MassGT1_v1",
@@ -69,12 +71,17 @@ process.hltOniaHI.HLTPaths =  [
   "HLT_PAL1DoubleMu0_QGTE14_v1",
   "HLT_PAL1DoubleMu0_QGTE15_v1",
   "HLT_PAL1DoubleMu10_v1",
-  "HLT_PAL2DoubleMu10_v1",
+  "HLT_PAL1DoubleMu10_Mass60to150_v1",
   "HLT_PAL2DoubleMuOpen_v1",
-  "HLT_PAL3DoubleMuOpen_HIon_v1",
+  "HLT_PAL2DoubleMu10_v1",
+  "HLT_PAL2DoubleMu10_Mass60to150_v1",
   "HLT_PAL3DoubleMuOpen_v1",
-  "HLT_PAL3DoubleMu10_HIon_v1",
+  "HLT_PAL3DoubleMuOpen_HIon_v1",
   "HLT_PAL3DoubleMu10_v1",
+  "HLT_PAL3DoubleMu10_Mass60to150_v1",
+  "HLT_PAL3DoubleMu10_HIon_v1",
+  "HLT_PAL3DoubleMu10_Mass60to150_HIon_v1",
+  "HLT_PA2013L2DoubleMu3_v1",
   "HLT_PAL1MuOpen_v1",
   "HLT_PAL1Mu0_NoBptxAND_v1",
   "HLT_PAL1Mu0_v1",
@@ -90,7 +97,10 @@ process.hltOniaHI.HLTPaths =  [
   "HLT_PAL3Mu5_v1",
   "HLT_PAL3Mu7_v1",
   "HLT_PAL3Mu12_v1",
-  "HLT_PAL3Mu15_v1"
+  "HLT_PAL3Mu15_v1",
+  "HLT_PA2013Mu3_v1", 
+  "HLT_PA2013Mu7_v1",
+  "HLT_PA2013Mu12_v1"
   ]
 
 process.hltOniaHI.throw = False
@@ -113,7 +123,7 @@ process.onia2MuMuPatGlbGlb.srcTracks                = cms.InputTag("generalTrack
 process.onia2MuMuPatGlbGlb.primaryVertexTag         = cms.InputTag("offlinePrimaryVertices")
 process.patMuonsWithoutTrigger.pvSrc                = cms.InputTag("offlinePrimaryVertices")
 # Adding muonLessPV gives you lifetime values wrt. muonLessPV only
-process.onia2MuMuPatGlbGlb.addMuonlessPrimaryVertex = True
+process.onia2MuMuPatGlbGlb.addMuonlessPrimaryVertex = False
 if isMC:
   process.genMuons.src = "genParticles"
   process.onia2MuMuPatGlbGlb.genParticles = "genParticles"
@@ -192,13 +202,13 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                 fillRooDataSet    = cms.bool(False),
                                 fillTree          = cms.bool(True),
                                 fillHistos        = cms.bool(False),
-                                minimumFlag       = cms.bool(True),
+                                minimumFlag       = cms.bool(False),
                                 fillSingleMuons   = cms.bool(True),
                                 fillRecoTracks    = cms.bool(False),
                                 histFileName      = cms.string(options.outputFile),		
                                 dataSetName       = cms.string(options.secondaryOutputFile),
                                 
-                                # HLT pPb TEST MENU:  /users/anstahll/PA2016/HIDileptonPA2016/V10
+                                # HLT pPb TEST MENU:  /users/anstahll/PA2016/HIDileptonPA2016/V16
                                 
                                 dblTriggerPathNames = cms.vstring("HLT_PAL1DoubleMu0_MassGT1_v1",
                                                                   "HLT_PAL1DoubleMuOpen_MassGT1_v1",
@@ -215,12 +225,17 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                                                   "HLT_PAL1DoubleMu0_QGTE14_v1",
                                                                   "HLT_PAL1DoubleMu0_QGTE15_v1",
                                                                   "HLT_PAL1DoubleMu10_v1",
-                                                                  "HLT_PAL2DoubleMu10_v1",
+                                                                  "HLT_PAL1DoubleMu10_Mass60to150_v1",
                                                                   "HLT_PAL2DoubleMuOpen_v1",
-                                                                  "HLT_PAL3DoubleMuOpen_HIon_v1",
+                                                                  "HLT_PAL2DoubleMu10_v1",
+                                                                  "HLT_PAL2DoubleMu10_Mass60to150_v1",
                                                                   "HLT_PAL3DoubleMuOpen_v1",
+                                                                  "HLT_PAL3DoubleMuOpen_HIon_v1",
+                                                                  "HLT_PAL3DoubleMu10_v1",
+                                                                  "HLT_PAL3DoubleMu10_Mass60to150_v1",
                                                                   "HLT_PAL3DoubleMu10_HIon_v1",
-                                                                  "HLT_PAL3DoubleMu10_v1"),
+                                                                  "HLT_PAL3DoubleMu10_Mass60to150_HIon_v1",
+                                                                  "HLT_PA2013L2DoubleMu3_v1"),
                                 
                                 dblTriggerFilterNames = cms.vstring("hltL1fL1DoubleMu0L1Filtered0MassGT1",
                                                                     "hltL1fL1DoubleMuOpenL1Filtered0MassGT1",
@@ -237,12 +252,17 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                                                     "hltL1fL1DoubleMu0L1Filtered0GTE14",
                                                                     "hltL1fL1DoubleMu0L1Filtered0GTE15",
                                                                     "hltL1fL1DoubleMu10L1Filtered0",
-                                                                    "hltL2fL1DoubleMu10L2Filtered0",
+                                                                    "hltL1fL1DoubleMu10Mass60to150L1Filtered0",
                                                                     "hltL2fL1DoubleMuOpenL2Filtered0",
-                                                                    "hltHIL3fL2DimuonMuOpenL3Filtered0",
+                                                                    "hltL2fL1DoubleMu10L2Filtered0",
+                                                                    "hltL2fL1DoubleMu10Mass60to150L2Filtered0",
                                                                     "hltL3fL2DimuonMuOpenL3Filtered0",
+                                                                    "hltHIL3fL2DimuonMuOpenL3Filtered0",
+                                                                    "hltL3fL2DimuonMu10L3Filtered10",
+                                                                    "hltL3fL2DimuonMu10Mass60to150L3Filtered10",
                                                                     "hltHIL3fL2DimuonMu10L3Filtered10",
-                                                                    "hltL3fL2DimuonMu10L3Filtered10"),
+                                                                    "hltHIL3fL2DimuonMu10Mass60to150L3Filtered10",
+                                                                    "hltL2fL1sPA2013DoubleMu3L2Filtered3"),
                                 
                                 sglTriggerPathNames = cms.vstring("HLT_PAL1MuOpen_v1",
                                                                   "HLT_PAL1Mu0_NoBptxAND_v1",
@@ -259,7 +279,10 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                                                   "HLT_PAL3Mu5_v1",
                                                                   "HLT_PAL3Mu7_v1",
                                                                   "HLT_PAL3Mu12_v1",
-                                                                  "HLT_PAL3Mu15_v1"),
+                                                                  "HLT_PAL3Mu15_v1",
+                                                                  "HLT_PA2013Mu3_v1",
+                                                                  "HLT_PA2013Mu7_v1",
+                                                                  "HLT_PA2013Mu12_v1"),
                                 
                                 sglTriggerFilterNames = cms.vstring("hltL1fL1sMuOpenL1Filtered0",
                                                                     "hltL1fL1sMu0L1Filtered0NoBptxAND",
@@ -276,7 +299,10 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                                                     "hltL3fL2sMu5L3Filtered5",
                                                                     "hltL3fL2sMu7L3Filtered7",
                                                                     "hltL3fL2sMu12L3Filtered12",
-                                                                    "hltL3fL2sMu15L3Filtered15")
+                                                                    "hltL3fL2sMu15L3Filtered15",
+                                                                    "hltL3fL2sPA2013Mu3L3Filtered3",
+                                                                    "hltL3fL2sPA2013Mu7L3Filtered7",
+                                                                    "hltL3fL2sPA2013Mu12L3Filtered12")
                                 )
 
 process.hionia.primaryVertexTag = cms.InputTag("offlinePrimaryVertices")
@@ -286,7 +312,7 @@ process.hionia.CentralitySrc    = cms.InputTag("")
 process.hionia.CentralityBinSrc = cms.InputTag("")
 process.hionia.srcTracks        = cms.InputTag("generalTracks")       
 
-process.oniaTree = cms.EndPath(process.hionia)
+process.oniaTree = cms.Path(process.hionia)
 
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.source.fileNames      = cms.untracked.vstring(options.inputFiles)        
