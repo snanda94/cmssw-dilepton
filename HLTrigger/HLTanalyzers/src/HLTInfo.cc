@@ -358,8 +358,8 @@ void HLTInfo::analyze(const edm::Handle<edm::TriggerResults>                 & h
     nl1stage2ct = il1stage2ct;
   }
   else {
-    nl1stage2ets = 0;
-    if (_Debug) std::cout << "%HLTInfo -- No L1 Stage2 EtSum object" << std::endl;
+    nl1stage2ct = 0;
+    if (_Debug) std::cout << "%HLTInfo -- No L1 Stage2 Calo Tower object" << std::endl;
   }
   
   HLTConfigProvider const & hltConfig = hltPrescaleProvider_->hltConfigProvider(); 
