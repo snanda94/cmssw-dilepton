@@ -451,7 +451,7 @@ void HLTMuon::analyze(const edm::Event & event,
         muonL1_eta[imu1c] = l1->eta();
         muonL1_phi[imu1c] = l1->phi();
         muonL1_bx[imu1c] = i;
-        muonL1_GMTMuonQuality[imu1c] = (l1->hwQual() == 0 ? 0 : (1 << l1->hwQual()));
+        muonL1_GMTMuonQuality[imu1c] = l1->hwQual();
         muonL1_charge[imu1c] = l1->charge();
 
 

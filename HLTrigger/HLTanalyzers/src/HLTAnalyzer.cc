@@ -37,8 +37,6 @@ HLTAnalyzer::HLTAnalyzer(edm::ParameterSet const& conf) :
     std::cout << " Beginning HLTAnalyzer Analysis " << std::endl;
 
     muonFilterCollections_    = conf.getParameter< std::vector< edm::InputTag > > ("muonFilters");
-
-    L1Bits_  = conf.getParameter< std::vector< int > > ("listL1Bits");
       
     muon_               = conf.getParameter<edm::InputTag> ("muon");
 
@@ -208,8 +206,8 @@ void HLTAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetu
     getCollection( iEvent, missing, mucands3,        MuCandTag3_,        MuCandTag3Token_,        kMucands3 );
     getCollection( iEvent, missing, L3TkTracksFromL2OIState, L3TkTracksFromL2OIStateTag_, L3TkTracksFromL2OIStateToken_, "L3TkTracksFromL2OIState" );
     getCollection( iEvent, missing, L3TkTracksFromL2OIHit, L3TkTracksFromL2OIHitTag_, L3TkTracksFromL2OIHitToken_, "L3TkTracksFromL2OIHit" );
-    getCollection( iEvent, missing, recoVertexsHLT,           VertexTagHLT_,              VertexHLTToken_,              kRecoVerticesHLT );
-    getCollection( iEvent, missing, recoVertexsOffline0,      VertexTagOffline0_,         VertexOffline0Token_,         kRecoVerticesOffline0 );
+    //getCollection( iEvent, missing, recoVertexsHLT,           VertexTagHLT_,              VertexHLTToken_,              kRecoVerticesHLT );
+    //getCollection( iEvent, missing, recoVertexsOffline0,      VertexTagOffline0_,         VertexOffline0Token_,         kRecoVerticesOffline0 );
     iEvent.getByToken(gtReadoutRecordToken_, l1GtRR); // kept for legacy support
 
     // print missing collections
