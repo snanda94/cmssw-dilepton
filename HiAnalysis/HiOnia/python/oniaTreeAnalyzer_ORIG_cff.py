@@ -4,9 +4,12 @@ from PhysicsTools.PatAlgos.tools.helpers import *
 
 def oniaTreeAnalyzer(process, HLTProName='HLT', muonSelection="Trk", useL1Stage2=True, isMC=True, pdgID=443, outputFileName="OniaTree.root"):
 
+    useL1Stage2='HLT'
+    useL1Stage2=False
+
     process.MessageLogger.categories.extend(["HiOnia2MuMuPAT_muonLessSizeORpvTrkSize"])
     process.MessageLogger.cerr.HiOnia2MuMuPAT_muonLessSizeORpvTrkSize = cms.untracked.PSet( limit = cms.untracked.int32(5) )
-    
+
     process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
     # load the Modules for the PATMuonsWithTrigger
     process.load('RecoMuon.Configuration.RecoMuon_cff')
@@ -39,7 +42,7 @@ def oniaTreeAnalyzer(process, HLTProName='HLT', muonSelection="Trk", useL1Stage2
     if isMC:
         process.genMuons.src = "genParticles"
         process.onia2MuMuPatGlbGlb.genParticles = "genParticles"
-        
+
     process.patMuonSequence.remove(process.hltOniaHI)
 
 ##### Dimuon pair selection
@@ -62,7 +65,7 @@ def oniaTreeAnalyzer(process, HLTProName='HLT', muonSelection="Trk", useL1Stage2
         process.onia2MuMuPatGlbGlb.lowerPuritySelection = cms.string("("+lowP+commonP1+")"+commonP2)
     else:
         print "ERROR: Incorrect muon selection " + muonSelection + " . Valid options are: Glb, Trk, GlbTrk"
-        
+
 ###################### HiOnia Analyzer #################################################
 
     process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
@@ -71,29 +74,29 @@ def oniaTreeAnalyzer(process, HLTProName='HLT', muonSelection="Trk", useL1Stage2
                                     srcMuonNoTrig       = cms.InputTag("patMuonsWithoutTrigger"),  # Name of PAT Muon Without Trigger Collection
                                     src                 = cms.InputTag("onia2MuMuPatGlbGlb"),      # Name of Onia Skim Collection
                                     EvtPlane            = cms.InputTag("hiEvtPlane",""),           # Name of Event Plane Collection. For RECO use: hiEventPlane,recoLevel
-                                    
+
                                     triggerResultsLabel = cms.InputTag("TriggerResults","",HLTProName), # Label of Trigger Results
-                                    
+
                                     #-- Reco Details
-                                    useBeamSpot = cms.bool(False),  
+                                    useBeamSpot = cms.bool(False),
                                     useRapidity = cms.bool(True),
-                                    
+
                                     #--
                                     maxAbsZ = cms.double(24.0),
-                                    
+
                                     pTBinRanges      = cms.vdouble(0.0, 6.0, 8.0, 9.0, 10.0, 12.0, 15.0, 40.0),
                                     etaBinRanges     = cms.vdouble(0.0, 2.5),
                                     centralityRanges = cms.vdouble(20,40,100),
 
-                                    onlyTheBest        = cms.bool(False),	
+                                    onlyTheBest        = cms.bool(False),
                                     applyCuts          = cms.bool(False),
                                     selTightGlobalMuon = cms.bool(False),
                                     storeEfficiency    = cms.bool(False),
-                                    
+
                                     removeSignalEvents = cms.untracked.bool(False),  # Remove/Keep signal events
                                     removeTrueMuons    = cms.untracked.bool(False),  # Remove/Keep gen Muons
                                     storeSameSign      = cms.untracked.bool(True),   # Store/Drop same sign dimuons
-                                    
+
                                     #-- Gen Details
                                     oniaPDG = cms.int32(pdgID),
                                     muonSel = cms.string(muonSelection),
@@ -104,7 +107,7 @@ def oniaTreeAnalyzer(process, HLTProName='HLT', muonSelection="Trk", useL1Stage2
                                     useEvtPlane = cms.untracked.bool(False),
                                     useGeTracks = cms.untracked.bool(False),
                                     runVersionChange = cms.untracked.uint32(182133),
-                                    
+
                                     #-- Histogram configuration
                                     combineCategories = cms.bool(False),
                                     fillRooDataSet    = cms.bool(False),
@@ -113,60 +116,25 @@ def oniaTreeAnalyzer(process, HLTProName='HLT', muonSelection="Trk", useL1Stage2
                                     minimumFlag       = cms.bool(False),
                                     fillSingleMuons   = cms.bool(True),
                                     fillRecoTracks    = cms.bool(False),
-                                    histFileName      = cms.string(outputFileName),		
+                                    histFileName      = cms.string(outputFileName),
                                     dataSetName       = cms.string("Jpsi_DataSet.root"),
-                                    
-                                    # HLT pPb MENU:  /users/anstahll/PA2016/PAMuon2016Full/V3
-                                    
-                                    dblTriggerPathNames = cms.vstring("HLT_PAL1DoubleMuOpen_v1",
-                                                                      "HLT_PAL1DoubleMuOpen_OS_v1",
-                                                                      "HLT_PAL1DoubleMuOpen_SS_v1",
-                                                                      "HLT_PAL2DoubleMuOpen_v1",
-                                                                      "HLT_PAL3DoubleMuOpen_v1",
-                                                                      "HLT_PAL3DoubleMuOpen_HIon_v1",
-                                                                      "HLT_PAL1DoubleMu0_v1",
-                                                                      "HLT_PAL1DoubleMu0_MGT1_v1",
-                                                                      "HLT_PAL1DoubleMu0_HighQ_v1",
-                                                                      "HLT_PAL1DoubleMu10_v1",
-                                                                      "HLT_PAL2DoubleMu10_v1",
-                                                                      "HLT_PAL3DoubleMu10_v1",
-                                                                      "HLT_PA2013L2DoubleMu3_v1"),
-                                    
-                                    dblTriggerFilterNames = cms.vstring("hltL1fL1sDoubleMuOpenBptxANDL1Filtered0",
-                                                                        "hltL1fL1sDoubleMuOpenOSBptxANDL1Filtered0",
-                                                                        "hltL1fL1sDoubleMuOpenSSBptxANDL1Filtered0",
-                                                                        "hltL2fL1sDoubleMuOpenBptxANDL1f0L2Filtered0",
-                                                                        "hltL3fL1sDoubleMuOpenBptxANDL1f0L2f0L3Filtered0",
-                                                                        "hltHIL3fL1sDoubleMuOpenBptxANDL1f0L2f0L3Filtered0",
-                                                                        "hltL1fL1sDoubleMu0BptxANDL1Filtered0",
-                                                                        "hltL1fL1sDoubleMu0MassGT1BptxANDL1Filtered0",
-                                                                        "hltL1fL1sDoubleMu0BptxANDL1HighQFiltered0",
-                                                                        "hltL1fL1sDoubleMu10BptxANDL1Filtered0",
-                                                                        "hltL2fL1sDoubleMu10BptxANDL1f0L2Filtered10",
-                                                                        "hltL3fL1sDoubleMu10BptxANDL1f0L2f10L3Filtered10",
-                                                                        "hltL2fL1sDoubleMuOpenBptxANDL1f0L2Filtered3"),
-                                    
-                                    sglTriggerPathNames = cms.vstring("HLT_PAL2Mu12_v1",
-                                                                      "HLT_PAL2Mu15_v1",
-                                                                      "HLT_PAL3Mu3_v1",
-                                                                      "HLT_PAL3Mu5_v1",
-                                                                      "HLT_PAL3Mu7_v1",
-                                                                      "HLT_PAL3Mu12_v1",
-                                                                      "HLT_PAL3Mu15_v1",
-                                                                      "HLT_PA2013Mu3_v1",
-                                                                      "HLT_PA2013Mu7_v1",
-                                                                      "HLT_PA2013Mu12_v1"),
 
-                                    sglTriggerFilterNames = cms.vstring("hltL2fL1sSingleMu7BptxANDL1f0L2Filtered12",
-                                                                        "hltL2fL1sSingleMu7BptxANDL1f0L2Filtered15",
-                                                                        "hltL3fL1sSingleMu3BptxANDL1f0L2f0L3Filtered3",
-                                                                        "hltL3fL1sSingleMu5BptxANDL1f0L2f0L3Filtered5",
-                                                                        "hltL3fL1sSingleMu5BptxANDL1f0L2f0L3Filtered7",
-                                                                        "hltL3fL1sSingleMu7BptxANDL1f0L2f0L3Filtered12",
-                                                                        "hltL3fL1sSingleMu7BptxANDL1f0L2f0L3Filtered15",
-                                                                        "hltL3fL1sSingleMu3BptxANDL1f0L2f3L3Filtered3",
-                                                                        "hltL3fL1sSingleMu7BptxANDL1f0L2f5L3Filtered7",
-                                                                        "hltL3fL1sSingleMu12BptxANDL1f0L2f10L3Filtered12")
+                                    dblTriggerPathNames = cms.vstring("HLT_PAL1DoubleMuOpen_v1",
+                                                                      "HLT_PAL1DoubleMu0_HighQ_v1",
+                                                                      "HLT_PAL2DoubleMu3_v1"),
+                                    
+                                    dblTriggerFilterNames = cms.vstring("hltL1fL1sPAL1DoubleMuOpenL1Filtered0",
+                                                                        "hltL1fL1sPAL1DoubleMu0HighQL1FilteredHighQ",
+                                                                        "hltL2fL1sPAL2DoubleMu3L2Filtered3"),
+                                    
+                                    sglTriggerPathNames = cms.vstring("HLT_PAMu3_v1",
+                                                                      "HLT_PAMu7_v1",
+                                                                      "HLT_PAMu12_v1"),
+                                    
+                                    sglTriggerFilterNames = cms.vstring("hltL3fL2sMu3L3Filtered3",
+                                                                        "hltL3fL2sMu7L3Filtered7",
+                                                                        "hltL3fL2sMu12L3Filtered12")
+
                                     )
 
     process.hionia.primaryVertexTag = cms.InputTag("offlinePrimaryVertices")
@@ -174,6 +142,6 @@ def oniaTreeAnalyzer(process, HLTProName='HLT', muonSelection="Trk", useL1Stage2
     process.hionia.muonLessPV       = cms.bool(False)
     process.hionia.CentralitySrc    = cms.InputTag("")
     process.hionia.CentralityBinSrc = cms.InputTag("")
-    process.hionia.srcTracks        = cms.InputTag("generalTracks")       
+    process.hionia.srcTracks        = cms.InputTag("generalTracks")
 
     process.oniaTreeAna = cms.EndPath(process.patMuonSequence * process.onia2MuMuPatGlbGlb * process.hionia )
