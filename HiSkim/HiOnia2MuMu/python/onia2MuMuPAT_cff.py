@@ -44,15 +44,16 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stag
     
     if useL1Stage2:
         useL1Stage2Candidates(process)
-        process.patTrigger.collections.append("hltGmtStage2Digis:Muon")
         process.muonMatchHLTL1.matchedCuts = cms.string('coll("hltGmtStage2Digis:Muon")')
         process.muonMatchHLTL1.useMB2InOverlap = cms.bool(True)
         process.muonMatchHLTL1.useStage2L1 = cms.bool(True)
         process.muonMatchHLTL1.preselection = cms.string("")
 
     process.muonL1Info.maxDeltaR = 0.3
+    process.muonL1Info.maxDeltaEta   = 0.2
     process.muonL1Info.fallbackToME1 = True
     process.muonMatchHLTL1.maxDeltaR = 0.3
+    process.muonMatchHLTL1.maxDeltaEta   = 0.2
     process.muonMatchHLTL1.fallbackToME1 = True
     process.muonMatchHLTL2.maxDeltaR = 0.3
     process.muonMatchHLTL2.maxDPtRel = 10.0
