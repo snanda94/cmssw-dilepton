@@ -98,6 +98,8 @@ void HLTInfo::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   l1stage2muqul = new int[kMaxL1Stage2Mu];
   l1stage2muchg = new int[kMaxL1Stage2Mu];
   l1stage2mubx = new int[kMaxL1Stage2Mu];
+  l1stage2mutfMuonIndex = new int[kMaxL1Stage2Mu];
+  l1stage2mutfRegion = new int[kMaxL1Stage2Mu];
   const int kMaxL1Stage2Jt = 10000;
   l1stage2jtet = new float[kMaxL1Stage2Jt];
   l1stage2jte = new float[kMaxL1Stage2Jt];
@@ -140,6 +142,8 @@ void HLTInfo::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   HltTree->Branch("L1Stage2MuonQual",l1stage2muqul,"L1Stage2MuonQual[NL1Stage2Muon]/I");
   HltTree->Branch("L1Stage2MuonChg",l1stage2muchg,"L1Stage2MuonChg[NL1Stage2Muon]/I");
   HltTree->Branch("L1Stage2MuonBx",l1stage2mubx,"L1Stage2MuonBx[NL1Stage2Muon]/I");
+  HltTree->Branch("L1Stage2MuontfMuonIndex",l1stage2mutfMuonIndex,"L1Stage2MuontfMuonIndex[NL1Stage2Muon]/I");
+  HltTree->Branch("L1Stage2MuontfRegion",l1stage2mutfRegion,"L1Stage2MuontfRegion[NL1Stage2Muon]/I");
   HltTree->Branch("NL1Stage2Jet",&nl1stage2jet,"NL1Stage2Jet/I");
   HltTree->Branch("L1Stage2JetEt",l1stage2jtet,"L1Stage2JetEt[NL1Stage2Jet]/F");
   HltTree->Branch("L1Stage2JetE",l1stage2jte,"L1Stage2JetE[NL1Stage2Jet]/F");
@@ -272,6 +276,17 @@ void HLTInfo::analyze(const edm::Handle<edm::TriggerResults>                 & h
         l1stage2muchg[il1stage2mu] = muItr->charge();
         l1stage2muqul[il1stage2mu] = muItr->hwQual(); // Muon quality at hardware level
         l1stage2mubx[il1stage2mu]  = iBx;
+        l1stage2mutfMuonIndex[il1stage2mu] = muItr->tfMuonIndex(); // Muon Track Finder Index
+        l1stage2mutfRegion[il1stage2mu] = -1;
+        if ( muItr->tfMuonIndex()>35 && muItr->tfMuonIndex()<72 ) {
+          l1stage2mutfRegion[il1stage2mu] = 0; // Barrel Muon Track Finder 
+        }
+        else if ( (muItr->tfMuonIndex()>17 && muItr->tfMuonIndex()<36) || (muItr->tfMuonIndex()>71 && muItr->tfMuonIndex()<90) ) {
+          l1stage2mutfRegion[il1stage2mu] = 1; // Overlap Muon Track Finder 
+        }
+        else if ( (muItr->tfMuonIndex()<18) || (muItr->tfMuonIndex()>89) ) {
+          l1stage2mutfRegion[il1stage2mu] = 2; // Endcap Muon Track Finder 
+        }
         il1stage2mu++;
       }
     }

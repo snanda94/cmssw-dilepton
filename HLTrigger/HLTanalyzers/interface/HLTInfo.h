@@ -84,7 +84,7 @@ private:
   float *hltppt, *hltpeta;
   float *l1stage2eget, *l1stage2ege, *l1stage2egeta, *l1stage2egphi;
   float *l1stage2mupt, *l1stage2mue, *l1stage2mueta, *l1stage2muphi;
-  int   *l1stage2muchg, *l1stage2muiso, *l1stage2muqul;
+  int   *l1stage2muchg, *l1stage2muiso, *l1stage2muqul, *l1stage2mutfMuonIndex, *l1stage2mutfRegion;
   float *l1stage2jtet, *l1stage2jte, *l1stage2jteta, *l1stage2jtphi;
   float *l1stage2tauet, *l1stage2taue, *l1stage2taueta, *l1stage2tauphi;
   int   *l1stage2etset, *l1stage2etsphi;
