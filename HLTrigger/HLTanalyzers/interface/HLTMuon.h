@@ -98,7 +98,7 @@ private:
   float *muonReco_pt, *muonReco_phi, *muonReco_eta, *muonReco_et, *muonReco_e, *muonReco_chi2NDF, *muonReco_D0;
   int   *muonReco_charge, *muonReco_type, *muonReco_NValidTrkHits, *muonReco_NValidMuonHits;
   float *muonL1_pt, *muonL1_eta, *muonL1_phi;
-  int   *muonL1_charge, *muonL1_bx, *muonL1_GMTMuonQuality;
+  int   *muonL1_charge, *muonL1_bx, *muonL1_GMTMuonQuality, *muonL1_tfMuonIndex, *muonL1_tfRegion;
   float *muonL2_pt, *muonL2_eta, *muonL2_phi, *muonL2_dr, *muonL2_drsign, *muonL2_dz, *muonL2_vtxz;
   float *muonL2_L1dr;
   float *muonL3_pt, *muonL3_ptLx, *muonL3_eta, *muonL3_phi, *muonL3_dr, *muonL3_dz, *muonL3_vtxz, *muonL3_normchi2; 
@@ -109,7 +109,7 @@ private:
   int *muonL2_charge, *muonL2_iso, *muonL2_nhits, *muonL2_nchambers, *muonL2_nstat, *muonL2_ndtcscstat, *muonL3_charge, *muonL3_iso, *muonL3_L2idx, *muonL3_nhits, *muonL2_L1idx, *muonL3_global2idx, *muonL3_globalchg;
   int *muonL3_npixelhits, *muonL3_ntrackerhits, *muonL3_nmuonhits, *muonL3_trk10iso;
 
-  float *dimuonL1_invmass, *dimuonL1_pt, *dimuonL1_rap;
+  float *dimuonL1_invmass, *dimuonL1_pt, *dimuonL1_rap, *dimuonL1_dR, *dimuonL1_phi;
   int *dimuonL1_charge, *dimuonL1_Mu1idx, *dimuonL1_Mu2idx;
 
   float *dimuonL2_invmass, *dimuonL2_pt, *dimuonL2_rap, *dimuonL2_dca, *dimuonL2_dPt, *dimuonL2_dPhi, *dimuonL2_angle;

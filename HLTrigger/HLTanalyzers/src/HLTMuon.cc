@@ -78,6 +78,8 @@ void HLTMuon::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   muonL1_GMTMuonQuality = new int[kMaxMuonL1];
   muonL1_charge = new int[kMaxMuonL1];
   muonL1_trig = new ULong64_t[kMaxMuonL1];
+  muonL1_tfMuonIndex = new int[kMaxMuonL1];
+  muonL1_tfRegion = new int[kMaxMuonL1];
 
   const int kMaxMuonL2 = 10000;
   muonL2_pt = new float[kMaxMuonL2];
@@ -165,6 +167,8 @@ void HLTMuon::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   dimuonL1_Mu1idx = new int[kMaxDiMuL1];
   dimuonL1_Mu2idx = new int[kMaxDiMuL1];
   dimuonL1_trig = new ULong64_t[kMaxDiMuL1];
+  dimuonL1_dR = new float[kMaxDiMuL1];
+  dimuonL1_phi = new float[kMaxDiMuL1];
 
   const int kMaxDiMuL2 = 10000;
   dimuonL2_charge = new int[kMaxDiMuL2];
@@ -214,6 +218,8 @@ void HLTMuon::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   HltTree->Branch("MuonL1_Charge",          muonL1_charge,          "MuonL1_Charge[MuonL1_N]/I");
   HltTree->Branch("MuonL1_Bx",              muonL1_bx,              "MuonL1_Bx[MuonL1_N]/I");
   HltTree->Branch("MuonL1_GMTMuonQuality",  muonL1_GMTMuonQuality,  "MuonL1_GMTMuonQuality[MuonL1_N]/I");
+  HltTree->Branch("MuonL1_tfMuonIndex",     muonL1_tfMuonIndex,     "MuonL1_tfMuonIndex[MuonL1_N]/I");
+  HltTree->Branch("MuonL1_tfRegion",        muonL1_tfRegion,        "MuonL1_tfRegion[MuonL1_N]/I");
 
   HltTree->Branch("MuonL2_N",           &nmuonL2,          "MuonL2_N/I");
   HltTree->Branch("MuonL2_trig",        muonL2_trig,       "MuonL2_trig[MuonL2_N]/l");
@@ -270,6 +276,8 @@ void HLTMuon::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   HltTree->Branch("DiMuonL1_Charge",   dimuonL1_charge,   "DiMuonL1_Charge[DiMuonL1_N]/I");
   HltTree->Branch("DiMuonL1_Mu1idx",   dimuonL1_Mu1idx,   "DiMuonL1_Mu1idx[DiMuonL1_N]/I");    
   HltTree->Branch("DiMuonL1_Mu2idx",   dimuonL1_Mu2idx,   "DiMuonL1_Mu2idx[DiMuonL1_N]/I");
+  HltTree->Branch("DiMuonL1_dR",       dimuonL1_dR,       "DiMuonL1_dR[DiMuonL1_N]/F");  
+  HltTree->Branch("DiMuonL1_phi",      dimuonL1_phi,      "DiMuonL1_phi[DiMuonL1_N]/F");  
 
   HltTree->Branch("DiMuonL2_N",       &nDiMuonL2,         "DiMuonL2_N/I");
   HltTree->Branch("DiMuonL2_trig",     dimuonL2_trig,     "DiMuonL2_trig[DiMuonL2_N]/l");
@@ -454,7 +462,21 @@ void HLTMuon::analyze(const edm::Event & event,
         muonL1_GMTMuonQuality[imu1c] = l1->hwQual();
         muonL1_charge[imu1c] = l1->charge();
 
-
+        muonL1_tfMuonIndex[imu1c] = l1->tfMuonIndex();
+        muonL1_tfRegion[imu1c] = -1;
+        if ( l1->tfMuonIndex()>35 && l1->tfMuonIndex()<72 ) 
+          {
+            muonL1_tfRegion[imu1c] = 0; // Barrel Muon Track Finder 
+          }
+        else if ( (l1->tfMuonIndex()>17 && l1->tfMuonIndex()<36) || (l1->tfMuonIndex()>71 && l1->tfMuonIndex()<90) )
+          {
+            muonL1_tfRegion[imu1c] = 1; // Overlap Muon Track Finder 
+          }
+        else if ( (l1->tfMuonIndex()<18) || (l1->tfMuonIndex()>89) ) 
+          {
+            muonL1_tfRegion[imu1c] = 2; // Endcap Muon Track Finder 
+          }
+         
         int imu1c2nd = imu1c + 1;// This will be the index in the hltTree for the 2nd muon of the dimuon combination
 
         for (cand l1_2nd=l1; l1_2nd!=MuCands1->end(i); l1_2nd++) if (l1!=l1_2nd) {//Loop over all L1 muons from the one we are already treating
@@ -499,6 +521,11 @@ void HLTMuon::analyze(const edm::Event & event,
             dimuonL1_invmass[idimu1c] = p.mass();
             dimuonL1_pt[idimu1c] = p.pt();
             dimuonL1_rap[idimu1c] = p.Rapidity();
+
+            Double_t deta = p1.Eta()-p2.Eta();
+            Double_t dphi = TVector2::Phi_mpi_pi(p1.Phi()-p2.Phi());
+            dimuonL1_dR[idimu1c] = TMath::Sqrt( deta*deta+dphi*dphi );
+            dimuonL1_phi[idimu1c] = p.Phi();
 
             imu1c2nd++;
             idimu1c++;
