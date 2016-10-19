@@ -209,6 +209,14 @@ private:
   int  Reco_QQ_NtrkDeltaR04[Max_QQ_size];
   int  Reco_QQ_NtrkDeltaR05[Max_QQ_size];
 
+  bool Reco_QQ_mupl_isPFMuon[Max_QQ_size];      // Vector of isPFMuon for plus muon
+  bool Reco_QQ_mumi_isPFMuon[Max_QQ_size];      // Vector of isPFMuon for minus muon
+  bool Reco_QQ_mupl_isLooseMuon[Max_QQ_size];      // Vector of isLooseMuon for plus muon
+  bool Reco_QQ_mumi_isLooseMuon[Max_QQ_size];      // Vector of isLooseMuon for minus muon
+  bool Reco_QQ_mupl_isTightMuon[Max_QQ_size];      // Vector of isTightMuon for plus muon
+  bool Reco_QQ_mumi_isTightMuon[Max_QQ_size];      // Vector of isTightMuon for minus muon
+  bool Reco_QQ_mupl_isHighPtMuon[Max_QQ_size];      // Vector of isHighPtMuon for plus muon
+  bool Reco_QQ_mumi_isHighPtMuon[Max_QQ_size];      // Vector of isHighPtMuon for minus muon
   bool Reco_QQ_mupl_isGoodMuon[Max_QQ_size];      // Vector of isGoodMuon(TMOneStationTight) for plus muon
   bool Reco_QQ_mumi_isGoodMuon[Max_QQ_size];      // Vector of isGoodMuon(TMOneStationTight) for minus muon
   bool Reco_QQ_mupl_highPurity[Max_QQ_size];      // Vector of high purity flag for plus muon
@@ -259,6 +267,10 @@ private:
   int Reco_mu_charge[Max_mu_size];  // Vector of charge of muons
   int Reco_mu_type[Max_mu_size];  // Vector of type of muon (global=0, tracker=1, calo=2)  
 
+  bool Reco_mu_isPFMuon[Max_mu_size];    // Vector of isPFMuon
+  bool Reco_mu_isLooseMuon[Max_mu_size];    // Vector of isLooseMuon
+  bool Reco_mu_isTightMuon[Max_mu_size];    // Vector of isTightMuon
+  bool Reco_mu_isHighPtMuon[Max_mu_size];    // Vector of isHighPtMuon
   bool Reco_mu_isGoodMuon[Max_mu_size];    // Vector of isGoodMuon(TMOneStationTight)
   bool Reco_mu_highPurity[Max_mu_size];    // Vector of high purity flag  
   bool Reco_mu_TrkMuArb[Max_mu_size];      // Vector of TrackerMuonArbitrated
@@ -415,6 +427,7 @@ private:
   float RefVtx_zError;
   float zVtx;
   float nPV;
+  reco::Vertex recoRefVtx;
 
  // Triger stuff
   // PUT HERE THE *LAST FILTERS* OF THE BITS YOU LIKE
@@ -610,11 +623,13 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     RefVtx_xError = privtx->xError();
     RefVtx_yError = privtx->yError();
     RefVtx_zError = privtx->zError();
+    recoRefVtx = reco::Vertex(privtx->position(),privtx->error());
   } else {
     RefVtx.SetXYZ(0.,0.,0.);
     RefVtx_xError = 0.0;
     RefVtx_yError = 0.0;
     RefVtx_zError = 0.0;
+    recoRefVtx = reco::Vertex(reco::Vertex::Point(),reco::Vertex::Error());
   }
 
   zVtx = RefVtx.Z();
@@ -813,6 +828,10 @@ HiOniaAnalyzer::fillTreeMuon(const pat::Muon* muon, int iType, ULong64_t trigBit
   if (!_theMinimumFlag) {
     Reco_mu_SelectionType[Reco_mu_size] = muonIDmask(muon);
     Reco_mu_highPurity[Reco_mu_size] = iTrack->quality(reco::TrackBase::highPurity);
+    Reco_mu_isPFMuon[Reco_mu_size] = muon->isPFMuon();
+    Reco_mu_isLooseMuon[Reco_mu_size] = muon::isLooseMuon(*muon);
+    Reco_mu_isTightMuon[Reco_mu_size] = muon::isTightMuon(*muon,recoRefVtx);
+    Reco_mu_isHighPtMuon[Reco_mu_size] = muon::isHighPtMuon(*muon,recoRefVtx);
     Reco_mu_isGoodMuon[Reco_mu_size] = muon::isGoodMuon(*muon, muon::TMOneStationTight);
     Reco_mu_TrkMuArb[Reco_mu_size] = muon->muonID("TrackerMuonArbitrated");
     Reco_mu_TMOneStaTight[Reco_mu_size] = muon->muonID("TMOneStationTight");
@@ -877,12 +896,14 @@ HiOniaAnalyzer::fillTreeJpsi(int iSign, int count) {
 
   if (!(_isHI || _isPA) && _muonLessPrimaryVertex && aJpsiCand->hasUserData("muonlessPV")) {
     RefVtx = (*aJpsiCand->userData<reco::Vertex>("muonlessPV")).position();
+    recoRefVtx = *aJpsiCand->userData<reco::Vertex>("muonlessPV");
     RefVtx_xError = (*aJpsiCand->userData<reco::Vertex>("muonlessPV")).xError();
     RefVtx_yError = (*aJpsiCand->userData<reco::Vertex>("muonlessPV")).yError();
     RefVtx_zError = (*aJpsiCand->userData<reco::Vertex>("muonlessPV")).zError();
   }
   else if (!_muonLessPrimaryVertex && aJpsiCand->hasUserData("PVwithmuons")) {
     RefVtx = (*aJpsiCand->userData<reco::Vertex>("PVwithmuons")).position();
+    recoRefVtx = *aJpsiCand->userData<reco::Vertex>("PVwithmuons");
     RefVtx_xError = (*aJpsiCand->userData<reco::Vertex>("PVwithmuons")).xError();
     RefVtx_yError = (*aJpsiCand->userData<reco::Vertex>("PVwithmuons")).yError();
     RefVtx_zError = (*aJpsiCand->userData<reco::Vertex>("PVwithmuons")).zError();
@@ -919,6 +940,14 @@ HiOniaAnalyzer::fillTreeJpsi(int iSign, int count) {
     Reco_QQ_mupl_StationsMatched[Reco_QQ_size] = muon1->numberOfMatchedStations();
     Reco_QQ_mumi_StationsMatched[Reco_QQ_size] = muon2->numberOfMatchedStations();
 
+    Reco_QQ_mupl_isPFMuon[Reco_QQ_size] = muon1->isPFMuon();
+    Reco_QQ_mumi_isPFMuon[Reco_QQ_size] = muon2->isPFMuon();
+    Reco_QQ_mupl_isLooseMuon[Reco_QQ_size] = muon::isLooseMuon(*muon1);
+    Reco_QQ_mumi_isLooseMuon[Reco_QQ_size] = muon::isLooseMuon(*muon2);
+    Reco_QQ_mupl_isTightMuon[Reco_QQ_size] = muon::isTightMuon(*muon1,recoRefVtx);
+    Reco_QQ_mumi_isTightMuon[Reco_QQ_size] = muon::isTightMuon(*muon2,recoRefVtx);
+    Reco_QQ_mupl_isHighPtMuon[Reco_QQ_size] = muon::isHighPtMuon(*muon1,recoRefVtx);
+    Reco_QQ_mumi_isHighPtMuon[Reco_QQ_size] = muon::isHighPtMuon(*muon2,recoRefVtx);
     Reco_QQ_mupl_isGoodMuon[Reco_QQ_size] = muon::isGoodMuon(*muon1, muon::TMOneStationTight);
     Reco_QQ_mumi_isGoodMuon[Reco_QQ_size] = muon::isGoodMuon(*muon2, muon::TMOneStationTight);
 
@@ -953,6 +982,14 @@ HiOniaAnalyzer::fillTreeJpsi(int iSign, int count) {
     Reco_QQ_mupl_StationsMatched[Reco_QQ_size] = muon2->numberOfMatchedStations();
     Reco_QQ_mumi_StationsMatched[Reco_QQ_size] = muon1->numberOfMatchedStations();
 
+    Reco_QQ_mupl_isPFMuon[Reco_QQ_size] = muon2->isPFMuon();
+    Reco_QQ_mumi_isPFMuon[Reco_QQ_size] = muon1->isPFMuon();
+    Reco_QQ_mupl_isLooseMuon[Reco_QQ_size] = muon::isLooseMuon(*muon2);
+    Reco_QQ_mumi_isLooseMuon[Reco_QQ_size] = muon::isLooseMuon(*muon1);
+    Reco_QQ_mupl_isTightMuon[Reco_QQ_size] = muon::isTightMuon(*muon2,recoRefVtx);
+    Reco_QQ_mumi_isTightMuon[Reco_QQ_size] = muon::isTightMuon(*muon1,recoRefVtx);
+    Reco_QQ_mupl_isHighPtMuon[Reco_QQ_size] = muon::isHighPtMuon(*muon2,recoRefVtx);
+    Reco_QQ_mumi_isHighPtMuon[Reco_QQ_size] = muon::isHighPtMuon(*muon1,recoRefVtx);
     Reco_QQ_mupl_isGoodMuon[Reco_QQ_size] = muon::isGoodMuon(*muon2, muon::TMOneStationTight);
     Reco_QQ_mumi_isGoodMuon[Reco_QQ_size] = muon::isGoodMuon(*muon1, muon::TMOneStationTight);
 
@@ -1864,6 +1901,14 @@ HiOniaAnalyzer::InitTree()
   if (!_theMinimumFlag) {
     myTree->Branch("Reco_QQ_mupl_SelectionType", Reco_QQ_mupl_SelectionType,   "Reco_QQ_mupl_SelectionType[Reco_QQ_size]/I");
     myTree->Branch("Reco_QQ_mumi_SelectionType", Reco_QQ_mumi_SelectionType,   "Reco_QQ_mumi_SelectionType[Reco_QQ_size]/I");
+    myTree->Branch("Reco_QQ_mupl_isPFMuon", Reco_QQ_mupl_isPFMuon,   "Reco_QQ_mupl_isPFMuon[Reco_QQ_size]/O");
+    myTree->Branch("Reco_QQ_mumi_isPFMuon", Reco_QQ_mumi_isPFMuon,   "Reco_QQ_mumi_isPFMuon[Reco_QQ_size]/O");
+    myTree->Branch("Reco_QQ_mupl_isLooseMuon", Reco_QQ_mupl_isLooseMuon,   "Reco_QQ_mupl_isLooseMuon[Reco_QQ_size]/O");
+    myTree->Branch("Reco_QQ_mumi_isLooseMuon", Reco_QQ_mumi_isLooseMuon,   "Reco_QQ_mumi_isLooseMuon[Reco_QQ_size]/O");
+    myTree->Branch("Reco_QQ_mupl_isTightMuon", Reco_QQ_mupl_isTightMuon,   "Reco_QQ_mupl_isTightMuon[Reco_QQ_size]/O");
+    myTree->Branch("Reco_QQ_mumi_isTightMuon", Reco_QQ_mumi_isTightMuon,   "Reco_QQ_mumi_isTightMuon[Reco_QQ_size]/O");
+    myTree->Branch("Reco_QQ_mupl_isHighPtMuon", Reco_QQ_mupl_isHighPtMuon,   "Reco_QQ_mupl_isHighPtMuon[Reco_QQ_size]/O");
+    myTree->Branch("Reco_QQ_mumi_isHighPtMuon", Reco_QQ_mumi_isHighPtMuon,   "Reco_QQ_mumi_isHighPtMuon[Reco_QQ_size]/O");
     myTree->Branch("Reco_QQ_mupl_isGoodMuon", Reco_QQ_mupl_isGoodMuon,   "Reco_QQ_mupl_isGoodMuon[Reco_QQ_size]/O");
     myTree->Branch("Reco_QQ_mumi_isGoodMuon", Reco_QQ_mumi_isGoodMuon,   "Reco_QQ_mumi_isGoodMuon[Reco_QQ_size]/O");
     myTree->Branch("Reco_QQ_mupl_highPurity", Reco_QQ_mupl_highPurity,   "Reco_QQ_mupl_highPurity[Reco_QQ_size]/O");
@@ -1930,6 +1975,10 @@ HiOniaAnalyzer::InitTree()
   }
 
   if (!_theMinimumFlag) {
+    myTree->Branch("Reco_mu_isPFMuon", Reco_mu_isPFMuon,   "Reco_mu_isPFMuon[Reco_mu_size]/O");
+    myTree->Branch("Reco_mu_isLooseMuon", Reco_mu_isLooseMuon,   "Reco_mu_isLooseMuon[Reco_mu_size]/O");
+    myTree->Branch("Reco_mu_isTightMuon", Reco_mu_isTightMuon,   "Reco_mu_isTightMuon[Reco_mu_size]/O");
+    myTree->Branch("Reco_mu_isHighPtMuon", Reco_mu_isHighPtMuon,   "Reco_mu_isHighPtMuon[Reco_mu_size]/O");
     myTree->Branch("Reco_mu_isGoodMuon", Reco_mu_isGoodMuon,   "Reco_mu_isGoodMuon[Reco_mu_size]/O");
     myTree->Branch("Reco_mu_highPurity", Reco_mu_highPurity,   "Reco_mu_highPurity[Reco_mu_size]/O");
     myTree->Branch("Reco_mu_TrkMuArb", Reco_mu_TrkMuArb,   "Reco_mu_TrkMuArb[Reco_mu_size]/O");
@@ -2162,7 +2211,18 @@ HiOniaAnalyzer::hltReport(const edm::Event &iEvent ,const edm::EventSetup& iSetu
       unsigned int triggerIndex= hltConfig.triggerIndex( it->first );
       if (it->first == "NoTrigger") continue;
       if (triggerIndex >= n) {
-              std::cout << "[HiOniaAnalyzer::hltReport] --- TriggerName " << it->first << " not available in config!" << std::endl;
+         // if there is a wildcard in the trigger name... try all versions from 0 to 99
+         for (unsigned int itrig=0; itrig<100; itrig++) {
+            TString tmptstr(it->first);
+            tmptstr.ReplaceAll("*",Form("%i",itrig));
+            string tmpstr(tmptstr.Data());
+            triggerIndex = hltConfig.triggerIndex(tmpstr);
+            if (triggerIndex < n) {
+               it->second = triggerIndex;
+               break;
+            }
+         }
+         if (triggerIndex >= n) std::cout << "[HiOniaAnalyzer::hltReport] --- TriggerName " << it->first << " not available in config!" << std::endl;
       }
       else {
         it->second= triggerIndex;
