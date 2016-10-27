@@ -98,7 +98,7 @@ def oniaTreeAnalyzer(process, HLTProName='HLT', muonSelection="Trk", useL1Stage2
                                     oniaPDG = cms.int32(pdgID),
                                     muonSel = cms.string(muonSelection),
                                     isHI = cms.untracked.bool(False),
-                                    isPA = cms.untracked.bool(False),
+                                    isPA = cms.untracked.bool(True),
                                     isMC = cms.untracked.bool(isMC),
                                     isPromptMC = cms.untracked.bool(True),
                                     useEvtPlane = cms.untracked.bool(False),
@@ -129,8 +129,7 @@ def oniaTreeAnalyzer(process, HLTProName='HLT', muonSelection="Trk", useL1Stage2
                                                                       "HLT_PAL3DoubleMu0_HIon_v1",
                                                                       "HLT_PAL1DoubleMu10_v1",
                                                                       "HLT_PAL2DoubleMu10_v1",
-                                                                      "HLT_PAL3DoubleMu10_v1",
-                                                                      "HLT_PA2013L2DoubleMu3_v1"),
+                                                                      "HLT_PAL3DoubleMu10_v1"),
                                     
                                     dblTriggerFilterNames = cms.vstring("hltL1fL1sDoubleMuOpenBptxANDL1Filtered0",
                                                                         "hltL1fL1sDoubleMuOpenOSBptxANDL1Filtered0",
@@ -143,8 +142,7 @@ def oniaTreeAnalyzer(process, HLTProName='HLT', muonSelection="Trk", useL1Stage2
                                                                         "hltHIL3fL1sDoubleMuOpenBptxANDL1f0L2f0L3Filtered0",
                                                                         "hltL1fL1sDoubleMu10BptxANDL1Filtered0",
                                                                         "hltL2fL1sDoubleMu10BptxANDL1f0L2Filtered10",
-                                                                        "hltL3fL1sDoubleMu10BptxANDL1f0L2f10L3Filtered10",
-                                                                        "hltL2fL1sDoubleMuOpenBptxANDL1f0L2Filtered3"),
+                                                                        "hltL3fL1sDoubleMu10BptxANDL1f0L2f10L3Filtered10"),
                                     
                                     sglTriggerPathNames = cms.vstring("HLT_PAL2Mu12_v1",
                                                                       "HLT_PAL2Mu15_v1",
@@ -152,10 +150,7 @@ def oniaTreeAnalyzer(process, HLTProName='HLT', muonSelection="Trk", useL1Stage2
                                                                       "HLT_PAL3Mu5_v1",
                                                                       "HLT_PAL3Mu7_v1",
                                                                       "HLT_PAL3Mu12_v1",
-                                                                      "HLT_PAL3Mu15_v1",
-                                                                      "HLT_PA2013Mu3_v1",
-                                                                      "HLT_PA2013Mu7_v1",
-                                                                      "HLT_PA2013Mu12_v1"),
+                                                                      "HLT_PAL3Mu15_v1"),
 
                                     sglTriggerFilterNames = cms.vstring("hltL2fL1sSingleMu7BptxANDL1f0L2Filtered12",
                                                                         "hltL2fL1sSingleMu7BptxANDL1f0L2Filtered15",
@@ -163,10 +158,7 @@ def oniaTreeAnalyzer(process, HLTProName='HLT', muonSelection="Trk", useL1Stage2
                                                                         "hltL3fL1sSingleMu5BptxANDL1f0L2f0L3Filtered5",
                                                                         "hltL3fL1sSingleMu5BptxANDL1f0L2f0L3Filtered7",
                                                                         "hltL3fL1sSingleMu7BptxANDL1f0L2f0L3Filtered12",
-                                                                        "hltL3fL1sSingleMu7BptxANDL1f0L2f0L3Filtered15",
-                                                                        "hltL3fL1sSingleMu3BptxANDL1f0L2f3L3Filtered3",
-                                                                        "hltL3fL1sSingleMu7BptxANDL1f0L2f5L3Filtered7",
-                                                                        "hltL3fL1sSingleMu12BptxANDL1f0L2f10L3Filtered12")
+                                                                        "hltL3fL1sSingleMu7BptxANDL1f0L2f0L3Filtered15")
                                     )
 
     process.hionia.primaryVertexTag = cms.InputTag("offlinePrimaryVertices")
