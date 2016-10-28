@@ -98,7 +98,7 @@ def oniaTreeAnalyzer(process, HLTProName='HLT', muonSelection="Trk", useL1Stage2
                                     oniaPDG = cms.int32(pdgID),
                                     muonSel = cms.string(muonSelection),
                                     isHI = cms.untracked.bool(False),
-                                    isPA = cms.untracked.bool(True),
+                                    isPA = cms.untracked.bool(False),
                                     isMC = cms.untracked.bool(isMC),
                                     isPromptMC = cms.untracked.bool(True),
                                     useEvtPlane = cms.untracked.bool(False),
