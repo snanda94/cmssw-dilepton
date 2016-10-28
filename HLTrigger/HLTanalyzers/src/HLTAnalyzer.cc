@@ -49,16 +49,16 @@ HLTAnalyzer::HLTAnalyzer(edm::ParameterSet const& conf) :
     //    where there is purposefully this duplication because FastSim does the 
     //    simulation of muons seperately, and needs the same collection.
  
-    l1extramu_        = conf.getParameter<std::string>   ("l1extramu");
-    m_l1stage2mu      = edm::InputTag(l1extramu_,  "Muon");
-    m_l1stage2eg      = edm::InputTag("hltCaloStage2Digis", "EGamma");
-    m_l1stage2jet     = edm::InputTag("hltCaloStage2Digis", "Jet");
-    m_l1stage2tau     = edm::InputTag("hltCaloStage2Digis", "Tau");
-    m_l1stage2ets     = edm::InputTag("hltCaloStage2Digis", "EtSum");
-    m_l1stage2ct      = edm::InputTag("hltCaloStage2Digis", "CaloTower");
+    gmtstage2_      = conf.getParameter<std::string>   ("gmtStage2Digis");
+    calostage2_     = conf.getParameter<std::string>   ("caloStage2Digis");
+    m_l1stage2mu      = edm::InputTag(gmtstage2_,  "Muon");
+    m_l1stage2eg      = edm::InputTag(calostage2_, "EGamma");
+    m_l1stage2jet     = edm::InputTag(calostage2_, "Jet");
+    m_l1stage2tau     = edm::InputTag(calostage2_, "Tau");
+    m_l1stage2ets     = edm::InputTag(calostage2_, "EtSum");
 
     hltresults_       = conf.getParameter<edm::InputTag> ("hltresults");
-    gtReadoutRecord_  = conf.getParameter<edm::InputTag> ("l1GtReadoutRecord");
+    gObjectMapRecord_ = conf.getParameter<edm::InputTag> ("gObjectMapRecord");
     
     MuCandTag2_          = conf.getParameter<edm::InputTag> ("MuCandTag2");
     MuCandTag3_          = conf.getParameter<edm::InputTag> ("MuCandTag3");
@@ -99,9 +99,8 @@ HLTAnalyzer::HLTAnalyzer(edm::ParameterSet const& conf) :
     l1stage2jetToken_  = consumes< BXVector<l1t::Jet> >(m_l1stage2jet);
     l1stage2tauToken_  = consumes< BXVector<l1t::Tau> >(m_l1stage2tau);
     l1stage2etsToken_  = consumes< BXVector<l1t::EtSum> >(m_l1stage2ets);
-    l1stage2ctToken_   = consumes< BXVector<l1t::CaloTower> >(m_l1stage2ct);
 
-    gtReadoutRecordToken_ = consumes<L1GlobalTriggerReadoutRecord>(gtReadoutRecord_);
+    gObjectMapRecordToken_ = consumes<GlobalObjectMapRecord>(gObjectMapRecord_);
 
     MuCandTag2Token_ = consumes<reco::RecoChargedCandidateCollection>(MuCandTag2_);
     MuCandTag3Token_ = consumes<reco::RecoChargedCandidateCollection>(MuCandTag3_);
@@ -157,13 +156,12 @@ void HLTAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetu
     std::vector< edm::Handle<trigger::TriggerFilterObjectWithRefs> > muonFilterCollections;
 
     edm::Handle<edm::TriggerResults>                  hltresults;
-    edm::Handle<L1GlobalTriggerReadoutRecord>         l1GtRR;
+    edm::Handle<GlobalObjectMapRecord>                l1GoMR;
     edm::Handle< BXVector<l1t::EGamma> >              l1stage2eg;
     edm::Handle< BXVector<l1t::Muon> >                l1stage2mu;
     edm::Handle< BXVector<l1t::Jet> >                 l1stage2jet;
     edm::Handle< BXVector<l1t::Tau> >                 l1stage2tau;
     edm::Handle< BXVector<l1t::EtSum> >               l1stage2ets;
-    edm::Handle< BXVector<l1t::CaloTower> >           l1stage2ct;
 
     edm::Handle<reco::MuonCollection>                 muon;
     
@@ -196,19 +194,18 @@ void HLTAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetu
     BSPosition = recoBeamSpotHandle->position();
     getCollection( iEvent, missing, muon,            muon_,              muonToken_,              kMuon );
     getCollection( iEvent, missing, hltresults,      hltresults_,        hltresultsToken_,        kHltresults );
-    getCollection( iEvent, missing, l1stage2eg,      m_l1stage2eg,       l1stage2egToken_,      "L1 Stage2 EGamma objects" );
-    getCollection( iEvent, missing, l1stage2mu,      m_l1stage2mu,       l1stage2muToken_,      "L1 Stage2 Muon objects" );
-    getCollection( iEvent, missing, l1stage2jet,     m_l1stage2jet,      l1stage2jetToken_,     "L1 Stage2 Jet objects" );
-    getCollection( iEvent, missing, l1stage2tau,     m_l1stage2tau,      l1stage2tauToken_,     "L1 Stage2 Tau objects" );
-    getCollection( iEvent, missing, l1stage2ets,     m_l1stage2ets,      l1stage2etsToken_,     "L1 Stage2 EtSum objects" );
-    getCollection( iEvent, missing, l1stage2ct,      m_l1stage2ct,       l1stage2ctToken_,      "L1 Stage2 CaloTower objects" );
+    getCollection( iEvent, missing, l1GoMR,          gObjectMapRecord_,  gObjectMapRecordToken_,  "L1 Stage2 Global Object Map Record" );
+    getCollection( iEvent, missing, l1stage2eg,      m_l1stage2eg,       l1stage2egToken_,        "L1 Stage2 EGamma objects" );
+    getCollection( iEvent, missing, l1stage2mu,      m_l1stage2mu,       l1stage2muToken_,        "L1 Stage2 Muon objects" );
+    getCollection( iEvent, missing, l1stage2jet,     m_l1stage2jet,      l1stage2jetToken_,       "L1 Stage2 Jet objects" );
+    getCollection( iEvent, missing, l1stage2tau,     m_l1stage2tau,      l1stage2tauToken_,       "L1 Stage2 Tau objects" );
+    getCollection( iEvent, missing, l1stage2ets,     m_l1stage2ets,      l1stage2etsToken_,       "L1 Stage2 EtSum objects" );
     getCollection( iEvent, missing, mucands2,        MuCandTag2_,        MuCandTag2Token_,        kMucands2 );
     getCollection( iEvent, missing, mucands3,        MuCandTag3_,        MuCandTag3Token_,        kMucands3 );
     getCollection( iEvent, missing, L3TkTracksFromL2OIState, L3TkTracksFromL2OIStateTag_, L3TkTracksFromL2OIStateToken_, "L3TkTracksFromL2OIState" );
     getCollection( iEvent, missing, L3TkTracksFromL2OIHit, L3TkTracksFromL2OIHitTag_, L3TkTracksFromL2OIHitToken_, "L3TkTracksFromL2OIHit" );
     //getCollection( iEvent, missing, recoVertexsHLT,           VertexTagHLT_,              VertexHLTToken_,              kRecoVerticesHLT );
     //getCollection( iEvent, missing, recoVertexsOffline0,      VertexTagOffline0_,         VertexOffline0Token_,         kRecoVerticesOffline0 );
-    iEvent.getByToken(gtReadoutRecordToken_, l1GtRR); // kept for legacy support
 
     // print missing collections
     if (not missing.empty() and (errCnt < errMax())) {
@@ -235,21 +232,20 @@ void HLTAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetu
 			   theMagField,
                            recoBeamSpotHandle,
                            HltTree);
-    
+
     // run the analysis, passing required event fragments
     hlt_analysis_.analyze(
                           hltresults,
-                          l1GtRR,
                           l1stage2eg,
                           l1stage2mu,
                           l1stage2jet,
                           l1stage2tau,
                           l1stage2ets,
-                          l1stage2ct,
+                          l1GoMR,
                           iSetup,
                           iEvent,
                           HltTree);
-    
+
                           /*
     vrt_analysisHLT_.analyze(
 			     recoVertexsHLT,
