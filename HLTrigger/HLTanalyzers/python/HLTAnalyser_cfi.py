@@ -14,6 +14,8 @@ hltanalysis = cms.EDAnalyzer("HLTAnalyzer",
     filterEff                       = cms.untracked.double(1.),
 
     ### L1 Stage 2 objects
+    l1tAlgBlkInputTag               = cms.InputTag("hltGtStage2Digis"),  # Needed, fix bug of GlobalAlgBlk uninitialized token
+    l1tExtBlkInputTag               = cms.InputTag("hltGtStage2Digis"),
     gObjectMapRecord                = cms.InputTag("hltGtStage2ObjectMap"),
     gmtStage2Digis                  = cms.string("hltGmtStage2Digis"),
     caloStage2Digis                 = cms.string("hltCaloStage2Digis"),

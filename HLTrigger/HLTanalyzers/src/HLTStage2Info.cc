@@ -58,6 +58,7 @@ void HLTStage2Info::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   }
 
   getPrescales_ = pSet.getUntrackedParameter<bool>("getPrescales", false);
+  getL1InfoFromEventSetup_ = pSet.getUntrackedParameter<bool>("getL1InfoFromEventSetup", true);
   dummyBranches_ = pSet.getUntrackedParameter<std::vector<std::string> >("dummyBranches",std::vector<std::string>(0));
 
   HltEvtCnt = 0;
@@ -66,6 +67,7 @@ void HLTStage2Info::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   trigPrescl = new int[kMaxTrigFlag];
   L1TEvtCnt = 0;
   const int kMaxL1TFlag = 10000;
+  l1TInitialFlag = new int[kMaxL1TFlag];
   l1TFinalFlag = new int[kMaxL1TFlag];
   l1TPrescl = new int[kMaxL1TFlag];
   const int kMaxHLTPart = 10000;
@@ -111,8 +113,10 @@ void HLTStage2Info::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   l1stage2tauphi = new float[kMaxL1Stage2Tau];
   l1stage2taubx = new int[kMaxL1Stage2Tau];
   const int kMaxL1Stage2EtS = 10000;
-  l1stage2etset = new int[kMaxL1Stage2EtS];
-  l1stage2etsphi = new int[kMaxL1Stage2EtS];
+  l1stage2etset = new float[kMaxL1Stage2EtS];
+  l1stage2etsphi = new float[kMaxL1Stage2EtS];
+  l1stage2etshwet = new int[kMaxL1Stage2EtS];
+  l1stage2etshwphi = new int[kMaxL1Stage2EtS];
   l1stage2etstype = new int[kMaxL1Stage2EtS];
   l1stage2etsbx = new int[kMaxL1Stage2EtS];
 
@@ -158,8 +162,10 @@ void HLTStage2Info::setup(const edm::ParameterSet& pSet, TTree* HltTree) {
   HltTree->Branch("L1Stage2TauPhi",l1stage2tauphi,"L1Stage2TauPhi[NL1Stage2Tau]/F");
   HltTree->Branch("L1Stage2TauBx",l1stage2taubx,"L1Stage2TauBx[NL1Stage2Tau]/I");
   HltTree->Branch("NL1Stage2EtSum",&nl1stage2ets,"NL1Stage2EtSum/I");
-  HltTree->Branch("L1Stage2EtSumEt",l1stage2etset,"L1Stage2EtSumEt[NL1Stage2EtSum]/I");
-  HltTree->Branch("L1Stage2EtSumPhi",l1stage2etsphi,"L1Stage2EtSumPhi[NL1Stage2EtSum]/I");
+  HltTree->Branch("L1Stage2EtSumEt",l1stage2etset,"L1Stage2EtSumEt[NL1Stage2EtSum]/F");
+  HltTree->Branch("L1Stage2EtSumPhi",l1stage2etsphi,"L1Stage2EtSumPhi[NL1Stage2EtSum]/F");
+  HltTree->Branch("L1Stage2EtSumHwEt",l1stage2etshwet,"L1Stage2EtSumHwEt[NL1Stage2EtSum]/I");
+  HltTree->Branch("L1Stage2EtSumHwPhi",l1stage2etshwphi,"L1Stage2EtSumHwPhi[NL1Stage2EtSum]/I");
   HltTree->Branch("L1Stage2EtSumType",l1stage2etstype,"L1Stage2EtSumType[NL1Stage2EtSum]/I");
   HltTree->Branch("L1Stage2EtSumBx",l1stage2etsbx,"L1Stage2EtSumBx[NL1Stage2EtSum]/I");
 }
@@ -355,8 +361,10 @@ void HLTStage2Info::analyze(const edm::Handle<edm::TriggerResults>              
     typedef std::vector<l1t::EtSum>::const_iterator l1cand;
     for(int iBx = L1Stage2EtSum->getFirstBX(); iBx <= L1Stage2EtSum->getLastBX(); ++iBx) { 
       for (l1cand etsItr=L1Stage2EtSum->begin(iBx); etsItr!=L1Stage2EtSum->end(iBx); ++etsItr) {
-        l1stage2etset[il1stage2ets]   = etsItr->hwPt();
-        l1stage2etsphi[il1stage2ets]  = etsItr->hwPhi();
+        l1stage2etset[il1stage2ets]   = etsItr->et();
+        l1stage2etsphi[il1stage2ets]  = etsItr->phi();
+        l1stage2etshwet[il1stage2ets]   = etsItr->hwPt();
+        l1stage2etshwphi[il1stage2ets]  = etsItr->hwPhi();
         l1stage2etstype[il1stage2ets] = etsItr->getType();
         l1stage2etsbx[il1stage2ets]   = iBx;
         il1stage2ets++;
@@ -372,16 +380,17 @@ void HLTStage2Info::analyze(const edm::Handle<edm::TriggerResults>              
   //==============L1 Stage2 information=======================================
 
 
-  if (L1GOMR.isValid()) {
+  if (L1GOMR.isValid() && !getL1InfoFromEventSetup_) {
     // Get the stage2 menu from GlobalObjectMapRecord collection
     if (L1TEvtCnt==0){
-      const std::vector<GlobalObjectMap> gObjectMapRecord = L1GOMR->gtObjectMap();
       // 1st event : Book as many branches as trigger paths provided in the input...
+      const std::vector<GlobalObjectMap> gObjectMapRecord = L1GOMR->gtObjectMap();
       std::vector<GlobalObjectMap>::const_iterator gObjectMap = gObjectMapRecord.begin();
+      // Book branches for algo bits
       for (; gObjectMap!=gObjectMapRecord.end(); ++gObjectMap) {
         int itrig = gObjectMap->algoBitNumber();
         algoBitToName[itrig] = TString( gObjectMap->algoName() );
-        HltTree->Branch(algoBitToName[itrig],l1TFinalFlag+itrig,algoBitToName[itrig]+"/I");
+        HltTree->Branch(algoBitToName[itrig]+"_Final",l1TFinalFlag+itrig,algoBitToName[itrig]+"_Final/I");
         HltTree->Branch(algoBitToName[itrig]+"_Prescl",l1TPrescl+itrig,algoBitToName[itrig]+"_Prescl/I");
       }
     }
@@ -390,6 +399,7 @@ void HLTStage2Info::analyze(const edm::Handle<edm::TriggerResults>              
     for (; iL1Trig!=algoBitToName.end(); ++iL1Trig) {
       std::string name = iL1Trig->second.Data();
       int iBit = iL1Trig->first;
+      l1TInitialFlag[iBit] = false; // The Global Object Collection doesn't have initial L1 decisions
       l1TFinalFlag[iBit] = L1GOMR->getObjectMap(name)->algoGtlResult();
       if(!(l1tGlobalUtil_->getPrescaleByName(name, l1TPrescl[iBit]))) l1TPrescl[iBit] = -1;
     }
@@ -398,15 +408,17 @@ void HLTStage2Info::analyze(const edm::Handle<edm::TriggerResults>              
   else {
     // Get the stage2 menu from Event Setup
     if (L1TEvtCnt==0){
+      // 1st event : Book as many branches as trigger paths provided in the input...
       edm::ESTransientHandle<L1TUtmTriggerMenu> l1GtMenu;
-      eventSetup.get< L1TUtmTriggerMenuRcd>().get(l1GtMenu);
+      eventSetup.get<L1TUtmTriggerMenuRcd>().get(l1GtMenu);
       if(l1GtMenu.isValid()) {
         const L1TUtmTriggerMenu* stage2Menu = l1GtMenu.product();
         // Book branches for algo bits
         for (auto const & algo: stage2Menu->getAlgorithmMap()) {
           int itrig = algo.second.getIndex();
           algoBitToName[itrig] = TString( algo.second.getName() );
-          HltTree->Branch(algoBitToName[itrig],l1TFinalFlag+itrig,algoBitToName[itrig]+"/I");
+          HltTree->Branch(algoBitToName[itrig]+"_Initial",l1TInitialFlag+itrig,algoBitToName[itrig]+"_Initial/I");
+          HltTree->Branch(algoBitToName[itrig]+"_Final",l1TFinalFlag+itrig,algoBitToName[itrig]+"_Final/I");
           HltTree->Branch(algoBitToName[itrig]+"_Prescl",l1TPrescl+itrig,algoBitToName[itrig]+"_Prescl/I");
         }
       }
@@ -419,6 +431,8 @@ void HLTStage2Info::analyze(const edm::Handle<edm::TriggerResults>              
       bool des = false;
       if (!(l1tGlobalUtil_->getFinalDecisionByName(name, des))) l1TFinalFlag[iBit] = false;
       else l1TFinalFlag[iBit] = des;
+      if (!(l1tGlobalUtil_->getInitialDecisionByName(name, des))) l1TInitialFlag[iBit] = false;
+      else l1TInitialFlag[iBit] = des;
       if(!(l1tGlobalUtil_->getPrescaleByName(name, l1TPrescl[iBit]))) l1TPrescl[iBit] = -1;
     }
     L1TEvtCnt++;
