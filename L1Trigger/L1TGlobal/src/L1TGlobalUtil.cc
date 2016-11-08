@@ -32,8 +32,8 @@ l1t::L1TGlobalUtil::L1TGlobalUtil(){
     m_l1GtMenuCacheID = 0ULL;
     m_l1GtPfAlgoCacheID = 0ULL;
     m_filledPrescales = false;
-    m_algorithmTriggersUnprescaled = false;
-    m_algorithmTriggersUnmasked = false;
+    m_algorithmTriggersUnprescaled = true;
+    m_algorithmTriggersUnmasked = true;
 
     edm::FileInPath f1("L1Trigger/L1TGlobal/data/Luminosity/startup/prescale_L1TGlobal.csv");
     m_preScaleFileName = f1.fullPath();
@@ -50,6 +50,8 @@ l1t::L1TGlobalUtil::L1TGlobalUtil(edm::ParameterSet const& pset,
 				  edm::ConsumesCollector& iC) :
   L1TGlobalUtil() {
   m_l1tGlobalUtilHelper.reset(new L1TGlobalUtilHelper(pset, iC));
+  m_algorithmTriggersUnprescaled = pset.getUntrackedParameter<bool>("getPrescales",true);
+  m_algorithmTriggersUnmasked = pset.getUntrackedParameter<bool>("getPrescales",true);
 }
 
 // destructor
