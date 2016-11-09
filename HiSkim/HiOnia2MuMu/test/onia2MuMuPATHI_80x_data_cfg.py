@@ -29,7 +29,7 @@ process = cms.Process("Onia2MuMuPAT")
 options = VarParsing.VarParsing ('analysis')
 
 # setup any defaults you want
-options.inputFiles = ''
+options.inputFiles = 'file:/afs/cern.ch/user/a/anstahll/UPDATE/ONIA/CMSSW_8_0_23/src/HiSkim/HiOnia2MuMu/test/60F56674-D8A4-E611-A91A-FA163EB6F0FA.root'
 options.outputFile = 'onia2MuMuPAT_DATA_80X.root'
 
 options.maxEvents = -1 # -1 means all events
@@ -43,15 +43,35 @@ process.MessageLogger.cerr.HiOnia2MuMuPAT_muonLessSizeORpvTrkSize = cms.untracke
 
 # load the Geometry and Magnetic Field for the TransientTrackBuilder
 process.load("TrackingTools/TransientTrack/TransientTrackBuilder_cfi")
-process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-process.load("Configuration.StandardSequences.MagneticField_cff")
+process.load('Configuration.Geometry.GeometryExtended2016Reco_cff')
+process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
 
 # Global Tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data_PIon', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '80X_dataRun2_v18', '')
 process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
+
+
+process.GlobalTag.toGet = cms.VPSet(
+  cms.PSet(
+    record = cms.string("HeavyIonRcd"),
+    tag = cms.string("CentralityTable_HFtowersPlusTrunc200_EPOS5TeV_v80x01_mc"),
+    connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
+    label = cms.untracked.string("HFtowersPlusTruncEpos")
+    ),
+  cms.PSet(
+    record = cms.string('L1TUtmTriggerMenuRcd'),
+    tag = cms.string("L1Menu_HeavyIons2016_v2_m2_xml"),
+    connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS')
+    ),
+  cms.PSet(
+    record = cms.string('L1TGlobalPrescalesVetosRcd'),
+    tag = cms.string("L1TGlobalPrescalesVetos_Stage2v0_hlt"),
+    connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS')
+    )
+  )
 
 # HLT Dimuon Triggers
 import HLTrigger.HLTfilters.hltHighLevel_cfi
@@ -86,10 +106,11 @@ process.hltOniaHI.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT")
 from HiSkim.HiOnia2MuMu.onia2MuMuPAT_cff import *
 onia2MuMuPAT(process, GlobalTag=process.GlobalTag.globaltag, MC=isMC, HLT="HLT", Filter=True, useL1Stage2=True)
 
-### Temporal fix for the PAT Trigger prescale warnings.
+### For the PAT Trigger prescale warnings.
 process.patTriggerFull.l1GtReadoutRecordInputTag = cms.InputTag("gtDigis","","RECO")
 process.patTriggerFull.l1tAlgBlkInputTag = cms.InputTag("gtStage2Digis","","RECO")
 process.patTriggerFull.l1tExtBlkInputTag = cms.InputTag("gtStage2Digis","","RECO")
+process.patTriggerFull.getPrescales      = cms.untracked.bool(False)
 ###
 
 ##### Onia2MuMuPAT input collections/options

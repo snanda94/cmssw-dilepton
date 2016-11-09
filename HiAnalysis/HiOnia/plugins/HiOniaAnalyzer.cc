@@ -875,7 +875,7 @@ HiOniaAnalyzer::fillTreeJpsi(int iSign, int count) {
 
   Reco_QQ_trig[Reco_QQ_size] = trigBits;
 
-  if (!(_isHI || _isPA) && _muonLessPrimaryVertex && aJpsiCand->hasUserData("muonlessPV")) {
+  if (!(_isHI) && _muonLessPrimaryVertex && aJpsiCand->hasUserData("muonlessPV")) {
     RefVtx = (*aJpsiCand->userData<reco::Vertex>("muonlessPV")).position();
     RefVtx_xError = (*aJpsiCand->userData<reco::Vertex>("muonlessPV")).xError();
     RefVtx_yError = (*aJpsiCand->userData<reco::Vertex>("muonlessPV")).yError();
@@ -1309,7 +1309,7 @@ HiOniaAnalyzer::makeCuts(int sign) {
       const pat::CompositeCandidate* cand = &(*it);     
       if (fabs(cand->rapidity()) >= etaMax) continue;
 
-      if (!(_isHI || _isPA) && _muonLessPrimaryVertex && cand->hasUserData("muonlessPV"))
+      if (!(_isHI) && _muonLessPrimaryVertex && cand->hasUserData("muonlessPV"))
         RefVtx = (*cand->userData<reco::Vertex>("muonlessPV")).position();
       else if (!_muonLessPrimaryVertex && cand->hasUserData("PVwithmuons"))
         RefVtx = (*cand->userData<reco::Vertex>("PVwithmuons")).position();
