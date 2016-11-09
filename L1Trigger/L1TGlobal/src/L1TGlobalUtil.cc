@@ -50,6 +50,8 @@ l1t::L1TGlobalUtil::L1TGlobalUtil(edm::ParameterSet const& pset,
 				  edm::ConsumesCollector& iC) :
   L1TGlobalUtil() {
   m_l1tGlobalUtilHelper.reset(new L1TGlobalUtilHelper(pset, iC));
+  m_algorithmTriggersUnprescaled = pset.getUntrackedParameter<bool>("getPrescales",true);
+  m_algorithmTriggersUnmasked = pset.getUntrackedParameter<bool>("getPrescales",true);
 }
 
 // destructor
