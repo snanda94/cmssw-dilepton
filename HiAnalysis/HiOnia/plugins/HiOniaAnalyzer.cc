@@ -632,13 +632,13 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     trigPrescale[iTr-1] = mapTriggerNameToPrescaleFac_[theTriggerNames.at(iTr)];
   }
 
-  if (_isHI || _isPA) {
-
-    edm::Handle<reco::Centrality> centrality;
+  edm::Handle<reco::Centrality> centrality;
+  edm::Handle<int> cbin_;
+  if (_isHI || _isPA)  {
     iEvent.getByToken(_centralityTagToken, centrality); 
-
-    edm::Handle<int> cbin_;
     iEvent.getByToken(_centralityBinTagToken, cbin_);
+  }
+  if (centrality.isValid() && cbin_.isValid()) {
     centBin = *cbin_;
     hCent->Fill(centBin);
     
@@ -2082,14 +2082,15 @@ HiOniaAnalyzer::beginRun(const edm::Run& iRun, const edm::EventSetup& iSetup) {
   EDConsumerBase::Labels labelTriggerResults;
   EDConsumerBase::labelsForToken(_tagTriggerResultsToken, labelTriggerResults);	
   const std::string pro = labelTriggerResults.process;
-  bool changed = true;
 
   //bool init(const edm::Run& iRun, const edm::EventSetup& iSetup, const std::string& processName, bool& changed);
+  bool changed = true;
   hltConfigInit = false;
   if( hltConfig.init(iRun, iSetup, pro, changed) ) hltConfigInit = true;
 
+  changed = true;
   hltPrescaleInit = false;
-  //  if( hltPrescaleProvider.init(iRun, iSetup, pro, changed) ) hltPrescaleInit = true;
+  if( hltPrescaleProvider.init(iRun, iSetup, pro, changed) ) hltPrescaleInit = true;
 
   return;
 }
@@ -2192,14 +2193,13 @@ HiOniaAnalyzer::hltReport(const edm::Event &iEvent ,const edm::EventSetup& iSetu
         if (_isMC) {
           mapTriggerNameToPrescaleFac_[triggerPathName] = 1;
         } else {
-          /*
           //-------prescale factor------------
           if ( hltPrescaleInit && hltPrescaleProvider.prescaleSet(iEvent,iSetup)>=0 ) {
             std::pair<std::vector<std::pair<std::string,int> >,int> detailedPrescaleInfo = hltPrescaleProvider.prescaleValuesInDetail(iEvent, iSetup, triggerPathName);
             //get HLT prescale info from hltPrescaleProvider     
             const int hltPrescale = detailedPrescaleInfo.second;
             //get L1 prescale info from hltPrescaleProvider
-            int l1Prescale = 1;     
+            int l1Prescale = -1;     
             if (detailedPrescaleInfo.first.size()==1) {
               l1Prescale = detailedPrescaleInfo.first.at(0).second;
             }
@@ -2208,12 +2208,11 @@ HiOniaAnalyzer::hltReport(const edm::Event &iEvent ,const edm::EventSetup& iSetu
               std::cout << "[HiOniaAnalyzer::hltReport] --- Need to define a proper way to compute the total L1 prescale, default L1 prescale value set to 1 "  << std::endl;
             }
             else {
-              //std::cout << "[HiOniaAnalyzer::hltReport] --- L1 prescale was NOT found for TriggerName " << triggerPathName  << " , default L1 prescale value set to 1 " <<  std::endl;
+              std::cout << "[HiOniaAnalyzer::hltReport] --- L1 prescale was NOT found for TriggerName " << triggerPathName  << " , default L1 prescale value set to 1 " <<  std::endl;
             }
             //compute the total prescale = HLT prescale * L1 prescale
             mapTriggerNameToPrescaleFac_[triggerPathName] = hltPrescale * l1Prescale;
           }
-          */
         }
       }
     }
