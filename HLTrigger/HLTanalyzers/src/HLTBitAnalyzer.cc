@@ -34,6 +34,7 @@ HLTBitAnalyzer::HLTBitAnalyzer(edm::ParameterSet const& conf)  :
   // their names and types, and access them to initialize internal
   // variables. Example as follows:
 
+  _getSimL1 = conf.getUntrackedParameter<bool>("getSimL1", false);
   _UseL1Stage2 = conf.getUntrackedParameter<bool>("UseL1Stage2",true);
   _getL1InfoFromEventSetup = conf.getUntrackedParameter<bool>("getL1InfoFromEventSetup", true);
 
@@ -44,11 +45,19 @@ HLTBitAnalyzer::HLTBitAnalyzer(edm::ParameterSet const& conf)  :
 
     gmtstage2_        = conf.getParameter<std::string>   ("gmtStage2Digis");
     calostage2_       = conf.getParameter<std::string>   ("caloStage2Digis");
-    m_l1stage2mu      = edm::InputTag(gmtstage2_,  "Muon");
-    m_l1stage2eg      = edm::InputTag(calostage2_, "EGamma");
-    m_l1stage2jet     = edm::InputTag(calostage2_, "Jet");
-    m_l1stage2tau     = edm::InputTag(calostage2_, "Tau");
-    m_l1stage2ets     = edm::InputTag(calostage2_, "EtSum");
+    if (_getSimL1) {
+      m_l1stage2mu      = edm::InputTag(gmtstage2_,  "");
+      m_l1stage2eg      = edm::InputTag(calostage2_);
+      m_l1stage2jet     = edm::InputTag(calostage2_);
+      m_l1stage2tau     = edm::InputTag(calostage2_);
+      m_l1stage2ets     = edm::InputTag(calostage2_);
+    } else {
+      m_l1stage2mu      = edm::InputTag(gmtstage2_,  "Muon");
+      m_l1stage2eg      = edm::InputTag(calostage2_, "EGamma");
+      m_l1stage2jet     = edm::InputTag(calostage2_, "Jet");
+      m_l1stage2tau     = edm::InputTag(calostage2_, "Tau");
+      m_l1stage2ets     = edm::InputTag(calostage2_, "EtSum");
+    }
 
     gObjectMapRecord_ = conf.getParameter<edm::InputTag> ("gObjectMapRecord");
 

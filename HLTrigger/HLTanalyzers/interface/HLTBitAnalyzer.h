@@ -98,6 +98,7 @@ private:
 
   std::string _HistName; // Name of histogram file
   TFile* m_file; // pointer to Histogram file
+  bool _getSimL1;
   bool _UseTFileService;
   bool _UseL1Stage2;
   bool _getL1InfoFromEventSetup;

@@ -91,6 +91,7 @@ private:
   //
   // All input tags
   //
+  bool getSimL1_;
   std::vector< edm::InputTag > muonFilterCollections_;
 
   edm::InputTag BSProducer_;

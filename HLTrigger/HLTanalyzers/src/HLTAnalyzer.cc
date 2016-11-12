@@ -36,6 +36,7 @@ HLTAnalyzer::HLTAnalyzer(edm::ParameterSet const& conf) :
     // variables. Example as follows:
     std::cout << " Beginning HLTAnalyzer Analysis " << std::endl;
 
+    getSimL1_ = conf.getUntrackedParameter<bool>("getSimL1", false);
     muonFilterCollections_    = conf.getParameter< std::vector< edm::InputTag > > ("muonFilters");
       
     muon_               = conf.getParameter<edm::InputTag> ("muon");
@@ -51,11 +52,19 @@ HLTAnalyzer::HLTAnalyzer(edm::ParameterSet const& conf) :
  
     gmtstage2_      = conf.getParameter<std::string>   ("gmtStage2Digis");
     calostage2_     = conf.getParameter<std::string>   ("caloStage2Digis");
-    m_l1stage2mu      = edm::InputTag(gmtstage2_,  "Muon");
-    m_l1stage2eg      = edm::InputTag(calostage2_, "EGamma");
-    m_l1stage2jet     = edm::InputTag(calostage2_, "Jet");
-    m_l1stage2tau     = edm::InputTag(calostage2_, "Tau");
-    m_l1stage2ets     = edm::InputTag(calostage2_, "EtSum");
+    if (getSimL1_) {
+      m_l1stage2mu      = edm::InputTag(gmtstage2_,  "");
+      m_l1stage2eg      = edm::InputTag(calostage2_);
+      m_l1stage2jet     = edm::InputTag(calostage2_);
+      m_l1stage2tau     = edm::InputTag(calostage2_);
+      m_l1stage2ets     = edm::InputTag(calostage2_);
+    } else {
+      m_l1stage2mu      = edm::InputTag(gmtstage2_,  "Muon");
+      m_l1stage2eg      = edm::InputTag(calostage2_, "EGamma");
+      m_l1stage2jet     = edm::InputTag(calostage2_, "Jet");
+      m_l1stage2tau     = edm::InputTag(calostage2_, "Tau");
+      m_l1stage2ets     = edm::InputTag(calostage2_, "EtSum");
+    }
 
     hltresults_       = conf.getParameter<edm::InputTag> ("hltresults");
     gObjectMapRecord_ = conf.getParameter<edm::InputTag> ("gObjectMapRecord");
