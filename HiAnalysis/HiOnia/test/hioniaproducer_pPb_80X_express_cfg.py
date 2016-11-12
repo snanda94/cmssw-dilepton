@@ -51,7 +51,7 @@ process.load('Configuration.StandardSequences.Reconstruction_cff')
 # Global Tag:
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '80X_dataRun2_v18', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '80X_dataRun2_Express_v15', '')
 process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
 
 process.GlobalTag.toGet = cms.VPSet(
@@ -156,24 +156,12 @@ if isMC:
 
 ###################### HiOnia Analyzer #################################################
 
-### For Centrality and Event Plane
-process.load("RecoHI.HiEvtPlaneAlgos.HiEvtPlane_cfi")
-process.load("RecoHI.HiEvtPlaneAlgos.hiEvtPlaneFlat_cfi")
+### For Centrality
 process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi")
-process.hiEvtPlane.vertexTag = cms.InputTag("offlinePrimaryVertices")
-process.hiEvtPlane.trackTag  = cms.InputTag("generalTracks")
-process.hiEvtPlane.centralityBinTag = cms.InputTag("centralityBin","HFtowersPlusTrunc")
-process.hiEvtPlane.centralityVariable = cms.string("HFtowersPlusTrunc")
-process.hiEvtPlane.nonDefaultGlauberModel = cms.string("Epos")
-process.hiEvtPlaneFlat.vertexTag = cms.InputTag("offlinePrimaryVertices")
-process.hiEvtPlaneFlat.trackTag  = cms.InputTag("generalTracks")
-process.hiEvtPlaneFlat.centralityBinTag = cms.InputTag("centralityBin","HFtowersPlusTrunc")
-process.hiEvtPlaneFlat.centralityVariable = cms.string("HFtowersPlusTrunc")
-process.hiEvtPlaneFlat.nonDefaultGlauberModel = cms.string("Epos")
 process.centralityBin.Centrality = cms.InputTag("pACentrality")
 process.centralityBin.centralityVariable = cms.string("HFtowersPlusTrunc")
 process.centralityBin.nonDefaultGlauberModel = cms.string("Epos")
-process.EventAna_step = cms.Path( process.centralityBin * process.hiEvtPlane * process.hiEvtPlaneFlat )
+process.EventAna_step = cms.Path( process.centralityBin )
 
 process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                 #-- Collections

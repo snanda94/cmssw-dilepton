@@ -7,7 +7,7 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 # Setup Settings for ONIA TREE:
    
 isMC           = False    # if input is MONTECARLO: True or if it's DATA: False
-applyMuonCuts  = True     # Apply muon ID quality cuts
+applyMuonCuts  = False    # Apply muon ID quality cuts
 muonSelection  = "Trk"    # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal&&isTracker), Trk(isTracker) are availale
 
 #----------------------------------------------------------------------------
@@ -46,10 +46,35 @@ process.MessageLogger.cerr.HiOnia2MuMuPAT_muonLessSizeORpvTrkSize = cms.untracke
 # Global Tag:
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data_PIon', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '80X_dataRun2_Prompt_v15', '')
 process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
 
+process.GlobalTag.toGet = cms.VPSet(
+  cms.PSet(
+    record = cms.string("HeavyIonRcd"),
+    tag = cms.string("CentralityTable_HFtowersPlusTrunc200_EPOS5TeV_v80x01_mc"),
+    connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
+    label = cms.untracked.string("HFtowersPlusTruncEpos")
+    ),
+  cms.PSet(
+    record = cms.string('L1TUtmTriggerMenuRcd'),
+    tag = cms.string("L1Menu_HeavyIons2016_v2_m2_xml"),
+    connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS')
+    ),
+  cms.PSet(
+    record = cms.string('L1TGlobalPrescalesVetosRcd'),
+    tag = cms.string("L1TGlobalPrescalesVetos_Stage2v0_hlt"),
+    connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS')
+    )
+  )
 
+
+### For Centrality
+process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi")
+process.centralityBin.Centrality = cms.InputTag("pACentrality")
+process.centralityBin.centralityVariable = cms.string("HFtowersPlusTrunc")
+process.centralityBin.nonDefaultGlauberModel = cms.string("Epos")
+process.EventAna_step = cms.Path( process.centralityBin )
 
 process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                 #-- Collections
@@ -84,7 +109,7 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                 oniaPDG = cms.int32(443),
                                 muonSel = cms.string(muonSelection),
                                 isHI = cms.untracked.bool(False),
-                                isPA = cms.untracked.bool(False),
+                                isPA = cms.untracked.bool(True),
                                 isMC = cms.untracked.bool(isMC),
                                 isPromptMC = cms.untracked.bool(True),
                                 useEvtPlane = cms.untracked.bool(False),
@@ -150,8 +175,9 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
 process.hionia.primaryVertexTag = cms.InputTag("offlinePrimaryVertices")
 process.hionia.genParticles     = cms.InputTag("genParticles")
 process.hionia.muonLessPV       = cms.bool(True)
-process.hionia.CentralitySrc    = cms.InputTag("")
-process.hionia.CentralityBinSrc = cms.InputTag("")
+process.hionia.EvtPlane         = cms.InputTag("hiEvtPlaneFlat","")
+process.hionia.CentralitySrc    = cms.InputTag("pACentrality")
+process.hionia.CentralityBinSrc = cms.InputTag("centralityBin","HFtowersPlusTrunc")
 process.hionia.srcTracks        = cms.InputTag("generalTracks")
       
 #Options:
@@ -164,3 +190,4 @@ process.TFileService = cms.Service("TFileService",
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxEvents) )
 process.options   = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 process.p         = cms.Path(process.oniaSequence)
+process.schedule  = cms.Schedule( process.EventAna_step, process.p )
