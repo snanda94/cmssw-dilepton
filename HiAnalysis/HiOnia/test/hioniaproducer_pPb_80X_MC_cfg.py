@@ -6,18 +6,20 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 
 # Setup Settings for ONIA TREE:
    
-isMC           = False    # if input is MONTECARLO: True or if it's DATA: False
+isMC           = True     # if input is MONTECARLO: True or if it's DATA: False
 applyMuonCuts  = False    # Apply muon ID quality cuts
 muonSelection  = "Trk"    # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal&&isTracker), Trk(isTracker) are availale
+genPDG         = 443      # Generated Particle PDG ID (only needed for MC), Jpsi: 443 , Psi(2S): 100443, Upsilon(1S): 553 , Upsilon(2S): 100553 , Upsilon(2S): 200553
 
 #----------------------------------------------------------------------------
 
-# Print Onia Skim settings:
-print( " " ) 
-print( "[INFO] Settings used for ONIA TREE DATA: " )  
-print( "[INFO] isMC          = " + ("True" if isMC else "False") )  
-print( "[INFO] applyMuonCuts = " + ("True" if applyMuonCuts else "False") ) 
-print( "[INFO] muonSelection = " + muonSelection )  
+# Print Onia Analysis settings:
+print( " " )
+print( "[INFO] Settings used for ONIA TREE DATA: " )
+print( "[INFO] isMC          = " + ("True" if isMC else "False") )
+print( "[INFO] applyMuonCuts = " + ("True" if applyMuonCuts else "False") )
+print( "[INFO] muonSelection = " + muonSelection )
+print( "[INFO] genPDG        = " + str(genPDG) )
 print( " " )
 
 
@@ -30,8 +32,8 @@ options = VarParsing.VarParsing ('analysis')
 # Input and Output File Names
 options.outputFile = "OniaTree.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
-options.inputFiles =  ''
-options.maxEvents = 50 # -1 means all events
+options.inputFiles =  'file:/home/llr/cms/stahl/TEST/CMSSW_8_0_26_patch2/src/HiSkim/HiOnia2MuMu/test/onia2MuMuPAT_MC_80X.root'
+options.maxEvents = -1 # -1 means all events
 
 # Get and parse the command line arguments
 options.parseArguments()
@@ -46,8 +48,7 @@ process.MessageLogger.cerr.HiOnia2MuMuPAT_muonLessSizeORpvTrkSize = cms.untracke
 # Global Tag:
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '80X_dataRun2_Prompt_v15', '')
-process.GlobalTag.snapshotTime = cms.string("9999-12-31 23:59:59.000")
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc_pa', '')
 
 process.GlobalTag.toGet = cms.VPSet(
   cms.PSet(
@@ -55,16 +56,6 @@ process.GlobalTag.toGet = cms.VPSet(
     tag = cms.string("CentralityTable_HFtowersPlusTrunc200_EPOS5TeV_v80x01_mc"),
     connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
     label = cms.untracked.string("HFtowersPlusTruncEpos")
-    ),
-  cms.PSet(
-    record = cms.string('L1TUtmTriggerMenuRcd'),
-    tag = cms.string("L1Menu_HeavyIons2016_v2_m2_xml"),
-    connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS')
-    ),
-  cms.PSet(
-    record = cms.string('L1TGlobalPrescalesVetosRcd'),
-    tag = cms.string("L1TGlobalPrescalesVetos_Stage2v0_hlt"),
-    connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS')
     )
   )
 
@@ -74,6 +65,7 @@ process.load("RecoHI.HiCentralityAlgos.CentralityBin_cfi")
 process.centralityBin.Centrality = cms.InputTag("pACentrality")
 process.centralityBin.centralityVariable = cms.string("HFtowersPlusTrunc")
 process.centralityBin.nonDefaultGlauberModel = cms.string("Epos")
+
 process.EventAna_step = cms.Path( process.centralityBin )
 
 process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
@@ -106,7 +98,7 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                 storeSameSign      = cms.untracked.bool(True),   # Store/Drop same sign dimuons
                                 
                                 #-- Gen Details
-                                oniaPDG = cms.int32(443),
+                                oniaPDG = cms.int32(genPDG),
                                 muonSel = cms.string(muonSelection),
                                 isHI = cms.untracked.bool(False),
                                 isPA = cms.untracked.bool(True),
@@ -127,8 +119,8 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                 histFileName      = cms.string(options.outputFile),		
                                 dataSetName       = cms.string(options.secondaryOutputFile),
                                     
-                                # HLT pPb MENU:  /users/anstahll/PA2016/PAMuon2016Full/V3
-                                
+                                # HLT pPb MENU 2016
+
                                 dblTriggerPathNames = cms.vstring("HLT_PAL1DoubleMuOpen_v1",
                                                                   "HLT_PAL1DoubleMuOpen_OS_v1",
                                                                   "HLT_PAL1DoubleMuOpen_SS_v1",
@@ -141,7 +133,7 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                                                   "HLT_PAL1DoubleMu10_v1",
                                                                   "HLT_PAL2DoubleMu10_v1",
                                                                   "HLT_PAL3DoubleMu10_v1"),
-                                
+
                                 dblTriggerFilterNames = cms.vstring("hltL1fL1sDoubleMuOpenBptxANDL1Filtered0",
                                                                     "hltL1fL1sDoubleMuOpenOSBptxANDL1Filtered0",
                                                                     "hltL1fL1sDoubleMuOpenSSBptxANDL1Filtered0",
@@ -154,11 +146,11 @@ process.hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                                                                     "hltL1fL1sDoubleMu10BptxANDL1Filtered0",
                                                                     "hltL2fL1sDoubleMu10BptxANDL1f0L2Filtered10",
                                                                     "hltL3fL1sDoubleMu10BptxANDL1f0L2f10L3Filtered10"),
-                                
+
                                 sglTriggerPathNames = cms.vstring("HLT_PAL2Mu12_v1",
                                                                   "HLT_PAL2Mu15_v1",
                                                                   "HLT_PAL3Mu3_v1",
-                                                                  "HLT_PAL3Mu5_v1",
+                                                                  "HLT_PAL3Mu5_v3",
                                                                   "HLT_PAL3Mu7_v1",
                                                                   "HLT_PAL3Mu12_v1",
                                                                   "HLT_PAL3Mu15_v1"),
@@ -189,5 +181,5 @@ process.TFileService = cms.Service("TFileService",
                                    )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxEvents) )
 process.options   = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
-process.p         = cms.Path(process.oniaSequence)
+process.p         = cms.Path(process.hionia)
 process.schedule  = cms.Schedule( process.EventAna_step, process.p )

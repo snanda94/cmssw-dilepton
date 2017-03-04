@@ -590,7 +590,6 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   //   using namespace edm;
   InitEvent();
-
   nEvents++;
   hStats->Fill(BIN_nEvents);
    
@@ -708,7 +707,7 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     SumET_ET = 0;
   }
 
-  if (_isHI && _useEvtPlane) {
+  if ((_isHI || _isPA) && _useEvtPlane) {
     nEP = 0; 
     edm::Handle<reco::EvtPlaneCollection> flatEvtPlanes;
     iEvent.getByToken(_evtPlaneTagToken,flatEvtPlanes);
@@ -1829,7 +1828,7 @@ HiOniaAnalyzer::InitTree()
   myTree->Branch("SumET_ZDCplus",&SumET_ZDCplus,"SumET_ZDCplus/F");
   myTree->Branch("SumET_ZDCminus",&SumET_ZDCminus,"SumET_ZDCminus/F");
 
-  if (_isHI && _useEvtPlane) {
+  if ((_isHI || _isPA) && _useEvtPlane) {
     myTree->Branch("nEP", &nEP, "nEP/I");
     myTree->Branch("rpAng", &rpAng, "rpAng[nEP]/F");
     myTree->Branch("rpSin", &rpSin, "rpSin[nEP]/F");
@@ -2199,13 +2198,12 @@ HiOniaAnalyzer::hltReport(const edm::Event &iEvent ,const edm::EventSetup& iSetu
             //get HLT prescale info from hltPrescaleProvider     
             const int hltPrescale = detailedPrescaleInfo.second;
             //get L1 prescale info from hltPrescaleProvider
-            int l1Prescale = -1;     
+            int l1Prescale = -1;
             if (detailedPrescaleInfo.first.size()==1) {
               l1Prescale = detailedPrescaleInfo.first.at(0).second;
             }
             else if (detailedPrescaleInfo.first.size()>1) {
-              std::cout << "[HiOniaAnalyzer::hltReport] --- TriggerName " << triggerPathName << " has complex L1 seed " << hltConfig.hltL1GTSeeds(triggerPathName).at(0).second << std::endl;
-              std::cout << "[HiOniaAnalyzer::hltReport] --- Need to define a proper way to compute the total L1 prescale, default L1 prescale value set to 1 "  << std::endl;
+              l1Prescale = 1; // Means it is a complex l1 seed, and for us it is only Mu3 OR Mu5, both of them unprescaled at L1
             }
             else {
               std::cout << "[HiOniaAnalyzer::hltReport] --- L1 prescale was NOT found for TriggerName " << triggerPathName  << " , default L1 prescale value set to 1 " <<  std::endl;
