@@ -4,17 +4,19 @@ from PhysicsTools.PatAlgos.tools.helpers import *
 
 def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True):
     # Setup the process
-    process.options = cms.untracked.PSet(
-        wantSummary = cms.untracked.bool(True),
-        # fileMode = cms.untracked.string('MERGE'),
-    )
-     
+    if not hasattr(process, 'options'):
+        process.options = cms.untracked.PSet(
+            wantSummary = cms.untracked.bool(True),
+            # fileMode = cms.untracked.string('MERGE'),
+            )
+        
     # Drop the DQM stuff on input
-    process.source = cms.Source("PoolSource",
-        inputCommands = cms.untracked.vstring("keep *", 
-                                              "drop *_MEtoEDMConverter_*_*"),
-        fileNames = cms.untracked.vstring()
-    )
+    if not getattr(process, 'source'):
+        process.source = cms.Source("PoolSource",
+                                    inputCommands = cms.untracked.vstring("keep *", 
+                                                                          "drop *_MEtoEDMConverter_*_*"),
+                                    fileNames = cms.untracked.vstring()
+                                    )
 
     # Prune generated particles to muons and their parents
     process.genMuons = cms.EDProducer("GenParticlePruner",
@@ -41,7 +43,7 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True):
     addHLTL1Passthrough(process)
     #useL1MatchingWindowForSinglets(process)
 
-    process.patTrigger.collections.remove("hltL3MuonCandidates")
+    #process.patTrigger.collections.remove("hltL3MuonCandidates")
     process.patTrigger.collections.append("hltHIL3MuonCandidates")
 
     process.muonL1Info.maxDeltaR = 0.3
