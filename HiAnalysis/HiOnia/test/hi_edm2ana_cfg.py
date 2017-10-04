@@ -358,7 +358,7 @@ if isPbPb:
     process.hionia.CentralityBinSrc = cms.InputTag("centralityBin","HFtowers")
   
   #process.p = cms.EndPath(process.hiEvtPlane*process.hionia)
-  process.Onia2MuMuPAT.append(process.hionia)
+  process.hioniaPath = cms.Path(process.hionia)
 else:    
   process.hionia.primaryVertexTag = cms.InputTag("offlinePrimaryVertices")
   process.hionia.genParticles     = cms.InputTag("genParticles")
@@ -367,11 +367,11 @@ else:
   process.hionia.CentralityBinSrc = cms.InputTag("")
   process.hionia.srcTracks        = cms.InputTag("generalTracks")  
 
-  process.Onia2MuMuPAT.append(process.hionia)
+  process.hioniaPath = cms.Path(process.hionia)
 
 
 ##### Construct the sequence
-process.schedule = cms.Schedule(process.Onia2MuMuPAT)
+process.schedule = cms.Schedule(process.Onia2MuMuPAT,process.hioniaPath)
   
 from Configuration.Applications.ConfigBuilder import MassReplaceInputTag
 MassReplaceInputTag(process)
