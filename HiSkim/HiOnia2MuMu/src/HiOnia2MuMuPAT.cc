@@ -71,7 +71,7 @@ HiOnia2MuMuPAT::isSoftMuon(const pat::Muon* aMuon) {
           muon::isGoodMuon(*aMuon, muon::TMOneStationTight) &&
           aMuon->innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5   &&
           aMuon->innerTrack()->hitPattern().pixelLayersWithMeasurement()   > 0   &&
-          //aMuon->innerTrack()->quality(reco::TrackBase::highPurity) && 
+          aMuon->innerTrack()->quality(reco::TrackBase::highPurity) && 
           fabs(aMuon->innerTrack()->dxy(RefVtx)) < 0.3 &&
           fabs(aMuon->innerTrack()->dz(RefVtx)) < 20.
           );
@@ -936,7 +936,7 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     	for (std::map<std::string, float>::iterator i = userBcFloat.begin(); i != userBcFloat.end(); i++) { BcCand.addUserFloat(i->first , i->second); }
     	for (std::map<std::string, reco::Vertex>::iterator i = userBcVertex.begin(); i != userBcVertex.end(); i++) { BcCand.addUserData(i->first , i->second); }
 
-	if(!LateTrimuonSel_(myCand)) continue;	
+	if(!LateTrimuonSel_(BcCand)) continue;	
     	// ---- Push back output ----  
     	trimuOutput->push_back(BcCand);
 
