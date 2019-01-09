@@ -4,6 +4,62 @@ from PhysicsTools.PatAlgos.tools.helpers import *
 
 def oniaTreeAnalyzer(process, muonTriggerList=[[],[],[],[]], HLTProName='HLT', muonSelection="Trk", useL1Stage2=True, isMC=True, pdgID=443, outputFileName="OniaTree.root", muonlessPV = False, doTrimu=False):
 
+    if muonTriggerList == [[],[],[],[]]:
+        muonTriggerList = { 
+            'DoubleMuonTrigger' : cms.vstring(
+                "HLT_HIL1DoubleMuOpen_v1",
+                "HLT_HIL1DoubleMuOpen_OS_v1",
+                "HLT_HIL1DoubleMuOpen_SS_v1",
+                "HLT_HIL1DoubleMu0_v1",
+                "HLT_HIL1DoubleMu0_HighQ_v1",
+                "HLT_HIL1DoubleMu10_v1",
+                "HLT_HIL2DoubleMu0_v1",
+                "HLT_HIL2DoubleMu10_v1",
+                "HLT_HIL3DoubleMu0_v1",
+                "HLT_HIL3DoubleMu10_v1"
+                ),
+            'DoubleMuonFilter'  : cms.vstring(
+                "hltL1fL1sDoubleMuOpenL1Filtered0",
+                "hltL1fL1sDoubleMuOpenOSL1Filtered0",
+                "hltL1fL1sDoubleMuOpenSSL1Filtered0",
+                "hltL1fL1sDoubleMu0L1Filtered0",
+                "hltL1fL1sDoubleMu0L1HighQFiltered0",
+                "hltL1fL1sDoubleMu10L1Filtered0",
+                "hltL2fL1sDoubleMu0L1f0L2Filtered0",
+                "hltL2fL1sDoubleMu10L1f0L2Filtered10",
+                "hltL3fL1sDoubleMu0L1f0L2f0L3Filtered0",
+                "hltL3fL1sDoubleMu10L1f0L2f0L3Filtered10"
+                ),
+            'SingleMuonTrigger' : cms.vstring(
+                "HLT_HIL1Mu12_v1",
+                "HLT_HIL1Mu16_v1",
+                "HLT_HIL2Mu7_v1",
+                "HLT_HIL2Mu12_v1",
+                "HLT_HIL2Mu15_v1",
+                "HLT_HIL2Mu20_v1",
+                "HLT_HIL3Mu3_v1",
+                "HLT_HIL3Mu5_v1",
+                "HLT_HIL3Mu7_v1",
+                "HLT_HIL3Mu12_v1",
+                "HLT_HIL3Mu15_v1",
+                "HLT_HIL3Mu20_v1"
+                ),
+            'SingleMuonFilter'  : cms.vstring(
+                "hltL1fL1sSingleMu12L1Filtered0",
+                "hltL1fL1sSingleMu16L1Filtered0",
+                "hltL2fL1sSingleMu3OR5L1f0L2Filtered7",
+                "hltL2fL1sSingleMu7L1f0L2Filtered12",
+                "hltL2fL1sSingleMu7L1f0L2Filtered15",
+                "hltL2fL1sSingleMu7L1f0L2Filtered20",
+                "hltL3fL1sSingleMu3L1f0L2f0L3Filtered3",
+                "hltL3fL1sSingleMu3OR5L1f0L2f0L3Filtered5",
+                "hltL3fL1sSingleMu3OR5L1f0L2f0L3Filtered7",
+                "hltL3fL1sSingleMu7L1f0L2f0L3Filtered12",
+                "hltL3fL1sSingleMu7L1f0L2f0L3Filtered15",
+                "hltL3fL1sSingleMu7L1f0L2f0L3Filtered20"
+                )
+            }
+
     process.load("FWCore.MessageService.MessageLogger_cfi")
     process.MessageLogger.categories.extend(["GetManyWithoutRegistration","GetByLabelWithoutRegistration"])
     process.MessageLogger.destinations = ['cout', 'cerr']
@@ -20,8 +76,8 @@ def oniaTreeAnalyzer(process, muonTriggerList=[[],[],[],[]], HLTProName='HLT', m
 
 ###################### Onia Skim Producer #################################################
 
-    import HLTrigger.HLTfilters.hltHighLevel_cfi
-    process.hltOniaHI = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
+#    import HLTrigger.HLTfilters.hltHighLevel_cfi
+#    process.hltOniaHI = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
 
     from HiSkim.HiOnia2MuMu.onia2MuMuPAT_cff import onia2MuMuPAT
     onia2MuMuPAT(process, GlobalTag=process.GlobalTag.globaltag, MC=isMC, HLT=HLTProName, Filter=False, useL1Stage2=useL1Stage2, doTrimuons=doTrimu)
@@ -49,7 +105,7 @@ def oniaTreeAnalyzer(process, muonTriggerList=[[],[],[],[]], HLTProName='HLT', m
         process.genMuons.src = "genParticles"
         process.onia2MuMuPatGlbGlb.genParticles = "genParticles"
         
-    process.patMuonSequence.remove(process.hltOniaHI)
+#    process.patMuonSequence.remove(process.hltOniaHI)
 
 ##### Dimuon pair selection
     commonP1 = "|| (innerTrack.isNonnull && genParticleRef(0).isNonnull)"
@@ -154,4 +210,5 @@ def oniaTreeAnalyzer(process, muonTriggerList=[[],[],[],[]], HLTProName='HLT', m
     process.hionia.srcTracks        = cms.InputTag("generalTracks")
 
     #process.oniaTreeAna = cms.EndPath(process.patMuonSequence * process.onia2MuMuPatGlbGlb * process.hionia )
-    process.oniaTreeAna = cms.Path(process.patMuonSequence * process.onia2MuMuPatGlbGlb * process.hionia )
+    #process.oniaTreeAna = cms.Path(process.patMuonSequence * process.onia2MuMuPatGlbGlb * process.hionia )
+    process.oniaTreeAna = cms.Sequence(process.patMuonSequence * process.onia2MuMuPatGlbGlb * process.hionia )

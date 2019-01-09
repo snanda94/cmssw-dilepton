@@ -14,6 +14,14 @@ hltanalysis = hltbitanalysis.clone(
     )
 
 
+hltanalysisReco = hltbitanalysis.clone(
+    l1tAlgBlkInputTag               = cms.InputTag("gtStage2Digis"),
+    l1tExtBlkInputTag               = cms.InputTag("gtStage2Digis"),
+    gObjectMapRecord                = cms.InputTag("gtStage2ObjectMap"),
+    gmtStage2Digis                  = cms.string("gmtStage2Digis"),
+    caloStage2Digis                 = cms.string("caloStage2Digis"),
+    hltresults           = cms.InputTag("TriggerResults::HLT"),
+)
 
 
 skimanalysis = cms.EDAnalyzer("FilterAnalyzer",

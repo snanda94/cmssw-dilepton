@@ -4,11 +4,12 @@ from PhysicsTools.PatAlgos.tools.helpers import *
 
 def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stage2=False, doTrimuons=False):
     # Setup the process
-    process.options = cms.untracked.PSet(
-        wantSummary = cms.untracked.bool(True),
-        # fileMode = cms.untracked.string('MERGE'),
-    )
-     
+    #process.options = cms.untracked.PSet(
+    #    wantSummary = cms.untracked.bool(True),
+    #    # fileMode = cms.untracked.string('MERGE'),
+    #)
+    
+    ''' 
     # Drop the DQM stuff on input
     if hasattr(process, "source") and hasattr(process.source, "inputCommands"): 
         process.source.inputCommands = cms.untracked.vstring("keep *", "drop *_MEtoEDMConverter_*_*")
@@ -17,7 +18,7 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stag
                                     inputCommands = cms.untracked.vstring("keep *", "drop *_MEtoEDMConverter_*_*"),
                                     fileNames = cms.untracked.vstring()
                                     )
-
+    '''
     # Prune generated particles to muons and their parents
     process.genMuons = cms.EDProducer("GenParticlePruner",
         src = cms.InputTag("genParticles"),
@@ -71,7 +72,7 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stag
       
     # Make a sequence
     process.patMuonSequence = cms.Sequence(
-        process.hltOniaHI *
+        #process.hltOniaHI *
         process.genMuons *
         process.patMuonsWithTriggerSequence
     )
@@ -120,7 +121,7 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stag
 
     if doTrimuons:
         process.Onia2MuMuPAT.replace(process.onia2MuMuPatGlbGlbFilter, process.onia2MuMuPatGlbGlbFilter * process.onia2MuMuPatGlbGlbFilter3mu)
-     
+
     process.outOnia2MuMu = cms.OutputModule("PoolOutputModule",
         fileName = cms.untracked.string('onia2MuMuPAT.root'),
         outputCommands =  cms.untracked.vstring(

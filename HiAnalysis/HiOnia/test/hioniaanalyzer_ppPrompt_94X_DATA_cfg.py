@@ -21,7 +21,6 @@ muonLessPV     = True  # Recalculate the PV without the two muons from the selec
 keepExtraColl  = False # General Tracks + Stand Alone Muons + Converted Photon collections
 saveHLTBit     = False # for trigger analysis
 saveHLTobj     = False # For trigger analysis
-
 #----------------------------------------------------------------------------
 
 # Print Onia Tree settings:
@@ -47,7 +46,7 @@ options.outputFile = "Oniatree.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
 options.inputFiles =[
     '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/00000/E2A9F70B-8042-E811-9D04-FA163E74586C.root'
-]
+    ]
 options.maxEvents = 3000 # -1 means all events
 
 # Get and parse the command line arguments
@@ -122,12 +121,12 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load('Configuration.StandardSequences.Reconstruction_cff')
-
+    
 # Global Tag:
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, globalTag, '')
-
+    
 #----------------------------------------------------------------------------
 
 # For OniaTree Analyzer
@@ -223,5 +222,8 @@ process.TFileService = cms.Service("TFileService",
 		)
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxEvents) )
 process.options   = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
-process.schedule  = cms.Schedule( process.oniaTreeAna )
-#process.schedule  = cms.Schedule( process.oniaTreeAna , process.hltBitAna , process.hltObjectAna )
+process.oniaTreeAna = cms.EndPath(process.oniaTreeAna)
+if saveHLTobj or saveHLTBit:
+    process.schedule  = cms.Schedule( process.oniaTreeAna , process.hltBitAna , process.hltObjectAna )
+else:
+    process.schedule  = cms.Schedule( process.oniaTreeAna )
