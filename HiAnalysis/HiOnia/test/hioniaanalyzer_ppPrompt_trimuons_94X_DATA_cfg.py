@@ -224,5 +224,9 @@ process.TFileService = cms.Service("TFileService",
 		)
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxEvents) )
 process.options   = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
-process.schedule  = cms.Schedule( process.oniaTreeAna )
+process.oniaTreeAna = cms.EndPath(process.oniaTreeAna)
+if saveHLTobj or saveHLTBit:
+    process.schedule  = cms.Schedule( process.oniaTreeAna , process.hltBitAna , process.hltObjectAna )
+else:
+    process.schedule  = cms.Schedule( process.oniaTreeAna )
 #process.schedule  = cms.Schedule( process.oniaTreeAna , process.hltBitAna , process.hltObjectAna )
