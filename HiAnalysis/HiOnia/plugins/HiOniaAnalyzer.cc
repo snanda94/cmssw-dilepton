@@ -2499,7 +2499,7 @@ HiOniaAnalyzer::fillRecoMuons(int iCent)
         if ( _muonSel==(std::string)("Glb")      && selGlobalMuon(muon)  ) muType = Glb;
         if ( _muonSel==(std::string)("GlbTrk")   && selGlobalMuon(muon)  ) muType = GlbTrk;
         if ( _muonSel==(std::string)("Trk")      && selTrackerMuon(muon) ) muType = Trk;
-        if ( _muonSel==(std::string)("TwoGlbAmongThree") && selTrackerMuon(muon) ) muType = Trk;
+        if ( _muonSel==(std::string)("TwoGlbAmongThree") && selGlobalOrTrackerMuon(muon) ) muType = Trk;
 	if ( _muonSel==(std::string)("GlbOrTrk") && selGlobalOrTrackerMuon(muon) ) muType = GlbOrTrk;
       
 	if ( muType==GlbOrTrk || muType==GlbTrk || muType==Trk || muType==Glb ) {

@@ -292,8 +292,8 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
                 //edm::LogWarning("HiOnia2MuMuPAT_muonLessSizeORpvTrkSize") << 
                 //  "Still have the original PV: the refit was not done 'cose it is already muonless" << "\n";
               } else if ( muonLess.size()<=1 ){
-                edm::LogWarning("HiOnia2MuMuPAT_muonLessSizeORpvTrkSize") << 
-                  "Still have the original PV: the refit was not done 'cose there are not enough tracks to do the refit without the muon tracks" << "\n";
+                // edm::LogWarning("HiOnia2MuMuPAT_muonLessSizeORpvTrkSize") << 
+                //   "Still have the original PV: the refit was not done 'cose there are not enough tracks to do the refit without the muon tracks" << "\n";
               } else {
                 edm::LogWarning("HiOnia2MuMuPAT_muonLessSizeORpvTrkSize") << 
                   "Still have the original PV: Something weird just happened, muonLess.size()=" << muonLess.size() << " and thePrimaryV.tracksSize()=" << thePrimaryV.tracksSize() << " ." << "\n";
