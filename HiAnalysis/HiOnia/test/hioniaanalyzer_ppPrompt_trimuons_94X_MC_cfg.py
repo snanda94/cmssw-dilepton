@@ -7,14 +7,14 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 # Setup Settings for ONIA TREE: PbPb 2018
 
 HLTProcess     = "HLT" # Name of HLT process 
-isMC           = False # if input is MONTECARLO: True or if it's DATA: False
+isMC           = True # if input is MONTECARLO: True or if it's DATA: False
 muonSelection  = "TwoGlbAmongThree" # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal&&isTracker), Trk(isTracker), TwoGlbAmongThree (which requires two isGlobal for a trimuon, and one isGlobal for a dimuon) are available
-applyEventSel  = True # Only apply Event Selection if the required collections are present
-OnlySoftMuons  = True # Keep only isSoftMuon's (with highPurity because this is pp config) from the beginning of HiSkim. In any case, if applyCuts=True, isSoftMuon is required at HiAnalysis level for muons of selected dimuons.
-applyCuts      = True # At HiAnalysis level, apply kinematic acceptance cuts + identification cuts (isSoftMuon or isTightMuon, depending on TightGlobalMuon flag) for muons from selected di(tri)muons + hard-coded cuts on the di(tri)muon that you would want to add (but recommended to add everything in LateDimuonSelection)
+applyEventSel  = False # Only apply Event Selection if the required collections are present
+OnlySoftMuons  = False # Keep only isSoftMuon's (with highPurity because this is pp config) from the beginning of HiSkim. In any case, if applyCuts=True, isSoftMuon is required at HiAnalysis level for muons of selected dimuons.
+applyCuts      = False # At HiAnalysis level, apply kinematic acceptance cuts + identification cuts (isSoftMuon or isTightMuon, depending on TightGlobalMuon flag) for muons from selected di(tri)muons + hard-coded cuts on the di(tri)muon that you would want to add (but recommended to add everything in LateDimuonSelection)
 SofterSgMuAcceptance = True # Whether to accept muons with a softer acceptance cuts than the usual (pt>3.5GeV at central eta, pt>1.8 at high |eta|). Applies when applyCuts=True
 doTrimuons     = True # Make collections of trimuon candidates in addition to dimuons, and keep only events with >0 trimuons
-atLeastOneCand = True # Keep only events that have one selected dimuon (or at least one trimuon if doTrimuons = true)
+atLeastOneCand = False # Keep only events that have one selected dimuon (or at least one trimuon if doTrimuons = true)
 OneMatchedHLTMu = 4   # Keep only di(tri)muons of which the one(two) muon(s) are matched to the HLT Filter of this number. You can get the desired number in the output of oniaTree. Set to -1 for no matching.
 muonLessPV     = True  # Recalculate the PV without the two muons from the selected dimuon
 #############################################################################
@@ -42,10 +42,14 @@ process = cms.Process("HIOnia")
 options = VarParsing.VarParsing ('analysis')
 
 # Input and Output File Names
-options.outputFile = "Oniatree.root"
+options.outputFile = "Oniatree_MC.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
 options.inputFiles =[
-    '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/00000/E2A9F70B-8042-E811-9D04-FA163E74586C.root'
+    '/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_16122018_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_16122018_1_reco_NoCuts/181222_231452/0000/Bc_reconstructed_108.root',
+    '/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_16122018_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_16122018_1_reco_NoCuts/181222_231452/0000/Bc_reconstructed_109.root',
+    '/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_16122018_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_16122018_1_reco_NoCuts/181222_231452/0000/Bc_reconstructed_110.root',
+    '/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_16122018_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_16122018_1_reco_NoCuts/181222_231452/0000/Bc_reconstructed_111.root',
+    '/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_16122018_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_16122018_1_reco_NoCuts/181222_231452/0000/Bc_reconstructed_112.root',
     ]
 options.maxEvents = 3000 # -1 means all events
 

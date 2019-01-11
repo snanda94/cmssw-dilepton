@@ -109,7 +109,7 @@ triggerList    = {
         "hltL3fL1sSingleMu7L1f0L2f0L3Filtered15",
         "hltL3fL1sSingleMu7L1f0L2f0L3Filtered20",
         )
-    }
+}
 
 if isMC:
     globalTag = '92X_upgrade2017_realistic_v11'
@@ -131,13 +131,14 @@ process.GlobalTag = GlobalTag(process.GlobalTag, globalTag, '')
 
 # For OniaTree Analyzer
 from HiAnalysis.HiOnia.oniaTreeAnalyzer_cff import oniaTreeAnalyzer
-oniaTreeAnalyzer(process, muonTriggerList=triggerList, HLTProName=HLTProcess, muonSelection=muonSelection, useL1Stage2=True, isMC=isMC, outputFileName=options.outputFile, muonlessPV=muonLessPV, doTrimu=doTrimuons)
+oniaTreeAnalyzer(process,
+                 #muonTriggerList=triggerList, HLTProName=HLTProcess, #useL1Stage2=True, 
+                 muonSelection=muonSelection, isMC=isMC, outputFileName=options.outputFile, muonlessPV=muonLessPV, doTrimu=doTrimuons)
 
 #process.onia2MuMuPatGlbGlb.dimuonSelection       = cms.string("8 < mass && mass < 14 && charge==0 && abs(daughter('muon1').innerTrack.dz - daughter('muon2').innerTrack.dz) < 25")
 #process.onia2MuMuPatGlbGlb.lowerPuritySelection  = cms.string("")
 #process.onia2MuMuPatGlbGlb.higherPuritySelection = cms.string("") ## No need to repeat lowerPuritySelection in there, already included
 process.onia2MuMuPatGlbGlb.LateDimuonSel         = cms.string("userFloat(\"vProb\")>0.01") 
-process.onia2MuMuPatGlbGlb.LateTrimuonSel        = cms.string("userFloat(\"vProb\")>0.005")
 process.onia2MuMuPatGlbGlb.onlySoftMuons         = cms.bool(OnlySoftMuons)
 
 process.hionia.minimumFlag      = cms.bool(keepExtraColl)           #for Reco_trk_*
