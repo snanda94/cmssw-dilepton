@@ -44,10 +44,10 @@ options = VarParsing.VarParsing ('analysis')
 # Input and Output File Names
 options.outputFile = "Oniatree.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
-options.inputFiles =[
-    '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/00000/E2A9F70B-8042-E811-9D04-FA163E74586C.root'
+options.inputFiles =[#'file:edmFile_pp5TeV.root'
+                     '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/6AB94440-E52D-E811-818F-A0369FD1EEA8.root'
     ]
-options.maxEvents = 3000 # -1 means all events
+options.maxEvents = -1 # -1 means all events
 
 # Get and parse the command line arguments
 options.parseArguments()
