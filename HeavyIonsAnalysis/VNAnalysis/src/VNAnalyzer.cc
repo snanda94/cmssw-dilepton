@@ -217,6 +217,20 @@ private:
   int nCentBins_ = 1;
   int ntrack;
 
+//###from OniaAnalyzer
+  edm::EDGetTokenT<reco::VertexCollection>            _thePVsToken;
+  math::XYZPoint RefVtx;
+  float RefVtx_xError;
+  float RefVtx_yError;
+  float RefVtx_zError;
+  float zVtx;
+  float nPV;
+  // number of primary vertices
+  TH1F* hPileUp;
+  // z vertex distribution
+  TH1F* hZVtx;
+//###
+
 
   //==============  Harmonics ============
   TH2D * ptav[ncentbins];
@@ -364,7 +378,8 @@ private:
 //
 // constructors and destructor
 //
-VNAnalyzer::VNAnalyzer(const edm::ParameterSet& iConfig):runno_(0)  
+VNAnalyzer::VNAnalyzer(const edm::ParameterSet& iConfig):runno_(0),
+_thePVsToken(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("primaryVertexTag")     ))
 {
   ran = new TRandom();
   ran->SetSeed(0);
@@ -447,7 +462,7 @@ VNAnalyzer::VNAnalyzer(const edm::ParameterSet& iConfig):runno_(0)
   flatdelvtx_ = iConfig.getParameter<double>("flatdelvtx") ;
   
   effTable_ = iConfig.getParameter<std::string>("effTable_");
-  makeTree_ = iConfig.getUntrackedParameter<bool>("makeTree_",false);
+  makeTree_ = iConfig.getUntrackedParameter<bool>("makeTree_",true);
   
   nvtx_ = iConfig.getUntrackedParameter<int>("nvtx_", 100);
   dzdzerror_ = iConfig.getUntrackedParameter<double>("dzdzerror_", 3.);
@@ -740,6 +755,38 @@ VNAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   using namespace edm;
   using namespace std;
   using namespace reco;
+
+  edm::Handle<reco::VertexCollection> privtxs;
+  iEvent.getByToken(_thePVsToken, privtxs);
+  reco::VertexCollection::const_iterator privtx;
+
+  if (privtxs.isValid()){
+    nPV = privtxs->size();
+  
+    if ( privtxs->begin() != privtxs->end() ) {
+      privtx=privtxs->begin();
+      RefVtx = privtx->position();
+      RefVtx_xError = privtx->xError();
+      RefVtx_yError = privtx->yError();
+      RefVtx_zError = privtx->zError();
+    } else {
+      RefVtx.SetXYZ(0.,0.,0.);
+      RefVtx_xError = 0.0; 
+      RefVtx_yError = 0.0; 
+      RefVtx_zError = 0.0; 
+    }    
+
+    zVtx = RefVtx.Z();
+
+    hZVtx->Fill(zVtx);
+    hPileUp->Fill(nPV);
+  }
+  else {
+    std::cout<<"ERROR: privtxs is NULL or not isValid ! Return now"<<std::endl; return;
+  }
+
+ 
+
   Bool_t newrun = kFALSE;
   if(runno_ != iEvent.id().run()) newrun = kTRUE;
   runno_ = iEvent.id().run();
@@ -786,8 +833,9 @@ VNAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   int ibin = hcentres->FindBin(centval)-1;
   hcent->Fill(centval);
   hcentbins->Fill(cbin);
+//	std::cout << "cbin fill : " << cbin << std::endl;
   int ntrkval=fillTracks(iEvent, iSetup, ibin);
-  if(ntrkval<=0) return;
+//  if(ntrkval<=0) {std::cout << "ntrkval<=0: ntrakval: " << ntrkval<<std::endl;return;}
   hvtx->Fill(vtx);
   hNtrk->Fill(ntrkval);
   //
@@ -879,7 +927,8 @@ VNAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     
   }
   
-  if(makeTree_) tree->Fill(); 
+  if(makeTree_) {tree->Fill();}
+
 }
 
 
@@ -888,6 +937,15 @@ VNAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 void 
 VNAnalyzer::beginJob()
 {
+   //hPileUp = new TH1F("hPileUp","Number of Primary Vertices;n_{PV};counts", 50, 0, 50);
+   hPileUp = fs->make<TH1F>("hPileUp","Number of Primary Vertices;n_{PV};counts", 50, 0, 50);
+   hPileUp->Sumw2();
+ 
+   //hZVtx = new TH1F("hZVtx","Primary z-vertex distribution;z_{vtx} [cm];counts", 120, -30, 30);
+   hZVtx = fs->make<TH1F>("hZVtx","Primary z-vertex distribution;z_{vtx} [cm];counts", 120, -30, 30);
+   hZVtx->Sumw2();
+
+	return;
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
