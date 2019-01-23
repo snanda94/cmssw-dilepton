@@ -30,5 +30,6 @@ vnanalyzer = cms.EDAnalyzer("VNAnalyzer",
                             Recenter = cms.untracked.bool(True),
                             EPLevel = cms.untracked.int32(2),
                             dzdzerror_pix_ = cms.untracked.double(8.0),
-                            chi2_ = cms.untracked.double(12.)
+                            chi2_ = cms.untracked.double(12.),
+			    primaryVertexTag = cms.InputTag("offlinePrimaryVertices") ###from OniaAnalyzer
  )
