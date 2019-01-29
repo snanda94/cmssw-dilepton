@@ -82,7 +82,7 @@ private:
 
   reco::GenParticleRef findDaughterRef(reco::GenParticleRef GenParticleDaughter, int GenParticlePDG);
   bool isSameLorentzV(TLorentzVector* v1, TLorentzVector* v2);
-  int IndexOfThisMuon(TLorentzVector* v1, TClonesArray* vlist, bool IsGen);
+  int IndexOfThisMuon(TLorentzVector* v1, TClonesArray* vlist);
   int IndexOfThisJpsi(int mu1_idx, int mu2_idx);
   void fillGenInfo();
   void fillMuMatchingInfo();
@@ -91,7 +91,7 @@ private:
   bool isAbHadron(int pdgID);
   bool isNeutrino(int pdgID);
   bool isAMixedbHadron(int pdgID, int momPdgID);
-  std::pair<bool, reco::GenParticleRef> findBcMotherRef(reco::GenParticleRef GenParticleMother,int GenParticlePDG, int verbose);
+  std::pair<bool, reco::GenParticleRef> findBcMotherRef(reco::GenParticleRef GenParticleMother,int GenParticlePDG);
   reco::GenParticleRef findMotherRef(reco::GenParticleRef GenParticleMother, int GenParticlePDG);
   std::pair<int, std::pair<float, float> >  findGenMCInfo(const reco::GenParticle *genJpsi);
   std::pair<int, std::pair<float, float> >  findGenBcInfo(reco::GenParticleRef genBc, const reco::GenParticle *genJpsi);
@@ -489,7 +489,7 @@ HiOniaAnalyzer::HiOniaAnalyzer(const edm::ParameterSet& iConfig):
   _patMuonToken(consumes<pat::MuonCollection>(iConfig.getParameter<edm::InputTag>("srcMuon"))),
   _patMuonNoTrigToken(consumes<pat::MuonCollection>(iConfig.getParameter<edm::InputTag>("srcMuonNoTrig"))),
   _patJpsiToken(consumes<pat::CompositeCandidateCollection>(iConfig.getParameter<edm::InputTag>("srcDimuon"))),
-  _patTrimuonToken(consumes<pat::CompositeCandidateCollection>(iConfig.getParameter<edm::InputTag>("srcTrimuon"))), //_doTrimuons?"srcTrimuon":"srcDimuon" the names of userData are the same as for dimuons, but with 'trimuon' product instance name
+  _patTrimuonToken(consumes<pat::CompositeCandidateCollection>(iConfig.getParameter<edm::InputTag>("srcTrimuon"))), //the names of userData are the same as for dimuons, but with 'trimuon' product instance name. Ignored if the collection does not exist
   _recoTracksToken(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("srcTracks"))),
   _genParticleToken(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"))),
   _thePVsToken(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("primaryVertexTag"))),
@@ -982,8 +982,8 @@ HiOniaAnalyzer::fillTreeJpsi(int count) {
 
       if (muon1->charge() > muon2->charge()) {
 
-	Reco_QQ_mupl_idx[Reco_QQ_size] = IndexOfThisMuon(&vMuon1 , Reco_mu_4mom, false); 
-	Reco_QQ_mumi_idx[Reco_QQ_size] = IndexOfThisMuon(&vMuon2 , Reco_mu_4mom, false);
+	Reco_QQ_mupl_idx[Reco_QQ_size] = IndexOfThisMuon(&vMuon1 , Reco_mu_4mom); 
+	Reco_QQ_mumi_idx[Reco_QQ_size] = IndexOfThisMuon(&vMuon2 , Reco_mu_4mom);
 
 	if (TVector2::Phi_mpi_pi(vMuon1.Phi() - vMuon2.Phi()) > 0) Reco_QQ_isCowboy[Reco_QQ_size] = true;
 	else Reco_QQ_isCowboy[Reco_QQ_size] = false;
@@ -996,8 +996,8 @@ HiOniaAnalyzer::fillTreeJpsi(int count) {
       }
       else {
 
-	Reco_QQ_mupl_idx[Reco_QQ_size] = IndexOfThisMuon(&vMuon2 , Reco_mu_4mom, false);
-	Reco_QQ_mumi_idx[Reco_QQ_size] = IndexOfThisMuon(&vMuon1 , Reco_mu_4mom, false);
+	Reco_QQ_mupl_idx[Reco_QQ_size] = IndexOfThisMuon(&vMuon2 , Reco_mu_4mom);
+	Reco_QQ_mumi_idx[Reco_QQ_size] = IndexOfThisMuon(&vMuon1 , Reco_mu_4mom);
 
 	if (TVector2::Phi_mpi_pi(vMuon2.Phi() - vMuon1.Phi()) > 0) Reco_QQ_isCowboy[Reco_QQ_size] = true;
 	else Reco_QQ_isCowboy[Reco_QQ_size] = false;
@@ -1221,9 +1221,9 @@ HiOniaAnalyzer::fillTreeBc(int count) {
       reco::TrackRef iTrack_mumi;
       reco::TrackRef iTrack_muW;
 
-      int mu1_idx = IndexOfThisMuon(&vMuon1 , Reco_mu_4mom, false);
-      int mu2_idx = IndexOfThisMuon(&vMuon2 , Reco_mu_4mom, false);
-      int mu3_idx = IndexOfThisMuon(&vMuon3 , Reco_mu_4mom, false);
+      int mu1_idx = IndexOfThisMuon(&vMuon1 , Reco_mu_4mom);
+      int mu2_idx = IndexOfThisMuon(&vMuon2 , Reco_mu_4mom);
+      int mu3_idx = IndexOfThisMuon(&vMuon3 , Reco_mu_4mom);
 
       //One dimuon combination has to pass the Jpsi kinematic cuts
       if (IndexOfThisJpsi(mu1_idx,mu2_idx)==-1 && IndexOfThisJpsi(mu2_idx,mu3_idx)==-1 && IndexOfThisJpsi(mu1_idx,mu3_idx)==-1) {return;}
@@ -1239,7 +1239,7 @@ HiOniaAnalyzer::fillTreeBc(int count) {
 	if (Reco_mu_charge[mu1_idx]==Reco_mu_charge[mu2_idx]){
 	  mu_loneCharge = mu3_idx; mu_SameCharge2 = mu1_idx;
 	}
-	if (Reco_mu_charge[mu1_idx]==Reco_mu_charge[mu3_idx]){
+	else if (Reco_mu_charge[mu1_idx]==Reco_mu_charge[mu3_idx]){
 	  mu_loneCharge = mu2_idx; mu_SameCharge1 = mu1_idx;
 	}
 
@@ -1601,12 +1601,9 @@ HiOniaAnalyzer::checkTriggers(const pat::CompositeCandidate* aJpsiCand) {
 
       for (unsigned int iTr=1;iTr<NTRIGGERS;++iTr) {
 	if (isTriggerMatched[iTr]) {
-	  // fill event counting histogram only once per event, also if several muons fired trigger
-	  //      if (alreadyFilled[iTr]) continue;
 	  // since we have bins for event info, let's try to fill here the trigger info for each pair
 	  // also if there are several pairs matched to the same kind of trigger
 	  hStats->Fill(iTr+NTRIGGERS); // pair info
-	  //      alreadyFilled[iTr]=true;
 	}
       }
     }
@@ -2013,10 +2010,10 @@ HiOniaAnalyzer::isSameLorentzV(TLorentzVector* v1, TLorentzVector* v2){
 }
 
 int
-HiOniaAnalyzer::IndexOfThisMuon(TLorentzVector* v1, TClonesArray* vlist, bool IsGen){
+HiOniaAnalyzer::IndexOfThisMuon(TLorentzVector* v1, TClonesArray* vlist){
   int GoodIndex = -1;
-  for(int iMu=0;iMu< (IsGen?Gen_mu_size:Reco_mu_size) ;iMu++){
-    TLorentzVector *testMu = (TLorentzVector*) (IsGen?Gen_mu_4mom:Reco_mu_4mom)->ConstructedAt(iMu);
+  for(int iMu=0;iMu < vlist->GetEntries() ;iMu++){
+    TLorentzVector *testMu = (TLorentzVector*) vlist->ConstructedAt(iMu);
     if(isSameLorentzV(v1, testMu)){
       GoodIndex = iMu;
       break;
@@ -2069,7 +2066,7 @@ HiOniaAnalyzer::findDaughterRef(reco::GenParticleRef GenParticleDaughter, int Ge
 }
 
 std::pair<bool, reco::GenParticleRef>
-HiOniaAnalyzer::findBcMotherRef(reco::GenParticleRef GenParticleMother, int BcPDG, int verbose = 0) {
+HiOniaAnalyzer::findBcMotherRef(reco::GenParticleRef GenParticleMother, int BcPDG) {
 
   bool FoundBc = false;
   for(int i=0; i<1000; ++i) {
@@ -2158,17 +2155,17 @@ HiOniaAnalyzer::fillGenInfo()
           TLorentzVector vMuon2 = lorentzMomentum(genMuon2->p4());
             
           if (genMuon1->charge() > genMuon2->charge()) {
-            Gen_QQ_mupl_idx[Gen_QQ_size] = IndexOfThisMuon(&vMuon1 , Gen_mu_4mom, true);
-            Gen_QQ_mumi_idx[Gen_QQ_size] = IndexOfThisMuon(&vMuon2 , Gen_mu_4mom, true);
+            Gen_QQ_mupl_idx[Gen_QQ_size] = IndexOfThisMuon(&vMuon1 , Gen_mu_4mom);
+            Gen_QQ_mumi_idx[Gen_QQ_size] = IndexOfThisMuon(&vMuon2 , Gen_mu_4mom);
           }
           else {
-            Gen_QQ_mupl_idx[Gen_QQ_size] = IndexOfThisMuon(&vMuon2 , Gen_mu_4mom, true);
-            Gen_QQ_mumi_idx[Gen_QQ_size] = IndexOfThisMuon(&vMuon1 , Gen_mu_4mom, true);
+            Gen_QQ_mupl_idx[Gen_QQ_size] = IndexOfThisMuon(&vMuon2 , Gen_mu_4mom);
+            Gen_QQ_mumi_idx[Gen_QQ_size] = IndexOfThisMuon(&vMuon1 , Gen_mu_4mom);
           }
 
 	  if(_doTrimuons){
 	    //GenInfo for the Bc and the daughter muon from the W daughter of the Bc. Beware, this is designed for generated Bc's having QQ as a daughter!!
-	    std::pair<bool, reco::GenParticleRef> findBcMom = findBcMotherRef( findMotherRef(gen->motherRef(),gen->pdgId()) , _BcPDG, 0); //the boolean says if the Bc mother was found
+	    std::pair<bool, reco::GenParticleRef> findBcMom = findBcMotherRef( findMotherRef(gen->motherRef(),gen->pdgId()) , _BcPDG); //the boolean says if the Bc mother was found
 	  
 	    if (findBcMom.first) {
 	  
@@ -2211,15 +2208,6 @@ HiOniaAnalyzer::fillGenInfo()
 	      }
 	    
 	      //Fill info for Bc and its mu,nu daughters
-	      // if (verbose){
-	      //   std::cout<<"BcPID = "<<genBc->pdgId()<<std::endl;
-	      //   std::cout<<"Bc 1st daughter PID = "<<genDau1->pdgId()<<std::endl;
-	      //   std::cout<<"Bc 2nd daughter PID = "<<genDau2->pdgId()<<std::endl;
-	      //   std::cout<<"Bc 3rd daughter PID = "<<genDau3->pdgId()<<std::endl;
-	      //   std::cout<<"Jpsi PID = "<<gen->pdgId()<<std::endl;
-	      //   std::cout<<"status of neutrino daughter of Bc = "<<gennuW->status()<<std::endl;
-	      //   std::cout<<"status of muon daughter of Bc = "<<genmuW->status()<<std::endl;
-	      // }
 	      if(goodDaughters && (genmuW->charge() == genBc->charge()) 
 		 && ( genmuW->status() == 1 ) ){
 	
@@ -2234,7 +2222,7 @@ HiOniaAnalyzer::fillGenInfo()
 		new((*Gen_Bc_4mom)[Gen_Bc_size])TLorentzVector(vBc);
 
 		TLorentzVector vmuW = lorentzMomentum(genmuW->p4());
-		Gen_Bc_muW_idx[Gen_Bc_size] = IndexOfThisMuon(&vmuW , Gen_mu_4mom, true);
+		Gen_Bc_muW_idx[Gen_Bc_size] = IndexOfThisMuon(&vmuW , Gen_mu_4mom);
 	      
 		TLorentzVector vnuW = lorentzMomentum(gennuW->p4());
 		new((*Gen_Bc_nuW_4mom)[Gen_Bc_size])TLorentzVector(vnuW);
@@ -2386,11 +2374,6 @@ HiOniaAnalyzer::fillRecoTracks()
 	std::cout<<"ERROR: 'track' pointer in fillRecoTracks is NULL ! Return now"<<std::endl; return;
       } else {
 
-	// double dz = track->dz(RefVtx);
-	// double dzsigma = sqrt(track->dzError()*track->dzError()+RefVtx_zError*RefVtx_zError);    
-	// double dxy = track->dxy(RefVtx);
-	// double dxysigma = sqrt(track->dxyError()*track->dxyError() + RefVtx_xError*RefVtx_yError);
-      
 	if (track->qualityByName("highPurity") &&
 	    track->pt()>0.2 && fabs(track->eta())<2.4 &&
 	    track->ptError()/track->pt()<0.1)  {
@@ -3145,18 +3128,6 @@ HiOniaAnalyzer::findGenBcInfo(reco::GenParticleRef genBc, const reco::GenParticl
   trueVtx.SetXYZ(genJpsi->vertex().x(),genJpsi->vertex().y(),genJpsi->vertex().z());
   trueVtxMom.SetXYZ(genBc->vertex().x(),genBc->vertex().y(),genBc->vertex().z());
   trueP.SetXYZ(genBc->momentum().x(),genBc->momentum().y(),genBc->momentum().z());
-
-  // if (genBc->numberOfMothers()>0) {
-  //   reco::GenParticleRef Bcmom = findMotherRef(genBc->motherRef(), genBc->pdgId());
-  //   TVector3 trueVtxBcMom(Bcmom->vertex().x(),Bcmom->vertex().y(),Bcmom->vertex().z());
-
-  //   TVector3 vdiffBcmom = trueVtxMom - trueVtxBcMom;
-  //   float trueLife3D_Bcmom = -99.;
-  //   trueLife3D_Bcmom = vdiffBcmom.Mag()*BcPDGMass/trueP.Mag();
-  //   if(trueLife3D_Bcmom>0.0001){
-  //     //std::cout<<"LIFETIME : Bc does not seem to come from primary vertex!! Travel distance of Bc mom =  " << trueLife3D_Bcmom <<std::endl; 
-  //   }
-  // }
 
   TVector3 vdiff = trueVtx - trueVtxMom;
   trueLife = vdiff.Perp()*BcPDGMass/trueP.Perp();
