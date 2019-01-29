@@ -279,7 +279,7 @@ private:
   int Reco_mu_type[Max_mu_size];  // Vector of type of muon (global=0, tracker=1, calo=2)  
   int Reco_mu_whichGen[Max_mu_size]; // index of the generated muon that was matched with this reco muon. Is -1 if the muon is not associated with a generated muon (fake, or very bad resolution)
 
-  bool Reco_mu_isGoodMuon[Max_mu_size];    // Vector of isGoodMuon(TMOneStationTight)
+  //  bool Reco_mu_isGoodMuon[Max_mu_size];    // Vector of isGoodMuon(TMOneStationTight)
   bool Reco_mu_highPurity[Max_mu_size];    // Vector of high purity flag  
   bool Reco_mu_TrkMuArb[Max_mu_size];      // Vector of TrackerMuonArbitrated
   bool Reco_mu_TMOneStaTight[Max_mu_size]; // Vector of TMOneStationTight
@@ -365,7 +365,6 @@ private:
   edm::EDGetTokenT<pat::MuonCollection>               _patMuonToken;
   edm::EDGetTokenT<pat::MuonCollection>               _patMuonNoTrigToken;
   edm::EDGetTokenT<pat::CompositeCandidateCollection> _patJpsiToken;
-  bool           _doTrimuons;
   edm::EDGetTokenT<pat::CompositeCandidateCollection> _patTrimuonToken;
   edm::EDGetTokenT<reco::TrackCollection>             _recoTracksToken;
   edm::EDGetTokenT<reco::GenParticleCollection>       _genParticleToken;
@@ -412,6 +411,7 @@ private:
   bool           _isPromptMC;
   bool           _useEvtPlane;
   bool           _useGeTracks;
+  bool           _doTrimuons;
 
   int _oniaPDG;
   int _BcPDG;
@@ -489,8 +489,7 @@ HiOniaAnalyzer::HiOniaAnalyzer(const edm::ParameterSet& iConfig):
   _patMuonToken(consumes<pat::MuonCollection>(iConfig.getParameter<edm::InputTag>("srcMuon"))),
   _patMuonNoTrigToken(consumes<pat::MuonCollection>(iConfig.getParameter<edm::InputTag>("srcMuonNoTrig"))),
   _patJpsiToken(consumes<pat::CompositeCandidateCollection>(iConfig.getParameter<edm::InputTag>("srcDimuon"))),
-  _doTrimuons(iConfig.getParameter<bool>("doTrimuons")),
-  _patTrimuonToken(consumes<pat::CompositeCandidateCollection>(iConfig.getParameter<edm::InputTag>(_doTrimuons?"srcTrimuon":"srcDimuon"))), // the names of userData are the same as for dimuons, but with 'trimuon' product instance name
+  _patTrimuonToken(consumes<pat::CompositeCandidateCollection>(iConfig.getParameter<edm::InputTag>("srcTrimuon"))), //_doTrimuons?"srcTrimuon":"srcDimuon" the names of userData are the same as for dimuons, but with 'trimuon' product instance name
   _recoTracksToken(consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("srcTracks"))),
   _genParticleToken(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"))),
   _thePVsToken(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("primaryVertexTag"))),
@@ -534,6 +533,7 @@ HiOniaAnalyzer::HiOniaAnalyzer(const edm::ParameterSet& iConfig):
   _isPromptMC(iConfig.getUntrackedParameter<bool>("isPromptMC",true) ),
   _useEvtPlane(iConfig.getUntrackedParameter<bool>("useEvtPlane",false) ),
   _useGeTracks(iConfig.getUntrackedParameter<bool>("useGeTracks",false) ),
+  _doTrimuons(iConfig.getParameter<bool>("doTrimuons")),
   _oniaPDG(iConfig.getParameter<int>("oniaPDG")),
   _BcPDG(iConfig.getParameter<int>("BcPDG")),
   _OneMatchedHLTMu(iConfig.getParameter<int>("OneMatchedHLTMu")),
@@ -876,41 +876,42 @@ HiOniaAnalyzer::fillTreeMuon(const pat::Muon* muon, int iType, ULong64_t trigBit
     reco::TrackRef iTrack = muon->innerTrack();
   
     if (!_theMinimumFlag) {
+      Reco_mu_SelectionType[Reco_mu_size] = muonIDmask(muon);
+      //      Reco_mu_isGoodMuon[Reco_mu_size] = muon::isGoodMuon(*muon, muon::TMOneStationTight);
+      Reco_mu_TrkMuArb[Reco_mu_size] = muon->muonID("TrackerMuonArbitrated");
+      Reco_mu_TMOneStaTight[Reco_mu_size] = muon->muonID("TMOneStationTight");
+      Reco_mu_StationsMatched[Reco_mu_size] = muon->numberOfMatchedStations();
+     
       if (!iTrack.isNull()){
-	Reco_mu_SelectionType[Reco_mu_size] = muonIDmask(muon);
 	Reco_mu_highPurity[Reco_mu_size] = iTrack->quality(reco::TrackBase::highPurity);
-	Reco_mu_isGoodMuon[Reco_mu_size] = muon::isGoodMuon(*muon, muon::TMOneStationTight);
-	Reco_mu_TrkMuArb[Reco_mu_size] = muon->muonID("TrackerMuonArbitrated");
-	Reco_mu_TMOneStaTight[Reco_mu_size] = muon->muonID("TMOneStationTight");
 	Reco_mu_nTrkHits[Reco_mu_size] = iTrack->found();
 	Reco_mu_normChi2_inner[Reco_mu_size] = iTrack->normalizedChi2();
 	Reco_mu_nPixValHits[Reco_mu_size] = iTrack->hitPattern().numberOfValidPixelHits();
 	Reco_mu_nPixWMea[Reco_mu_size] = iTrack->hitPattern().pixelLayersWithMeasurement();
 	Reco_mu_nTrkWMea[Reco_mu_size] = iTrack->hitPattern().trackerLayersWithMeasurement();
-	Reco_mu_StationsMatched[Reco_mu_size] = muon->numberOfMatchedStations();
 	Reco_mu_dxy[Reco_mu_size] = iTrack->dxy(RefVtx);
 	Reco_mu_dxyErr[Reco_mu_size] = iTrack->dxyError();
 	Reco_mu_dz[Reco_mu_size] = iTrack->dz(RefVtx);
 	Reco_mu_dzErr[Reco_mu_size] = iTrack->dzError();
 	Reco_mu_pt_inner[Reco_mu_size] = iTrack->pt();
 	Reco_mu_ptErr_inner[Reco_mu_size] = iTrack->ptError();
-    
-	if (muon->isGlobalMuon()) {
-	  reco::TrackRef gTrack = muon->globalTrack();
-	  Reco_mu_nMuValHits[Reco_mu_size] = gTrack->hitPattern().numberOfValidMuonHits();
-	  Reco_mu_normChi2_global[Reco_mu_size] = gTrack->normalizedChi2();
-	  Reco_mu_pt_global[Reco_mu_size] = gTrack->pt();
-	  Reco_mu_ptErr_global[Reco_mu_size] = gTrack->ptError();
-	}
-	else {
-	  Reco_mu_nMuValHits[Reco_mu_size] = -1;
-	  Reco_mu_normChi2_global[Reco_mu_size] = 999;
-	  Reco_mu_pt_global[Reco_mu_size] = -1;
-	  Reco_mu_ptErr_global[Reco_mu_size] = -1;
-	}
       }
       else{
 	std::cout<<"ERROR: 'iTrack' pointer in fillTreeMuon is NULL ! Return now"<<std::endl; return;
+      }
+    
+      if (muon->isGlobalMuon()) {
+	reco::TrackRef gTrack = muon->globalTrack();
+	Reco_mu_nMuValHits[Reco_mu_size] = gTrack->hitPattern().numberOfValidMuonHits();
+	Reco_mu_normChi2_global[Reco_mu_size] = gTrack->normalizedChi2();
+	Reco_mu_pt_global[Reco_mu_size] = gTrack->pt();
+	Reco_mu_ptErr_global[Reco_mu_size] = gTrack->ptError();
+      }
+      else {
+	Reco_mu_nMuValHits[Reco_mu_size] = -1;
+	Reco_mu_normChi2_global[Reco_mu_size] = 999;
+	Reco_mu_pt_global[Reco_mu_size] = -1;
+	Reco_mu_ptErr_global[Reco_mu_size] = -1;
       }
     }
 
@@ -987,8 +988,10 @@ HiOniaAnalyzer::fillTreeJpsi(int count) {
 	if (TVector2::Phi_mpi_pi(vMuon1.Phi() - vMuon2.Phi()) > 0) Reco_QQ_isCowboy[Reco_QQ_size] = true;
 	else Reco_QQ_isCowboy[Reco_QQ_size] = false;
 
-	iTrack_mupl = muon1->innerTrack();
-	iTrack_mumi = muon2->innerTrack();
+	if(_muonLessPrimaryVertex){
+	  iTrack_mupl = muon1->innerTrack();
+	  iTrack_mumi = muon2->innerTrack();
+	}
 
       }
       else {
@@ -999,8 +1002,10 @@ HiOniaAnalyzer::fillTreeJpsi(int count) {
 	if (TVector2::Phi_mpi_pi(vMuon2.Phi() - vMuon1.Phi()) > 0) Reco_QQ_isCowboy[Reco_QQ_size] = true;
 	else Reco_QQ_isCowboy[Reco_QQ_size] = false;
 
-	iTrack_mupl = muon2->innerTrack();
-	iTrack_mumi = muon1->innerTrack();
+	if(_muonLessPrimaryVertex){
+	  iTrack_mupl = muon2->innerTrack();
+	  iTrack_mumi = muon1->innerTrack();
+	}
 
       }
 
@@ -1134,14 +1139,6 @@ HiOniaAnalyzer::fillTreeJpsi(int count) {
 	    double dzsigma = sqrt(track->dzError()*track->dzError()+RefVtx_zError*RefVtx_zError);    
 	    double dxy = track->dxy(RefVtx);
 	    double dxysigma = sqrt(track->dxyError()*track->dxyError() + RefVtx_xError*RefVtx_yError);
-	    // to be fixed
-	    // double dxysigma = sqrt(track->dxyError()*track->dxyError() + RefVtx_xError*RefVtx_xError+RefVtx_yError*RefVtx_yError);
-	    // std::cout << "original: " << dxysigma
-	    //                << " better: "  << sqrt( pow(track->dxyError(),2) + pow(RefVtx_xError,2) + pow(RefVtx_yError,2) )
-	    //                << " ratio: " << dxysigma / sqrt( pow(track->dxyError(),2) + pow(RefVtx_xError,2) + pow(RefVtx_yError,2) )
-	    //                << " best: "
-	    //                << std::endl;
-      
 
 	    if (track->qualityByName("highPurity") &&
 		track->pt()>0.2 && fabs(track->eta())<2.4 &&
@@ -2716,7 +2713,7 @@ HiOniaAnalyzer::InitTree()
   }
 
   if (!_theMinimumFlag) {
-    myTree->Branch("Reco_mu_isGoodMuon", Reco_mu_isGoodMuon,   "Reco_mu_isGoodMuon[Reco_mu_size]/O");
+    //    myTree->Branch("Reco_mu_isGoodMuon", Reco_mu_isGoodMuon,   "Reco_mu_isGoodMuon[Reco_mu_size]/O");
     myTree->Branch("Reco_mu_highPurity", Reco_mu_highPurity,   "Reco_mu_highPurity[Reco_mu_size]/O");
     myTree->Branch("Reco_mu_TrkMuArb", Reco_mu_TrkMuArb,   "Reco_mu_TrkMuArb[Reco_mu_size]/O");
     myTree->Branch("Reco_mu_TMOneStaTight", Reco_mu_TMOneStaTight, "Reco_mu_TMOneStaTight[Reco_mu_size]/O");

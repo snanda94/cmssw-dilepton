@@ -47,7 +47,7 @@ options.secondaryOutputFile = "Jpsi_DataSet.root"
 options.inputFiles =[
     '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/00000/E2A9F70B-8042-E811-9D04-FA163E74586C.root'
     ]
-options.maxEvents = 3000 # -1 means all events
+options.maxEvents = 100 # -1 means all events
 
 # Get and parse the command line arguments
 options.parseArguments()
@@ -134,6 +134,7 @@ from HiAnalysis.HiOnia.oniaTreeAnalyzer_cff import oniaTreeAnalyzer
 oniaTreeAnalyzer(process,
                  #muonTriggerList=triggerList, HLTProName=HLTProcess, #useL1Stage2=True, 
                  muonSelection=muonSelection, isMC=isMC, outputFileName=options.outputFile, muonlessPV=muonLessPV, doTrimu=doTrimuons)
+process.oniaTreeAna = cms.Path(process.oniaTreeAna)
 
 process.onia2MuMuPatGlbGlb.dimuonSelection       = cms.string("2.2 < mass && mass < 4.0 && abs(daughter('muon1').innerTrack.dz - daughter('muon2').innerTrack.dz) < 25")
 process.onia2MuMuPatGlbGlb.trimuonSelection      = cms.string("2.5 < mass && mass < 8.3 && abs(daughter('muon1').innerTrack.dz - daughter('muon2').innerTrack.dz) < 25")
@@ -226,7 +227,6 @@ process.TFileService = cms.Service("TFileService",
 		)
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxEvents) )
 process.options   = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
-process.oniaTreeAna = cms.EndPath(process.oniaTreeAna)
 if saveHLTobj or saveHLTBit:
     process.schedule  = cms.Schedule( process.oniaTreeAna , process.hltBitAna , process.hltObjectAna )
 else:

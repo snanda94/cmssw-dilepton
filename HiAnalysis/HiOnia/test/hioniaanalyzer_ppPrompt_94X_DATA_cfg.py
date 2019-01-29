@@ -52,7 +52,7 @@ options.maxEvents = 100 # -1 means all events
 # Get and parse the command line arguments
 options.parseArguments()
 
-''' User can change the default trigger list here
+#User can change the default trigger list here
 triggerList    = {
     # Double Muon Trigger List
     'DoubleMuonTrigger' : cms.vstring(
@@ -111,7 +111,6 @@ triggerList    = {
         "hltL3fL1sSingleMu7L1f0L2f0L3Filtered20",
         )
 }
-'''
 
 if isMC:
     globalTag = '92X_upgrade2017_realistic_v11'
@@ -136,7 +135,7 @@ from HiAnalysis.HiOnia.oniaTreeAnalyzer_cff import oniaTreeAnalyzer
 oniaTreeAnalyzer(process,
                  #muonTriggerList=triggerList, HLTProName=HLTProcess, #useL1Stage2=True, 
                  muonSelection=muonSelection, isMC=isMC, outputFileName=options.outputFile, muonlessPV=muonLessPV, doTrimu=doTrimuons)
-process.oniaTreeAna = cms.EndPath(process.oniaTreeAna)
+process.oniaTreeAna = cms.Path(process.oniaTreeAna)
 
 #process.onia2MuMuPatGlbGlb.dimuonSelection       = cms.string("8 < mass && mass < 14 && charge==0 && abs(daughter('muon1').innerTrack.dz - daughter('muon2').innerTrack.dz) < 25")
 #process.onia2MuMuPatGlbGlb.lowerPuritySelection  = cms.string("")
