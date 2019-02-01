@@ -7,13 +7,13 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 # Setup Settings for ONIA TREE: PbPb 2018
 
 HLTProcess     = "HLT" # Name of HLT process 
-isMC           = False # if input is MONTECARLO: True or if it's DATA: False
-muonSelection  = "Glb" # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal&&isTracker), Trk(isTracker), TwoGlbAmongThree (which requires two isGlobal for a trimuon, and one isGlobal for a dimuon) are available
+isMC           = True # if input is MONTECARLO: True or if it's DATA: False
+muonSelection  = "TwoGlbAmongThree" # Single muon selection: Glb(isGlobal), GlbTrk(isGlobal&&isTracker), Trk(isTracker), TwoGlbAmongThree (which requires two isGlobal for a trimuon, and one isGlobal for a dimuon) are available
 applyEventSel  = False # Only apply Event Selection if the required collections are present
 OnlySoftMuons  = False # Keep only isSoftMuon's (with highPurity because this is pp config) from the beginning of HiSkim. In any case, if applyCuts=True, isSoftMuon is required at HiAnalysis level for muons of selected dimuons.
-applyCuts      = False # At HiAnalysis level, apply kinematic acceptance cuts + identification cuts (isSoftMuon or isTightMuon, depending on TightGlobalMuon flag) for muons from selected di(tri)muons + hard-coded cuts on the di(tri)muon that you would want to add (but recommended to add everything in LateDimuonSelection, applied at the end of HiSkim)
-SofterSgMuAcceptance = False # Whether to accept muons with a softer acceptance cuts than the usual (pt>3.5GeV at central eta, pt>1.8 at high |eta|). Applies when applyCuts=True
-doTrimuons     = False # Make collections of trimuon candidates in addition to dimuons, and keep only events with >0 trimuons
+applyCuts      = False # At HiAnalysis level, apply kinematic acceptance cuts + identification cuts (isSoftMuon or isTightMuon, depending on TightGlobalMuon flag) for muons from selected di(tri)muons + hard-coded cuts on the di(tri)muon that you would want to add (but recommended to add everything in LateDimuonSelection)
+SofterSgMuAcceptance = True # Whether to accept muons with a softer acceptance cuts than the usual (pt>3.5GeV at central eta, pt>1.8 at high |eta|). Applies when applyCuts=True
+doTrimuons     = True # Make collections of trimuon candidates in addition to dimuons, and keep only events with >0 trimuons
 atLeastOneCand = False # Keep only events that have one selected dimuon (or at least one trimuon if doTrimuons = true). BEWARE this can cause trouble in .root output if no event is selected by onia2MuMuPatGlbGlbFilter!
 OneMatchedHLTMu = -1   # Keep only di(tri)muons of which the one(two) muon(s) are matched to the HLT Filter of this number. You can get the desired number in the output of oniaTree. Set to -1 for no matching.
 muonLessPV     = True  # Recalculate the PV without the two muons from the selected dimuon
@@ -21,6 +21,7 @@ muonLessPV     = True  # Recalculate the PV without the two muons from the selec
 keepExtraColl  = False # General Tracks + Stand Alone Muons + Converted Photon collections
 #saveHLTBit     = False # for trigger analysis
 #saveHLTobj     = False # For trigger analysis
+
 #----------------------------------------------------------------------------
 
 # Print Onia Tree settings:
@@ -42,17 +43,20 @@ process = cms.Process("HIOnia")
 options = VarParsing.VarParsing ('analysis')
 
 # Input and Output File Names
-options.outputFile = "Oniatree.root"
+options.outputFile = "Oniatree_MC_trimuons_22012019.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
-options.inputFiles =[#'file:edmFile_pp5TeV.root'
-                     '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/6AB94440-E52D-E811-818F-A0369FD1EEA8.root'
+options.inputFiles =[#'file:/home/llr/cms/falmagne/Bc/gen/MC/CMSSW_9_4_12/src/Bc_reconstructed.root'
+    '/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_10.root',
+    '/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_11.root',
+    '/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_12.root',
+    '/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_13.root',
+    '/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_14.root'
     ]
 options.maxEvents = -1 # -1 means all events
 
 # Get and parse the command line arguments
 options.parseArguments()
 
-#User can change the default trigger list here
 triggerList    = {
     # Double Muon Trigger List
     'DoubleMuonTrigger' : cms.vstring(
@@ -137,11 +141,13 @@ oniaTreeAnalyzer(process,
                  muonSelection=muonSelection, isMC=isMC, outputFileName=options.outputFile, muonlessPV=muonLessPV, doTrimu=doTrimuons)
 process.oniaTreeAna = cms.Path(process.oniaTreeAna)
 
-#process.onia2MuMuPatGlbGlb.dimuonSelection       = cms.string("8 < mass && mass < 14 && charge==0 && abs(daughter('muon1').innerTrack.dz - daughter('muon2').innerTrack.dz) < 25")
+process.onia2MuMuPatGlbGlb.dimuonSelection       = cms.string("2.2 < mass && mass < 4.0 && abs(daughter('muon1').innerTrack.dz - daughter('muon2').innerTrack.dz) < 25")
+process.onia2MuMuPatGlbGlb.trimuonSelection      = cms.string("2.5 < mass && mass < 8.3 && abs(daughter('muon1').innerTrack.dz - daughter('muon2').innerTrack.dz) < 25")
 #process.onia2MuMuPatGlbGlb.lowerPuritySelection  = cms.string("")
-#process.onia2MuMuPatGlbGlb.higherPuritySelection = cms.string("") ## No need to repeat lowerPuritySelection in there, already included
+#process.onia2MuMuPatGlbGlb.higherPuritySelection = cms.string("") ## No need to repeat lowerPuritySelection in there, already included 
 if applyCuts:
-    process.onia2MuMuPatGlbGlb.LateDimuonSel         = cms.string("userFloat(\"vProb\")>0.01") 
+    process.onia2MuMuPatGlbGlb.LateDimuonSel         = cms.string("userFloat(\"vProb\")>0.002")
+    process.onia2MuMuPatGlbGlb.LateTrimuonSel        = cms.string("userFloat(\"vProb\")>0.005 && userFloat(\"ppdlPV3D\")>0 && userFloat(\"cosAlpha\")>0.2")
 process.onia2MuMuPatGlbGlb.onlySoftMuons         = cms.bool(OnlySoftMuons)
 
 process.hionia.minimumFlag      = cms.bool(keepExtraColl)           #for Reco_trk_*
@@ -173,7 +179,7 @@ if applyEventSel:
 if atLeastOneCand:
   process.oniaTreeAna.replace(process.onia2MuMuPatGlbGlb, process.onia2MuMuPatGlbGlb * process.onia2MuMuPatGlbGlbFilter)
   if doTrimuons:
-    process.oniaTreeAna.replace(process.onia2MuMuPatGlbGlb, process.onia2MuMuPatGlbGlbFilter3mu * process.onia2MuMuPatGlbGlb)
+      process.oniaTreeAna.replace(process.onia2MuMuPatGlbGlb, process.onia2MuMuPatGlbGlbFilter3mu * process.onia2MuMuPatGlbGlb)
 
 #----------------------------------------------------------------------------
 '''
