@@ -2012,8 +2012,11 @@ HiOniaAnalyzer::isSameLorentzV(TLorentzVector* v1, TLorentzVector* v2){
 
 int
 HiOniaAnalyzer::IndexOfThisMuon(TLorentzVector* v1, bool isGen){
-  if (isGen) return mapGenMuonMomToIndex_[ FloatToIntkey(v1->Pt()) ]; 
-  else return  mapMuonMomToIndex_[ FloatToIntkey(v1->Pt()) ];
+  const auto& mapMuIdx =  (isGen ?  mapGenMuonMomToIndex_ : mapMuonMomToIndex_);
+  const long int& muPt = FloatToIntkey(v1->Pt());
+
+  if (mapMuIdx.count(muPt)==0) return -1;
+  else return mapMuIdx.at(muPt);
 }
 
 int
