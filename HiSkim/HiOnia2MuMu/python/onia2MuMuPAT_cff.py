@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 from PhysicsTools.PatAlgos.tools.helpers import *
 
-def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stage2=False, doTrimuons=False):
+def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stage2=False, doTrimuons=False, DimuonTrk=False):
     # Setup the process
     #process.options = cms.untracked.PSet(
     #    wantSummary = cms.untracked.bool(True),
@@ -91,19 +91,23 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stag
         # BOTH muons must pass this selection
         lowerPuritySelection     = cms.string("((isGlobalMuon && isTrackerMuon) || (innerTrack.isNonnull && genParticleRef(0).isNonnull)) && abs(innerTrack.dxy)<4 && abs(innerTrack.dz)<35"),
         dimuonSelection          = cms.string(""), ## The dimuon must pass this selection before vertexing
+        DimuTrkSelection         = cms.string(""), ## The dimuon+track must pass this selection before vertexing
         trimuonSelection         = cms.string(""), ## The trimuon must pass this selection before vertexing
         LateDimuonSel            = cms.string(""), ## The dimuon must pass this selection before being written out
+        LateDimuTrkSel           = cms.string(""), ## The dimuon+track must pass this selection before being written out
         LateTrimuonSel           = cms.string(""), ## The trimuon must pass this selection before being written out 
         addCommonVertex          = cms.bool(True), ## Embed the full reco::Vertex out of the common vertex fit
         addMuonlessPrimaryVertex = cms.bool(False), ## Embed the primary vertex re-made from all the tracks except the two muons
         resolvePileUpAmbiguity   = cms.bool(True), ## Order PVs by their vicinity to the J/psi vertex, not by sumPt                            
         onlySoftMuons            = cms.bool(False), ## Keep only the isSoftMuons (without highPurity) for the single muons + the di(tri)muon combinations
-        doTrimuons               = cms.bool(doTrimuons) ## Make collections of trimuon candidates in addition to dimuons, and keep only events with >0 trimuons
-    )
+        doTrimuons               = cms.bool(doTrimuons), ## Make collections of trimuon candidates in addition to dimuons, and keep only events with >0 trimuons
+        DimuonTrk                = cms.bool(DimuonTrk), ## Make collections of Jpsi+track candidates in addition to dimuons, and keep only events with >0 Jpsi+trk
+        particleType             = cms.int32(211) ## pdgInt assigned to the track to be combined with the dimuons  
+     )
 
     # check if there is at least one (inclusive) di-muon. BEWARE this can cause trouble in .root output if no event is selected by onia2MuMuPatGlbGlbFilter!
     process.onia2MuMuPatGlbGlbFilter = cms.EDFilter("CandViewCountFilter",
-        src = cms.InputTag('onia2MuMuPatGlbGlb'),
+        src = cms.InputTag('onia2MuMuPatGlbGlb','dimutrk'),
         minNumber = cms.uint32(1),
     )
     process.onia2MuMuPatGlbGlbFilter3mu = cms.EDFilter("CandViewCountFilter",
@@ -131,7 +135,8 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stag
             'keep patMuons_patMuonsWithTrigger_*_Onia2MuMuPAT',    # All PAT muons including matches to triggers
             'keep patCompositeCandidates_*__Onia2MuMuPAT',         # PAT di-muons
             'keep patCompositeCandidates_*_trimuon_Onia2MuMuPAT',  # PAT trimuons
-            'keep *_offlinePrimaryVertices_*_*',                   # Primary vertices: you want these to compute impact parameters
+            'keep patCompositeCandidates_*_dimutrk_Onia2MuMuPAT',  # PAT dimuon+track candidates
+             'keep *_offlinePrimaryVertices_*_*',                   # Primary vertices: you want these to compute impact parameters
             'keep *_offlineBeamSpot_*_*',                          # Beam spot: you want this for the same reason                                   
             'keep edmTriggerResults_TriggerResults_*_*',           # HLT info, per path (cheap)
             'keep *_hltGmtStage2Digis_*_*',                        # Stage2 L1 Muon info

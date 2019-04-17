@@ -11,6 +11,8 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include <CommonTools/RecoAlgos/src/MassiveCandidateConverter.h>
+#include <CommonTools/RecoAlgos/src/TrackToCandidate.h>
 #include "CommonTools/Utils/interface/PtComparator.h"
 
 // DataFormat includes
@@ -64,13 +66,19 @@ class HiOnia2MuMuPAT : public edm::EDProducer {
     StringCutObjectSelector<pat::Muon> higherPuritySelection_;
     StringCutObjectSelector<pat::Muon> lowerPuritySelection_; 
     StringCutObjectSelector<reco::Candidate, true> dimuonSelection_;
+    StringCutObjectSelector<reco::Candidate, true> DimuTrkSelection_;
     StringCutObjectSelector<reco::Candidate, true> trimuonSelection_;
     StringCutObjectSelector<reco::Candidate, true> LateDimuonSel_;
+    StringCutObjectSelector<reco::Candidate, true> LateDimuTrkSel_;
     StringCutObjectSelector<reco::Candidate, true> LateTrimuonSel_;
     bool addCommonVertex_, addMuonlessPrimaryVertex_;
     bool resolveAmbiguity_;
     bool onlySoftMuons_;
     bool doTrimuons_;
+    bool DimuonTrk_;
+    converter::TrackToCandidate Converter_;
+    //PdtEntry pdtentry_;
+    int trackType_;
     GreaterByPt<pat::CompositeCandidate> pTComparator_;
     GreaterByVProb<pat::CompositeCandidate> vPComparator_;
 
