@@ -284,6 +284,8 @@ private:
   bool Reco_mu_highPurity[Max_mu_size];    // Vector of high purity flag  
   bool Reco_mu_TrkMuArb[Max_mu_size];      // Vector of TrackerMuonArbitrated
   bool Reco_mu_TMOneStaTight[Max_mu_size]; // Vector of TMOneStationTight
+  bool Reco_mu_InTightAcc[Max_mu_size];  // Is in the tight acceptance for global muons
+  bool Reco_mu_InLooseAcc[Max_mu_size];  // Is in the loose acceptance for global muons
 
   int Reco_mu_nPixValHits[Max_mu_size];  // Number of valid pixel hits in sta muons
   int Reco_mu_nMuValHits[Max_mu_size];  // Number of valid muon hits in sta muons
@@ -878,6 +880,8 @@ HiOniaAnalyzer::fillTreeMuon(const pat::Muon* muon, int iType, ULong64_t trigBit
     reco::TrackRef iTrack = muon->innerTrack();
   
     if (!_theMinimumFlag) {
+      Reco_mu_InTightAcc[Reco_mu_size] = isMuonInAccept(muon,"GLB");
+      Reco_mu_InLooseAcc[Reco_mu_size] = isMuonInAccept(muon,"GLBSOFT");
       Reco_mu_SelectionType[Reco_mu_size] = muonIDmask(muon);
       //      Reco_mu_isGoodMuon[Reco_mu_size] = muon::isGoodMuon(*muon, muon::TMOneStationTight);
       Reco_mu_TrkMuArb[Reco_mu_size] = muon->muonID("TrackerMuonArbitrated");
@@ -1247,7 +1251,7 @@ HiOniaAnalyzer::fillTreeBc(int count) {
 
 	int Jpsi1_idx = IndexOfThisJpsi(mu_loneCharge,mu_SameCharge1);
 	int Jpsi2_idx = IndexOfThisJpsi(mu_loneCharge,mu_SameCharge2);
-	double Jpsi1_massDiff = -1; double Jpsi2_massDiff = -1; double GoodJpsi_massDiff = -1;
+	double Jpsi1_massDiff = 1e4; double Jpsi2_massDiff = 1e4; double Jpsi3_massDiff = 1e4; double GoodJpsi_massDiff = 1e4;
 
 	//random initialization
 	Reco_3mu_QQ_idx[Reco_3mu_size] = -1; // Will be set to Jpsi1_idx if no good Jpsi is found 
@@ -1265,7 +1269,7 @@ HiOniaAnalyzer::fillTreeBc(int count) {
 	    Jpsi2_massDiff = fabs(( (TLorentzVector*)Reco_QQ_4mom->ConstructedAt(Jpsi2_idx) )->M()  - JpsiPDGMass);}
 
 	  //Keep the Jpsi with the smallest absolute mass difference with JpsiPDGMass, if the Jpsi was found
-	  if(((Jpsi1_massDiff <= Jpsi2_massDiff) || Jpsi2_massDiff==-1) && (Jpsi1_massDiff >= 0)){
+	  if((Jpsi1_massDiff < Jpsi2_massDiff) && (Jpsi1_massDiff < 2)){
 	    Reco_3mu_QQ_idx[Reco_3mu_size] = Jpsi1_idx;
 	    GoodJpsi_massDiff = Jpsi1_massDiff;
 
@@ -1280,7 +1284,7 @@ HiOniaAnalyzer::fillTreeBc(int count) {
 	    Reco_3mu_muW_idx[Reco_3mu_size] = mu_SameCharge2;      
 	  }
 
-	  if(((Jpsi2_massDiff < Jpsi1_massDiff) || Jpsi1_massDiff==-1) && (Jpsi2_massDiff >= 0)){
+	  if((Jpsi2_massDiff < Jpsi1_massDiff) && (Jpsi2_massDiff < 2)){
 	    Reco_3mu_QQ_idx[Reco_3mu_size] = Jpsi2_idx;
 	    GoodJpsi_massDiff = Jpsi2_massDiff;
 
@@ -1298,12 +1302,11 @@ HiOniaAnalyzer::fillTreeBc(int count) {
 	  //If the reco Jpsi mass is absurd (more than 230MeV away), or no reco Jpsi was found before, try the third dimuon combination even if wrong sign
 	  if (Reco_3mu_QQ_idx[Reco_3mu_size]==-1){
 	    int Jpsi3_idx = IndexOfThisJpsi(mu_SameCharge1,mu_SameCharge2);
-	    double Jpsi3_massDiff = -1;
 	    if (GoodJpsi_massDiff > 0.23){
 	      if(Jpsi3_idx > -1){
 		Jpsi3_massDiff = fabs(( (TLorentzVector*) Reco_QQ_4mom->ConstructedAt(Jpsi3_idx) )->M()  - JpsiPDGMass);}
     
-	      if(Jpsi3_massDiff >= 0 && Jpsi3_massDiff < 0.14){
+	      if(Jpsi3_massDiff < 0.14){
 		Reco_3mu_QQ_idx[Reco_3mu_size] = Jpsi3_idx;
 	
 		if(Reco_mu_charge[mu_SameCharge1] < Reco_mu_charge[mu_SameCharge2]) {
@@ -1320,16 +1323,22 @@ HiOniaAnalyzer::fillTreeBc(int count) {
 	    if(Reco_3mu_QQ_idx[Reco_3mu_size] == -1)
 	      Reco_3mu_QQ_idx[Reco_3mu_size] = (Jpsi1_idx>-1)?Jpsi1_idx:( (Jpsi2_idx>-1)?Jpsi2_idx:Jpsi3_idx ); //put in any Jpsi index that is not -1
 	  }//end try for Jpsi3
+
+	  if(Reco_3mu_QQ_idx[Reco_3mu_size] == -1){
+	    cout<<"With right charge,     Reco_3mu_QQ_idx[Reco_3mu_size] == -1,   and Jpsi indices = "<<IndexOfThisJpsi(mu1_idx,mu2_idx)<<" "<<IndexOfThisJpsi(mu3_idx,mu2_idx)<<" "<<IndexOfThisJpsi(mu1_idx,mu3_idx)<<endl;
+	    cout<<"Jpsi candidate masses = "<<Jpsi1_massDiff<<" "<<Jpsi3_massDiff<<" "<<Jpsi2_massDiff;
+	  }
+
 	}
       }//end Jpsi attribution for good Bc charge 
-  
+
       //If charge of the Bc is wrong, simpler procedure : only criterium is dimuon invariant mass to choose the Jpsi-dimuon
       else {
     
 	int Jpsi1_idx = IndexOfThisJpsi(mu1_idx,mu2_idx);
 	int Jpsi2_idx = IndexOfThisJpsi(mu1_idx,mu3_idx);
 	int Jpsi3_idx = IndexOfThisJpsi(mu2_idx,mu3_idx);
-	double Jpsi1_massDiff = -1; double Jpsi2_massDiff = -1; double Jpsi3_massDiff = -1;
+	double Jpsi1_massDiff = 1e4; double Jpsi2_massDiff = 1e4; double Jpsi3_massDiff = 1e4;
 
 	if(Reco_QQ_4mom==NULL){
 	  std::cout<<"ERROR: 'Reco_QQ_4mom' pointer in fillTreeBc is NULL ! Return now"<<std::endl; return;
@@ -1347,22 +1356,29 @@ HiOniaAnalyzer::fillTreeBc(int count) {
 	  Reco_3mu_mupl_idx[Reco_3mu_size] = mu2_idx;
 	  Reco_3mu_muW_idx[Reco_3mu_size] = mu3_idx;
 	  
-	  if(     Jpsi2_massDiff >= 0 && Jpsi2_massDiff < Jpsi1_massDiff && Jpsi2_massDiff < Jpsi3_massDiff ){
+	  if(Jpsi2_massDiff < 2 && Jpsi2_massDiff < Jpsi1_massDiff && Jpsi2_massDiff < Jpsi3_massDiff ){
 	    Reco_3mu_QQ_idx[Reco_3mu_size] = Jpsi2_idx;
 	    Reco_3mu_mumi_idx[Reco_3mu_size] = mu1_idx;      //Which muon is mumi or mupl is random
 	    Reco_3mu_mupl_idx[Reco_3mu_size] = mu3_idx;
 	    Reco_3mu_muW_idx[Reco_3mu_size] = mu2_idx;
 	  }
 
-	  else if(Jpsi3_massDiff >= 0 && Jpsi3_massDiff < Jpsi1_massDiff && Jpsi3_massDiff < Jpsi2_massDiff ){
+	  if(Jpsi3_massDiff < 2 && Jpsi3_massDiff < Jpsi1_massDiff && Jpsi3_massDiff < Jpsi2_massDiff ){
 	    Reco_3mu_QQ_idx[Reco_3mu_size] = Jpsi3_idx;
 	    Reco_3mu_mumi_idx[Reco_3mu_size] = mu2_idx;      //Which muon is mumi or mupl is random
 	    Reco_3mu_mupl_idx[Reco_3mu_size] = mu3_idx;
 	    Reco_3mu_muW_idx[Reco_3mu_size] = mu1_idx;
 	  }
+
+	  if(Reco_3mu_QQ_idx[Reco_3mu_size] == -1){
+	    cout<<"With wrong charge,     Reco_3mu_QQ_idx[Reco_3mu_size] == -1,   and Jpsi indices = "<<IndexOfThisJpsi(mu1_idx,mu2_idx)<<" "<<IndexOfThisJpsi(mu3_idx,mu2_idx)<<" "<<IndexOfThisJpsi(mu1_idx,mu3_idx)<<endl;
+	    cout<<"Jpsi candidate masses = "<<Jpsi1_massDiff<<" "<<Jpsi3_massDiff<<" "<<Jpsi2_massDiff;
+	  }
+
 	}
 
       }
+
 
       //*********
       //Fill all remaining Bc variables 
@@ -1846,8 +1862,8 @@ HiOniaAnalyzer::isMuonInAccept(const pat::Muon* aMuon, const std::string muonTyp
   if (muonType == (std::string)("GLB")) {
     return (fabs(aMuon->eta()) < 2.4 &&
             ((fabs(aMuon->eta()) < 1.2 && aMuon->pt() >= 3.5) ||
-             (1.2 <= fabs(aMuon->eta()) && fabs(aMuon->eta()) < 2.1 && aMuon->pt() >= 5.77-1.89*fabs(aMuon->eta())) ||
-             (2.1 <= fabs(aMuon->eta()) && aMuon->pt() >= 1.8)));
+             (1.2 <= fabs(aMuon->eta()) && fabs(aMuon->eta()) < 2.1 && aMuon->pt() >= 5.47-1.89*fabs(aMuon->eta())) ||
+             (2.1 <= fabs(aMuon->eta()) && aMuon->pt() >= 1.5)));
   }
   else if (muonType == (std::string)("TRK")) {
     return (fabs(aMuon->eta()) < 2.4 &&
@@ -1857,9 +1873,12 @@ HiOniaAnalyzer::isMuonInAccept(const pat::Muon* aMuon, const std::string muonTyp
   }
   else if (muonType == (std::string)("GLBSOFT")) {
     return (fabs(aMuon->eta()) < 2.4 &&
-            ((fabs(aMuon->eta()) < 1.0 && aMuon->pt() >= 3.3) ||
-             (1.0 <= fabs(aMuon->eta()) && fabs(aMuon->eta()) < 1.35 && aMuon->pt() >= 6.73-3.43*fabs(aMuon->eta()) ) ||
-             (1.35 <= fabs(aMuon->eta()) && aMuon->pt() >= 3.52-1.05*fabs(aMuon->eta()) )));
+            ((fabs(aMuon->eta()) < 0.3 && aMuon->pt() >= 3.4) ||
+             (fabs(aMuon->eta()) > 0.3 && fabs(aMuon->eta()) < 1.1 && aMuon->pt() >= 3.3) ||
+             (fabs(aMuon->eta()) > 1.1 && fabs(aMuon->eta()) < 1.4 && aMuon->pt() >= 7.7-4.0*fabs(aMuon->eta()) ) ||
+             (fabs(aMuon->eta()) > 1.4 && fabs(aMuon->eta()) < 1.55 && aMuon->pt() >= 2.1) ||
+             (fabs(aMuon->eta()) > 1.55 && fabs(aMuon->eta()) < 2.2 && aMuon->pt() >= 4.25-1.39*fabs(aMuon->eta()) ) ||
+             (fabs(aMuon->eta()) > 2.2 && aMuon->pt() >= 1.2) ));
   }
   else if (muonType == (std::string)("TRKSOFT")) {
     return (fabs(aMuon->eta()) < 2.4 &&
@@ -2695,6 +2714,8 @@ HiOniaAnalyzer::InitTree()
 
   if (!_theMinimumFlag) {
     //    myTree->Branch("Reco_mu_isGoodMuon", Reco_mu_isGoodMuon,   "Reco_mu_isGoodMuon[Reco_mu_size]/O");
+    myTree->Branch("Reco_mu_InTightAcc",Reco_mu_InTightAcc, "Reco_mu_InTightAcc[Reco_mu_size]/O");
+    myTree->Branch("Reco_mu_InLooseAcc",Reco_mu_InLooseAcc, "Reco_mu_InLooseAcc[Reco_mu_size]/O");
     myTree->Branch("Reco_mu_highPurity", Reco_mu_highPurity,   "Reco_mu_highPurity[Reco_mu_size]/O");
     myTree->Branch("Reco_mu_TrkMuArb", Reco_mu_TrkMuArb,   "Reco_mu_TrkMuArb[Reco_mu_size]/O");
     myTree->Branch("Reco_mu_TMOneStaTight", Reco_mu_TMOneStaTight, "Reco_mu_TMOneStaTight[Reco_mu_size]/O");
