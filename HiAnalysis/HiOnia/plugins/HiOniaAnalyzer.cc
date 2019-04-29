@@ -232,6 +232,8 @@ private:
   float Reco_3mu_cosAlpha3D[Max_QQ_size];    // cosine of angle between momentum of Bc and direction of PV--displaced vertex segment (3D)
   float Reco_3mu_MassErr[Max_Bc_size];
   float Reco_3mu_CorrM[Max_Bc_size];
+  float Reco_3mu_muW_dxy[Max_Bc_size];
+  float Reco_3mu_muW_dz[Max_Bc_size];
 
   int Reco_QQ_size;       // Number of reconstructed Onia 
   int Reco_QQ_type[Max_QQ_size];   // Onia category: GG, GT, TT
@@ -1302,11 +1304,11 @@ HiOniaAnalyzer::fillTreeBc(int count) {
 	  //If the reco Jpsi mass is absurd (more than 230MeV away), or no reco Jpsi was found before, try the third dimuon combination even if wrong sign
 	  if (Reco_3mu_QQ_idx[Reco_3mu_size]==-1){
 	    int Jpsi3_idx = IndexOfThisJpsi(mu_SameCharge1,mu_SameCharge2);
-	    if (GoodJpsi_massDiff > 0.23){
+	    if (GoodJpsi_massDiff > 1.999){
 	      if(Jpsi3_idx > -1){
 		Jpsi3_massDiff = fabs(( (TLorentzVector*) Reco_QQ_4mom->ConstructedAt(Jpsi3_idx) )->M()  - JpsiPDGMass);}
     
-	      if(Jpsi3_massDiff < 0.14){
+	      if(Jpsi3_massDiff < 2){
 		Reco_3mu_QQ_idx[Reco_3mu_size] = Jpsi3_idx;
 	
 		if(Reco_mu_charge[mu_SameCharge1] < Reco_mu_charge[mu_SameCharge2]) {
@@ -1402,6 +1404,17 @@ HiOniaAnalyzer::fillTreeBc(int count) {
       }
 
       new((*Reco_3mu_vtx)[Reco_3mu_size])TVector3(RefVtx.X(),RefVtx.Y(),RefVtx.Z());
+
+      if(Reco_3mu_muW_idx[Reco_3mu_size]==mu1_idx){
+	Reco_3mu_muW_dxy[Reco_3mu_size] = muon1->innerTrack()->dxy(RefVtx);
+	Reco_3mu_muW_dz[Reco_3mu_size] = muon1->innerTrack()->dz(RefVtx);
+      }else if(Reco_3mu_muW_idx[Reco_3mu_size]==mu2_idx){
+        Reco_3mu_muW_dxy[Reco_3mu_size] = muon2->innerTrack()->dxy(RefVtx);
+        Reco_3mu_muW_dz[Reco_3mu_size] = muon2->innerTrack()->dz(RefVtx);
+      }else if(Reco_3mu_muW_idx[Reco_3mu_size]==mu3_idx){
+        Reco_3mu_muW_dxy[Reco_3mu_size] = muon3->innerTrack()->dxy(RefVtx);
+        Reco_3mu_muW_dz[Reco_3mu_size] = muon3->innerTrack()->dz(RefVtx);
+      }
 
       //*********
       //Lifetime related variables
@@ -2645,6 +2658,8 @@ HiOniaAnalyzer::InitTree()
       myTree->Branch("Reco_3mu_whichGen", Reco_3mu_whichGen,   "Reco_3mu_whichGen[Reco_3mu_size]/I");
     }
     myTree->Branch("Reco_3mu_VtxProb", Reco_3mu_VtxProb,   "Reco_3mu_VtxProb[Reco_3mu_size]/F");
+    myTree->Branch("Reco_3mu_muW_dxy_muonlessVtx",      Reco_3mu_muW_dxy,    "Reco_3mu_muW_dxy_muonlessVtx[Reco_3mu_size]/F");
+    myTree->Branch("Reco_3mu_muW_dz_muonlessVtx",      Reco_3mu_muW_dz,    "Reco_3mu_muW_dz_muonlessVtx[Reco_3mu_size]/F");
     myTree->Branch("Reco_3mu_MassErr", Reco_3mu_MassErr,   "Reco_3mu_MassErr[Reco_3mu_size]/F");
     myTree->Branch("Reco_3mu_CorrM", Reco_3mu_CorrM,   "Reco_3mu_CorrM[Reco_3mu_size]/F");
     myTree->Branch("Reco_3mu_vtx", "TClonesArray", &Reco_3mu_vtx, 32000, 0);

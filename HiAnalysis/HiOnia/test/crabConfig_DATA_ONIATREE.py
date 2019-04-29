@@ -3,7 +3,7 @@ from WMCore.Configuration import Configuration
 config = Configuration()
 
 config.section_("General")
-config.General.requestName = "DoubleMu_Run2017G_AOD_Run_306546_306826_OniaTree_TripleMuBc"#306826
+config.General.requestName = "DoubleMu_Run2017G_AOD_Run_306546_306826_OniaTree_TripleMuBc_24042019"#306826
 config.General.workArea = 'crab_projects'
 config.General.transferOutputs = True
 config.General.transferLogs = True
@@ -11,7 +11,7 @@ config.General.transferLogs = True
 config.section_("JobType")
 config.JobType.pluginName = "Analysis"
 config.JobType.psetName = "HiAnalysis/HiOnia/test/hioniaanalyzer_ppPrompt_trimuons_94X_DATA_cfg.py"
-config.JobType.maxMemoryMB = 2500         # request high memory machines.
+#config.JobType.maxMemoryMB = 2500         # request high memory machines.
 #config.JobType.maxJobRuntimeMin = 2750    # request longer runtime, ~48 hours.
 
 config.section_("Data")
