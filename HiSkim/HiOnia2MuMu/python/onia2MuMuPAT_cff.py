@@ -109,7 +109,7 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stag
 
     # check if there is at least one (inclusive) di-muon. BEWARE this can cause trouble in .root output if no event is selected by onia2MuMuPatGlbGlbFilter!
     process.onia2MuMuPatGlbGlbFilter = cms.EDFilter("CandViewCountFilter",
-        src = cms.InputTag('onia2MuMuPatGlbGlb'),
+        src = cms.InputTag('onia2MuMuPatGlbGlb','dimutrk'),
         minNumber = cms.uint32(1),
     )
     process.onia2MuMuPatGlbGlbFilterDimutrk = cms.EDFilter("CandViewCountFilter",

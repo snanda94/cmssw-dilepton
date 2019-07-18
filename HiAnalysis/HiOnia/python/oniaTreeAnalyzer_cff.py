@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 from PhysicsTools.PatAlgos.tools.helpers import *
 
-def oniaTreeAnalyzer(process, muonTriggerList=[[],[],[],[]], HLTProName='HLT', muonSelection="Trk", useL1Stage2=True, isMC=True, pdgID=443, outputFileName="OniaTree.root", muonlessPV = False, doTrimu=False):
+def oniaTreeAnalyzer(process, muonTriggerList=[[],[],[],[]], HLTProName='HLT', muonSelection="Trk", useL1Stage2=True, isMC=True, pdgID=443, outputFileName="OniaTree.root", muonlessPV = False, doTrimu=False, doDimuTrk=False):
 
     if muonTriggerList == [[],[],[],[]]:
         muonTriggerList = { 
@@ -77,7 +77,7 @@ def oniaTreeAnalyzer(process, muonTriggerList=[[],[],[],[]], HLTProName='HLT', m
 ###################### Onia Skim Producer #################################################
 
     from HiSkim.HiOnia2MuMu.onia2MuMuPAT_cff import onia2MuMuPAT
-    onia2MuMuPAT(process, GlobalTag=process.GlobalTag.globaltag, MC=isMC, HLT=HLTProName, Filter=False, useL1Stage2=useL1Stage2, doTrimuons=doTrimu)
+    onia2MuMuPAT(process, GlobalTag=process.GlobalTag.globaltag, MC=isMC, HLT=HLTProName, Filter=False, useL1Stage2=useL1Stage2, doTrimuons=doTrimu, DimuonTrk=doDimuTrk)
 
 ### Temporal fix for the PAT Trigger prescale warnings.
     if (HLTProName == 'HLT') :
@@ -138,6 +138,7 @@ def oniaTreeAnalyzer(process, muonTriggerList=[[],[],[],[]], HLTProName='HLT', m
                                     srcMuonNoTrig       = cms.InputTag("patMuonsWithoutTrigger"),  # Name of PAT Muon Without Trigger Collection
                                     srcDimuon           = cms.InputTag("onia2MuMuPatGlbGlb",""),      # Name of Onia Skim Collection for dimuons
                                     srcTrimuon          = cms.InputTag("onia2MuMuPatGlbGlb","trimuon"),      # Name of Onia Skim Collection for trimuons
+                                    srcDimuTrk          = cms.InputTag("onia2MuMuPatGlbGlb","dimutrk"),      # Name of Onia Skim Collection for Jpsi+track
                                     EvtPlane            = cms.InputTag("hiEvtPlane",""),           # Name of Event Plane Collection. For RECO use: hiEventPlane,recoLevel
                                     
                                     triggerResultsLabel = cms.InputTag("TriggerResults","",HLTProName), # Label of Trigger Results
@@ -161,6 +162,7 @@ def oniaTreeAnalyzer(process, muonTriggerList=[[],[],[],[]], HLTProName='HLT', m
                                     SumETvariables     = cms.bool(True),
                                     OneMatchedHLTMu    = cms.int32(-1),  # Keep only di(tri)muons of which the one(two) muon(s) are matched to the HLT Filter of this number. You can get the desired number in the output of oniaTree. Set to-1 for no matching. 
                                     doTrimuons         = cms.bool(doTrimu),  # Whether to produce trimuon objects
+                                    DimuonTrk          = cms.bool(doDimuTrk),  # Whether to produce Jpsi+track objects
                                     storeSameSign      = cms.bool(True),   # Store/Drop same sign dimuons
                                     AtLeastOneCand     = cms.bool(False),  # If true, store only events that have at least one selected candidate dimuon (or trimuon candidate if doTrimuons=true)
 
