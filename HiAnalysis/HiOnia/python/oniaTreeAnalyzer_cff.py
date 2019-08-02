@@ -163,6 +163,7 @@ def oniaTreeAnalyzer(process, muonTriggerList=[[],[],[],[]], HLTProName='HLT', m
                                     OneMatchedHLTMu    = cms.int32(-1),  # Keep only di(tri)muons of which the one(two) muon(s) are matched to the HLT Filter of this number. You can get the desired number in the output of oniaTree. Set to-1 for no matching. 
                                     doTrimuons         = cms.bool(doTrimu),  # Whether to produce trimuon objects
                                     DimuonTrk          = cms.bool(doDimuTrk),  # Whether to produce Jpsi+track objects
+                                    genealogyInfo      = cms.bool(False), #gen-level info on QQ mother, and charged-track brothers/nephews of QQ  
                                     storeSameSign      = cms.bool(True),   # Store/Drop same sign dimuons
                                     AtLeastOneCand     = cms.bool(False),  # If true, store only events that have at least one selected candidate dimuon (or trimuon candidate if doTrimuons=true)
 

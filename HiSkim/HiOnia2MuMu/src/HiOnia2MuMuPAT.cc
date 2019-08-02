@@ -360,8 +360,8 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
               }
             } else {
               if ( muonLess.size()==thePrimaryV.tracksSize() ){
-                edm::LogWarning("HiOnia2MuMuPAT_muonLessSizeORpvTrkSize") << 
-                 "Still have the original PV: the refit was not done 'cose it is already muonless" << "\n";
+                //edm::LogWarning("HiOnia2MuMuPAT_muonLessSizeORpvTrkSize") << 
+		//"Still have the original PV: the refit was not done 'cose it is already muonless" << "\n";
               } else if ( muonLess.size()<=1 ){
                 edm::LogWarning("HiOnia2MuMuPAT_muonLessSizeORpvTrkSize") << 
                   "Still have the original PV: the refit was not done 'cose there are not enough tracks to do the refit without the muon tracks" << "\n";
@@ -1013,8 +1013,8 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     	    muonLess.clear();
     	    muonLess.reserve(thePrimaryV.tracksSize());
-    	    if( addMuonlessPrimaryVertex_ && thePrimaryV.tracksSize()>2) {
-    	      // Primary vertex matched to the dimuon, now refit it removing the three muons
+    	    if( addMuonlessPrimaryVertex_ && thePrimaryV.tracksSize()>3) {
+    	      // Primary vertex matched to the trimuon, now refit it removing the three muons
     	      // I need to go back to the reco::Muon object, as the TrackRef in the pat::Muon can be an embedded ref.
     	      const reco::Muon *rmu1 = dynamic_cast<const reco::Muon *>(it.originalObject());
     	      const reco::Muon *rmu2 = dynamic_cast<const reco::Muon *>(it2.originalObject());

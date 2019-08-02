@@ -47,13 +47,17 @@ options = VarParsing.VarParsing ('analysis')
 options.outputFile = "Oniatree_MC_trimuons.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
 options.inputFiles =[#'file:/home/llr/cms/falmagne/Bc/gen/MC/CMSSW_9_4_12/src/Bc_reconstructed.root'
-    '/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_10.root',
-    '/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_11.root',
-    '/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_12.root',
-    '/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_13.root',
-    '/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_14.root'
-    ]
-options.maxEvents = -1 # -1 means all events
+    #'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_10.root',
+    #'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_11.root',
+    #'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_12.root',
+    #'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_13.root',
+    #'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_14.root'
+    '/store/user/gfalmagn/Bc_analysis/MC/BJPsiMM_TuneCUETP8M1_5p02TeV_pythia8_16052018_withLambdab_ptHatMin10_reco/BJpsiMM/BJPsiMM_TuneCUETP8M1_5p02TeV_pythia8_16052018_withLambdab_ptHatMin10_reco/190516_151902/0000/HIN-RunIIpp5Spring18DR-00076_333.root',
+    #'/store/himc/RunIIpp5Spring18DR/JPsiMM_TuneCUETP8M1_5p02TeV_pythia8/AODSIM/94X_mc2017_realistic_forppRef5TeV-v2/260000/0E5313B3-6244-E911-B7C1-20040FE9CF48.root'
+    #'/store/himc/RunIIpp5Spring18DR/JPsiMM_TuneCUETP8M1_5p02TeV_pythia8/AODSIM/94X_mc2017_realistic_forppRef5TeV-v2/60000/FED7EDEF-CE46-E911-B2DB-782BCB1CFD1A.root'
+    #'file:/home/llr/cms/falmagne/tuples/pp17/NonPromptJpsi/MCreco/BJPsiMM_TuneCUETP8M1_5p02TeV_pythia8_16052018_withLambdab_ptHatMin2_reco.root'
+]
+options.maxEvents = 2000 # -1 means all events
 
 # Get and parse the command line arguments
 options.parseArguments()
@@ -138,7 +142,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, globalTag, '')
 # For OniaTree Analyzer
 from HiAnalysis.HiOnia.oniaTreeAnalyzer_cff import oniaTreeAnalyzer
 oniaTreeAnalyzer(process,
-                 #muonTriggerList=triggerList, HLTProName=HLTProcess, #useL1Stage2=True, 
+                 muonTriggerList=triggerList, #HLTProName=HLTProcess, #useL1Stage2=True, 
                  muonSelection=muonSelection, isMC=isMC, outputFileName=options.outputFile, muonlessPV=muonLessPV, doTrimu=doTrimuons)
 process.oniaTreeAna = cms.Path(process.oniaTreeAna)
 
@@ -161,6 +165,7 @@ process.hionia.SofterSgMuAcceptance = cms.bool(SofterSgMuAcceptance)
 process.hionia.applyCuts        = cms.bool(applyCuts)
 process.hionia.AtLeastOneCand   = cms.bool(atLeastOneCand)
 process.hionia.OneMatchedHLTMu  = cms.int32(OneMatchedHLTMu)
+process.hionia.genealogyInfo    = cms.bool(True)
 
 process.NoScraping = cms.EDFilter("FilterOutScraping",
                           applyfilter = cms.untracked.bool(True),
@@ -231,7 +236,8 @@ if saveHLTobj:
 process.source = cms.Source("PoolSource",
 #process.source = cms.Source("NewEventStreamFileReader", # for streamer data
 		fileNames = cms.untracked.vstring( options.inputFiles ),
-		)
+                #skipEvents=cms.untracked.uint32(84000)
+                )
 process.TFileService = cms.Service("TFileService", 
 		fileName = cms.string( options.outputFile )
 		)
