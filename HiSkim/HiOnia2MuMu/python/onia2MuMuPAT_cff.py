@@ -109,7 +109,7 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stag
 
     # check if there is at least one (inclusive) di-muon. BEWARE this can cause trouble in .root output if no event is selected by onia2MuMuPatGlbGlbFilter!
     process.onia2MuMuPatGlbGlbFilter = cms.EDFilter("CandViewCountFilter",
-        src = cms.InputTag('onia2MuMuPatGlbGlb','dimutrk'),
+        src = cms.InputTag('onia2MuMuPatGlbGlb',''),
         minNumber = cms.uint32(1),
     )
     process.onia2MuMuPatGlbGlbFilterDimutrk = cms.EDFilter("CandViewCountFilter",
@@ -140,7 +140,7 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stag
     process.outOnia2MuMu = cms.OutputModule("PoolOutputModule",
         fileName = cms.untracked.string('onia2MuMuPAT.root'),
         outputCommands =  cms.untracked.vstring(
-            'drop *',                       
+            'drop *',
             'keep *_mergedtruth_*_*',                              # tracking particles and tracking vertices for hit by hit matching
             'keep *_genParticles_*_*',                             # generated particles
             'keep *_genMuons_*_Onia2MuMuPAT',                      # generated muons and parents
@@ -150,6 +150,7 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stag
             'keep patCompositeCandidates_*_dimutrk_Onia2MuMuPAT',  # PAT dimuon+track candidates
             'keep *_dedxHarmonic2_*_*',                            # dE/dx estimator for tracks (to do PID when doDimuTrk)
             'keep *_offlinePrimaryVertices_*_*',                   # Primary vertices: you want these to compute impact parameters
+            'keep *_inclusiveCandidateSecondaryVertices_*_*',      # Secondary vertices: to check if non-prompt muons come from a common SV
             'keep *_offlineBeamSpot_*_*',                          # Beam spot: you want this for the same reason                                   
             'keep edmTriggerResults_TriggerResults_*_*',           # HLT info, per path (cheap)
             'keep *_hltGmtStage2Digis_*_*',                        # Stage2 L1 Muon info

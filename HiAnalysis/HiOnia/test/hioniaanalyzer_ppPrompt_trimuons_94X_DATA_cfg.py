@@ -12,9 +12,9 @@ muonSelection  = "TwoGlbAmongThree" # Single muon selection: Glb(isGlobal), GlbT
 applyEventSel  = True # Only apply Event Selection if the required collections are present
 OnlySoftMuons  = True # Keep only isSoftMuon's (with highPurity because this is pp config) from the beginning of HiSkim. In any case, if applyCuts=True, isSoftMuon is required at HiAnalysis level for muons of selected dimuons.
 applyCuts      = True # At HiAnalysis level, apply kinematic acceptance cuts + identification cuts (isSoftMuon or isTightMuon, depending on TightGlobalMuon flag) for muons from selected di(tri)muons + hard-coded cuts on the di(tri)muon that you would want to add (but recommended to add everything in LateDimuonSelection, applied at the end of HiSkim)
-SofterSgMuAcceptance = False # Whether to accept muons with a softer acceptance cuts than the usual (pt>3.5GeV at central eta, pt>1.8 at high |eta|). Applies when applyCuts=True
+SofterSgMuAcceptance = True # Whether to accept muons with a softer acceptance cuts than the usual (pt>3.5GeV at central eta, pt>1.8 at high |eta|). Applies when applyCuts=True
 doTrimuons     = True # Make collections of trimuon candidates in addition to dimuons, and keep only events with >0 trimuons
-doDimuonTrk    = True # Make collections of Jpsi+track candidates in addition to dimuons
+doDimuonTrk    = False # Make collections of Jpsi+track candidates in addition to dimuons
 atLeastOneCand = True # Keep only events that have one selected dimuon (or at least one trimuon if doTrimuons = true). BEWARE this can cause trouble in .root output if no event is selected by onia2MuMuPatGlbGlbFilter!
 OneMatchedHLTMu = 4   # Keep only di(tri)muons of which the one(two) muon(s) are matched to the HLT Filter of this number. You can get the desired number in the output of oniaTree. Set to -1 for no matching.
 muonLessPV     = True  # Recalculate the PV without the two muons from the selected dimuon
@@ -45,8 +45,8 @@ options = VarParsing.VarParsing ('analysis')
 # Input and Output File Names
 options.outputFile = "Oniatree.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
-options.inputFiles =[
-    '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/B6F95CE3-5B2E-E811-9F6F-A0369FD20D28.root',
+options.inputFiles =[#'file:/home/llr/cms/falmagne/production/pp2017/BcTrimu/CMSSW_9_4_14/src/pp5TeV_TrimuonSkim.root',
+                     '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/B6F95CE3-5B2E-E811-9F6F-A0369FD20D28.root',
     #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/B68C2814-912D-E811-9A7E-A0369FC5252C.root',
     #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/B2518E21-2538-E811-B08A-0025905C9726.root',
     #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/B03BCD95-892E-E811-B8C5-A0369FC513DC.root',
@@ -54,7 +54,7 @@ options.inputFiles =[
     #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/AC288DD0-552E-E811-A74F-3417EBE52915.root'
     #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/00000/E2A9F70B-8042-E811-9D04-FA163E74586C.root'
     ]
-options.maxEvents = 1000 # -1 means all events
+options.maxEvents = 30000 # -1 means all events
 
 # Get and parse the command line arguments
 options.parseArguments()

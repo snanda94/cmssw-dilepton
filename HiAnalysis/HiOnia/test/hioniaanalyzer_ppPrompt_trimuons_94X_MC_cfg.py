@@ -14,7 +14,7 @@ OnlySoftMuons  = False # Keep only isSoftMuon's (with highPurity because this is
 applyCuts      = False # At HiAnalysis level, apply kinematic acceptance cuts + identification cuts (isSoftMuon or isTightMuon, depending on TightGlobalMuon flag) for muons from selected di(tri)muons + hard-coded cuts on the di(tri)muon that you would want to add (but recommended to add everything in LateDimuonSelection)
 SofterSgMuAcceptance = True # Whether to accept muons with a softer acceptance cuts than the usual (pt>3.5GeV at central eta, pt>1.8 at high |eta|). Applies when applyCuts=True
 doTrimuons     = True # Make collections of trimuon candidates in addition to dimuons, and keep only events with >0 trimuons
-doDimuonTrk    = True # Make collections of Jpsi+track candidates in addition to dimuons
+doDimuonTrk    = False # Make collections of Jpsi+track candidates in addition to dimuons
 atLeastOneCand = False # Keep only events that have one selected dimuon (or at least one trimuon if doTrimuons = true). BEWARE this can cause trouble in .root output if no event is selected by onia2MuMuPatGlbGlbFilter!
 OneMatchedHLTMu = -1   # Keep only di(tri)muons of which the one(two) muon(s) are matched to the HLT Filter of this number. You can get the desired number in the output of oniaTree. Set to -1 for no matching.
 muonLessPV     = True  # Recalculate the PV without the two muons from the selected dimuon
@@ -47,17 +47,21 @@ options = VarParsing.VarParsing ('analysis')
 options.outputFile = "Oniatree_MC_trimuons.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
 options.inputFiles =[#'file:/home/llr/cms/falmagne/Bc/gen/MC/CMSSW_9_4_12/src/Bc_reconstructed.root'
+    '/store/himc/RunIIpp5Spring18DR/BJPsiMM_TuneCUETP8M1_5p02TeV_pythia8/AODSIM/94X_mc2017_realistic_forppRef5TeV_v1_ext1-v1/30000/FE62BDED-09A4-E911-97B3-1418774124DE.root',
     #'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_10.root',
     #'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_11.root',
     #'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_12.root',
     #'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_13.root',
     #'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_14.root'
-    '/store/user/gfalmagn/Bc_analysis/MC/BJPsiMM_TuneCUETP8M1_5p02TeV_pythia8_16052018_withLambdab_ptHatMin10_reco/BJpsiMM/BJPsiMM_TuneCUETP8M1_5p02TeV_pythia8_16052018_withLambdab_ptHatMin10_reco/190516_151902/0000/HIN-RunIIpp5Spring18DR-00076_333.root',
+    #'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_61.root'
+    #'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_3_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_3_reco_NoCuts/190125_103233/0000/Bc_reconstructed_7.root'
+    #'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_3_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_3_reco_NoCuts/190125_103233/0000/Bc_reconstructed_15.root'
+    #'/store/user/gfalmagn/Bc_analysis/MC/BJPsiMM_TuneCUETP8M1_5p02TeV_pythia8_16052018_withLambdab_ptHatMin10_reco/BJpsiMM/BJPsiMM_TuneCUETP8M1_5p02TeV_pythia8_16052018_withLambdab_ptHatMin10_reco/190516_151902/0000/HIN-RunIIpp5Spring18DR-00076_333.root',
     #'/store/himc/RunIIpp5Spring18DR/JPsiMM_TuneCUETP8M1_5p02TeV_pythia8/AODSIM/94X_mc2017_realistic_forppRef5TeV-v2/260000/0E5313B3-6244-E911-B7C1-20040FE9CF48.root'
     #'/store/himc/RunIIpp5Spring18DR/JPsiMM_TuneCUETP8M1_5p02TeV_pythia8/AODSIM/94X_mc2017_realistic_forppRef5TeV-v2/60000/FED7EDEF-CE46-E911-B2DB-782BCB1CFD1A.root'
     #'file:/home/llr/cms/falmagne/tuples/pp17/NonPromptJpsi/MCreco/BJPsiMM_TuneCUETP8M1_5p02TeV_pythia8_16052018_withLambdab_ptHatMin2_reco.root'
 ]
-options.maxEvents = 2000 # -1 means all events
+options.maxEvents = 1000 # -1 means all events
 
 # Get and parse the command line arguments
 options.parseArguments()
@@ -142,17 +146,17 @@ process.GlobalTag = GlobalTag(process.GlobalTag, globalTag, '')
 # For OniaTree Analyzer
 from HiAnalysis.HiOnia.oniaTreeAnalyzer_cff import oniaTreeAnalyzer
 oniaTreeAnalyzer(process,
-                 muonTriggerList=triggerList, #HLTProName=HLTProcess, #useL1Stage2=True, 
+                 #muonTriggerList=triggerList, HLTProName=HLTProcess, #useL1Stage2=True, 
                  muonSelection=muonSelection, isMC=isMC, outputFileName=options.outputFile, muonlessPV=muonLessPV, doTrimu=doTrimuons)
 process.oniaTreeAna = cms.Path(process.oniaTreeAna)
 
 process.onia2MuMuPatGlbGlb.dimuonSelection       = cms.string("2.2 < mass && mass < 4.0 && abs(daughter('muon1').innerTrack.dz - daughter('muon2').innerTrack.dz) < 25")
-process.onia2MuMuPatGlbGlb.trimuonSelection      = cms.string("2.5 < mass && mass < 8.3 && abs(daughter('muon1').innerTrack.dz - daughter('muon2').innerTrack.dz) < 25")
+process.onia2MuMuPatGlbGlb.trimuonSelection      = cms.string("2.9 < mass && mass < 8.3 && abs(daughter('muon1').innerTrack.dz - daughter('muon2').innerTrack.dz) < 25")
 #process.onia2MuMuPatGlbGlb.lowerPuritySelection  = cms.string("")
 #process.onia2MuMuPatGlbGlb.higherPuritySelection = cms.string("") ## No need to repeat lowerPuritySelection in there, already included 
 if applyCuts:
     process.onia2MuMuPatGlbGlb.LateDimuonSel         = cms.string("userFloat(\"vProb\")>0.002")
-    process.onia2MuMuPatGlbGlb.LateTrimuonSel        = cms.string("userFloat(\"vProb\")>0.005 && userFloat(\"ppdlPV3D\")>0 && userFloat(\"cosAlpha\")>0.2")
+    process.onia2MuMuPatGlbGlb.LateTrimuonSel        = cms.string("userFloat(\"vProb\")>0.005 && userFloat(\"ppdlPV3D\")>0 && userFloat(\"ppdlPV\")>0 && userFloat(\"cosAlpha\")>0.2")
 process.onia2MuMuPatGlbGlb.onlySoftMuons         = cms.bool(OnlySoftMuons)
 
 process.hionia.minimumFlag      = cms.bool(keepExtraColl)           #for Reco_trk_*
@@ -236,7 +240,6 @@ if saveHLTobj:
 process.source = cms.Source("PoolSource",
 #process.source = cms.Source("NewEventStreamFileReader", # for streamer data
 		fileNames = cms.untracked.vstring( options.inputFiles ),
-                #skipEvents=cms.untracked.uint32(84000)
                 )
 process.TFileService = cms.Service("TFileService", 
 		fileName = cms.string( options.outputFile )

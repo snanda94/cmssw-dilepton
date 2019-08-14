@@ -178,7 +178,7 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     // }
     for(unsigned int tidx=0; tidx<collTracks->size();tidx++) {
       const reco::TrackRef track(collTracks, tidx);        
-      if ( track->qualityByName("highPurity") && track->eta()<2.4 && fabs(track->dxy(RefVtx))<0.33 && fabs(track->dz(RefVtx))<20) { 
+      if ( track->qualityByName("highPurity") && track->eta()<2.4 && fabs(track->dxy(RefVtx))<0.3 && fabs(track->dz(RefVtx))<20) { 
 	Ntrk++; 
 	if (DimuonTrk_){ 
 	  ourTracks.push_back(track); }
