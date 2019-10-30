@@ -94,6 +94,10 @@ triggerList    = {
         "HLT_HIL3Mu12_v1",
         "HLT_HIL3Mu15_v1",
         "HLT_HIL3Mu20_v1",
+        "HLT_HIL2Mu3_NHitQ10_v1",
+        "HLT_HIL3Mu3_NHitQ10_v1",
+        "HLT_HIL2Mu5_NHitQ10_v1",
+        "HLT_HIL3Mu5_NHitQ10_v1",
         ),
     # Single Muon Filter List
     'SingleMuonFilter'  : cms.vstring(
@@ -109,6 +113,10 @@ triggerList    = {
         "hltL3fL1sSingleMu7L1f0L2f0L3Filtered12",
         "hltL3fL1sSingleMu7L1f0L2f0L3Filtered15",
         "hltL3fL1sSingleMu7L1f0L2f0L3Filtered20",
+        "hltL2fL1sSingleMu3L1f0L2NHitQ10L2Filtered3",
+        "hltL3fL1sSingleMu3L1f0L2f0L3NHitQ10L3Filtered3",
+        "hltL2fL1sSingleMu3OR5L1f0L2NHitQ10L2Filtered5",
+        "hltL3fL1sSingleMu3OR5L1f0L2f0L3NHitQ10L3Filtered5",
         )
 }
 
@@ -133,7 +141,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, globalTag, '')
 # For OniaTree Analyzer
 from HiAnalysis.HiOnia.oniaTreeAnalyzer_cff import oniaTreeAnalyzer
 oniaTreeAnalyzer(process,
-                 #muonTriggerList=triggerList, HLTProName=HLTProcess, #useL1Stage2=True, 
+                 muonTriggerList=triggerList, HLTProName=HLTProcess, #useL1Stage2=True, 
                  muonSelection=muonSelection, isMC=isMC, outputFileName=options.outputFile, muonlessPV=muonLessPV, doTrimu=doTrimuons)
 process.oniaTreeAna = cms.Path(process.oniaTreeAna)
 

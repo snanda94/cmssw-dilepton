@@ -79,6 +79,7 @@ class HiOnia2MuMuPAT : public edm::EDProducer {
     converter::TrackToCandidate Converter_;
     //PdtEntry pdtentry_;
     int trackType_;
+    double trackMass_;
     GreaterByPt<pat::CompositeCandidate> pTComparator_;
     GreaterByVProb<pat::CompositeCandidate> vPComparator_;
 

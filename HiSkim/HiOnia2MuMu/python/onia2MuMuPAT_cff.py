@@ -52,10 +52,10 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stag
         process.muonMatchHLTL1.preselection = cms.string("")
         #process.muonL1Info.matched = cms.InputTag("gtStage2Digis:Muon:RECO")
 
-    process.patTrigger.collections.append("hltIterL3MuonCandidatesPPOnAA")
-    process.patTrigger.collections.append("hltL2MuonCandidatesPPOnAA") 
-    process.muonMatchHLTL3.matchedCuts = cms.string('coll("hltIterL3MuonCandidatesPPOnAA")') 
-    process.muonMatchHLTL2.matchedCuts = cms.string('coll("hltL2MuonCandidatesPPOnAA")') 
+    #process.patTrigger.collections.append("hltIterL3MuonCandidatesPPOnAA")
+    #process.patTrigger.collections.append("hltL2MuonCandidatesPPOnAA") 
+    #process.muonMatchHLTL3.matchedCuts = cms.string('coll("hltIterL3MuonCandidatesPPOnAA")') 
+    #process.muonMatchHLTL2.matchedCuts = cms.string('coll("hltL2MuonCandidatesPPOnAA")') 
 
     process.muonL1Info.maxDeltaR = 0.3
     process.muonL1Info.maxDeltaEta   = 0.2
@@ -105,6 +105,7 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stag
         doTrimuons               = cms.bool(doTrimuons), ## Make collections of trimuon candidates in addition to dimuons, and keep only events with >0 trimuons
         DimuonTrk                = cms.bool(DimuonTrk), ## Make collections of Jpsi+track candidates in addition to dimuons, and keep only events with >0 Jpsi+trk
         particleType             = cms.int32(211) ## pdgInt assigned to the track to be combined with the dimuons
+        trackMass                = cms.double(0.13957018) ## mass assigned to the track to be combined with the dimuons
     )
 
     # check if there is at least one (inclusive) di-muon. BEWARE this can cause trouble in .root output if no event is selected by onia2MuMuPatGlbGlbFilter!
@@ -150,6 +151,8 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stag
             'keep patCompositeCandidates_*_dimutrk_Onia2MuMuPAT',  # PAT dimuon+track candidates
             'keep *_dedxHarmonic2_*_*',                            # dE/dx estimator for tracks (to do PID when doDimuTrk)
             'keep *_offlinePrimaryVertices_*_*',                   # Primary vertices: you want these to compute impact parameters
+            'keep *_inclusiveSecondaryVertices_*_*',      # Secondary vertices: to check if non-prompt muons come from a common SV
+            'keep *_inclusiveSecondaryVerticesLoose_*_*',      # Secondary vertices: to check if non-prompt muons come from a common SV
             'keep *_inclusiveCandidateSecondaryVertices_*_*',      # Secondary vertices: to check if non-prompt muons come from a common SV
             'keep *_offlineBeamSpot_*_*',                          # Beam spot: you want this for the same reason                                   
             'keep edmTriggerResults_TriggerResults_*_*',           # HLT info, per path (cheap)

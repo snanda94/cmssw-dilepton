@@ -56,7 +56,8 @@ HiOnia2MuMuPAT::HiOnia2MuMuPAT(const edm::ParameterSet& iConfig):
   doTrimuons_(iConfig.getParameter<bool>("doTrimuons")),
   DimuonTrk_(iConfig.getParameter<bool>("DimuonTrk")),
   Converter_(converter::TrackToCandidate(iConfig)),
-  trackType_(iConfig.getParameter<int>("particleType"))
+  trackType_(iConfig.getParameter<int>("particleType")),
+  trackMass_(iConfig.getParameter<double>("trackMass"))
 {  
   produces<pat::CompositeCandidateCollection>("");
   produces<pat::CompositeCandidateCollection>("trimuon");
@@ -106,7 +107,7 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   vector<double> muMasses, muMasses3, DimuTrkMasses;
   muMasses.push_back( 0.1056583715 );  muMasses.push_back( 0.1056583715 );
   muMasses3.push_back( 0.1056583715 );  muMasses3.push_back( 0.1056583715 );  muMasses3.push_back( 0.1056583715 );
-  DimuTrkMasses.push_back( 0.1056583715 );  DimuTrkMasses.push_back( 0.1056583715 );  DimuTrkMasses.push_back( 0.13957018 );
+  DimuTrkMasses.push_back( 0.1056583715 );  DimuTrkMasses.push_back( 0.1056583715 );  DimuTrkMasses.push_back( trackMass_ ); //0.13957018
 
   std::unique_ptr<pat::CompositeCandidateCollection> oniaOutput(new pat::CompositeCandidateCollection);
   std::unique_ptr<pat::CompositeCandidateCollection> trimuOutput(new pat::CompositeCandidateCollection);
@@ -161,27 +162,29 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   TrackCollection muonLess; // track collection related to PV, minus the 2 muons (if muonLessPV option is activated)
 
-  Handle<reco::TrackCollection> collTracks;
-  iEvent.getByToken(recoTracksToken_,collTracks);
   int Ntrk = -1; 
   std::vector<reco::TrackRef> ourTracks;
-  if ( collTracks.isValid() ) {
-    Ntrk = 0;
-    // for(std::vector<reco::Track>::const_iterator it=collTracks->begin(); it!=collTracks->end(); ++it) {
-    //   const reco::Track* track = &(*it);        
-    //   if ( track->qualityByName("highPurity") ) { 
-    // 	Ntrk++; 
-    // 	if (DimuonTrk_){ 
-    // 	  track->setMass(0.13957018);//pion mass for all tracks
-    // 	  ourTracks.push_back(*track); }
-    //   }
-    // }
-    for(unsigned int tidx=0; tidx<collTracks->size();tidx++) {
-      const reco::TrackRef track(collTracks, tidx);        
-      if ( track->qualityByName("highPurity") && track->eta()<2.4 && fabs(track->dxy(RefVtx))<0.3 && fabs(track->dz(RefVtx))<20) { 
-	Ntrk++; 
-	if (DimuonTrk_){ 
-	  ourTracks.push_back(track); }
+  if (DimuonTrk_){
+    Handle<reco::TrackCollection> collTracks;
+    iEvent.getByToken(recoTracksToken_,collTracks);
+    if ( collTracks.isValid() ) {
+      Ntrk = 0;
+      // for(std::vector<reco::Track>::const_iterator it=collTracks->begin(); it!=collTracks->end(); ++it) {
+      //   const reco::Track* track = &(*it);        
+      //   if ( track->qualityByName("highPurity") ) { 
+      // 	Ntrk++; 
+      // 	if (DimuonTrk_){ 
+      // 	  track->setMass(0.13957018);//pion mass for all tracks
+      // 	  ourTracks.push_back(*track); }
+      //   }
+      // }
+      for(unsigned int tidx=0; tidx<collTracks->size();tidx++) {
+	const reco::TrackRef track(collTracks, tidx);        
+	if ( track->qualityByName("highPurity") && track->eta()<2.4 && fabs(track->dxy(RefVtx))<0.3 && fabs(track->dz(RefVtx))<20) { 
+	  Ntrk++; 
+	  if (DimuonTrk_){ 
+	    ourTracks.push_back(track); }
+	}
       }
     }
   }
@@ -582,7 +585,9 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
         }
       }
 
-      userInt["Ntrk"] = Ntrk;
+      if (DimuonTrk_){
+	userInt["Ntrk"] = Ntrk;
+      }
 
       for (std::map<std::string, int>::iterator i = userInt.begin(); i != userInt.end(); i++) { myCand.addUserInt(i->first , i->second); }
       for (std::map<std::string, float>::iterator i = userFloat.begin(); i != userFloat.end(); i++) { myCand.addUserFloat(i->first , i->second); }
@@ -929,6 +934,7 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     
     TrimuonCand:
       if(!doTrimuons_) continue;
+
       // ---- Create all trimuon combinations (Bc candidates) ----
       for(int k=j+1; k<ourMuNb; k++){
       	const pat::Muon& it3 = ourMuons[k];
