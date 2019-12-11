@@ -89,7 +89,7 @@ private:
   bool isSameLorentzV(TLorentzVector* v1, TLorentzVector* v2);
   int IndexOfThisMuon(TLorentzVector* v1, bool isGen=false);
   int IndexOfThisTrack(TLorentzVector* v1, bool isGen=false);
-  int IndexOfThisJpsi(int mu1_idx, int mu2_idx);
+  int IndexOfThisJpsi(int mu1_idx, int mu2_idx, int flipJpsi=0);
   void fillGenInfo();
   void fillMuMatchingInfo();
   void fillQQMatchingInfo();
@@ -182,6 +182,8 @@ private:
 
   TClonesArray* Reco_mu_4mom;
   TClonesArray* Reco_QQ_4mom;
+  TClonesArray* Reco_QQ_mumi_4mom;
+  TClonesArray* Reco_QQ_mupl_4mom;
   TClonesArray* Reco_3mu_4mom;
   TClonesArray* Reco_QQ_vtx;
   TClonesArray* Reco_3mu_vtx;
@@ -303,6 +305,7 @@ private:
   float Reco_QQ_mumi_dxy[Max_QQ_size];  // dxy for minus inner track muons
   float Reco_QQ_mupl_dz[Max_QQ_size];  // dz for plus inner track muons
   float Reco_QQ_mumi_dz[Max_QQ_size];  // dz for minus inner track muons
+  Short_t Reco_QQ_flipJpsi[Max_QQ_size];
 
   Short_t Reco_mu_size;           // Number of reconstructed muons
   int Reco_mu_SelectionType[Max_mu_size];           
@@ -465,6 +468,7 @@ private:
   bool           _useGeTracks;
   bool           _doTrimuons;
   bool           _doDimuTrk;
+  int            _flipJpsiDirection;
   bool           _genealogyInfo;
 
   int _oniaPDG;
@@ -593,6 +597,7 @@ HiOniaAnalyzer::HiOniaAnalyzer(const edm::ParameterSet& iConfig):
   _useGeTracks(iConfig.getUntrackedParameter<bool>("useGeTracks",false) ),
   _doTrimuons(iConfig.getParameter<bool>("doTrimuons")),
   _doDimuTrk(iConfig.getParameter<bool>("DimuonTrk")),
+  _flipJpsiDirection(iConfig.getParameter<int>("flipJpsiDirection")),
   _genealogyInfo(iConfig.getParameter<bool>("genealogyInfo")),
   _oniaPDG(iConfig.getParameter<int>("oniaPDG")),
   _BcPDG(iConfig.getParameter<int>("BcPDG")),
@@ -868,6 +873,7 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   if(_doTrimuons)
     this->makeBcCuts(_storeSs);
 
+  //GEN info
   if (_isMC) {
     iEvent.getByToken(_genParticleToken,collGenParticles);
     iEvent.getByToken(_genInfoToken,genInfo);
@@ -908,6 +914,7 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
   }
 
+  //MC MATCHING info
   if (_isMC) {
     this->fillMuMatchingInfo(); //Needs to be done after fillGenInfo, and the filling of reco muons collections
     this->fillQQMatchingInfo(); //Needs to be done after fillMuMatchingInfo
@@ -916,6 +923,7 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
   }
 
+  //keeping events with at least ONE CANDIDATE when asked
   bool oneGoodCand = false;
   if(_AtLeastOneCand){
     if (_doTrimuons || _doDimuTrk){
@@ -1107,50 +1115,69 @@ HiOniaAnalyzer::fillTreeJpsi(int count) {
 
       new((*Reco_QQ_vtx)[Reco_QQ_size])TVector3(RefVtx.X(),RefVtx.Y(),RefVtx.Z());
 
+      
       TLorentzVector vMuon1 = lorentzMomentum(muon1->p4());
       TLorentzVector vMuon2 = lorentzMomentum(muon2->p4());
+      
+      reco::Track iTrack_mupl, iTrack_mumi, mu1Trk, mu2Trk;
+      if(_flipJpsiDirection>0 && aJpsiCand->hasUserData("muon1Track") && aJpsiCand->hasUserData("muon2Track")){
+      	mu1Trk = *(aJpsiCand->userData<reco::Track>("muon1Track"));
+      	mu2Trk = *(aJpsiCand->userData<reco::Track>("muon2Track"));
+      	// vMuon1 = TLorentzVector(mu1Trk.px(),mu1Trk.py(),mu1Trk.pz(),vMuon1.E()); //only the direction of the 3-momentum changes
+      	// vMuon2 = TLorentzVector(mu2Trk.px(),mu2Trk.py(),mu2Trk.pz(),vMuon2.E()); //only the direction of the 3-momentum changes
+      }
 
-      reco::TrackRef iTrack_mupl;
-      reco::TrackRef iTrack_mumi;
+      Reco_QQ_flipJpsi[Reco_QQ_size] = _flipJpsiDirection;
+      if(aJpsiCand->hasUserInt("flipJpsi")) Reco_QQ_flipJpsi[Reco_QQ_size] = aJpsiCand->userInt("flipJpsi");
+
+      if((muon1->innerTrack()).isNull() || (muon2->innerTrack()).isNull()){
+	std::cout<<"ERROR: 'iTrack_mupl' or 'iTrack_mumi' pointer in fillTreeJpsi is NULL ! Return now"<<std::endl; return;}
 
       if (muon1->charge() > muon2->charge()) {
 
-	Reco_QQ_mupl_idx[Reco_QQ_size] = IndexOfThisMuon(&vMuon1); 
+	Reco_QQ_mupl_idx[Reco_QQ_size] = IndexOfThisMuon(&vMuon1); //needs the non-flipped muon momentum
 	Reco_QQ_mumi_idx[Reco_QQ_size] = IndexOfThisMuon(&vMuon2);
 
 	if (TVector2::Phi_mpi_pi(vMuon1.Phi() - vMuon2.Phi()) > 0) Reco_QQ_isCowboy[Reco_QQ_size] = true;
 	else Reco_QQ_isCowboy[Reco_QQ_size] = false;
 
-	if(_muonLessPrimaryVertex || _useGeTracks){
-	  iTrack_mupl = muon1->innerTrack();
-	  iTrack_mumi = muon2->innerTrack();
+	if(_flipJpsiDirection>0){
+	  iTrack_mupl = mu1Trk;
+	  iTrack_mumi = mu2Trk;
+	  new((*Reco_QQ_mupl_4mom)[Reco_QQ_size])TLorentzVector(mu1Trk.px(),mu1Trk.py(),mu1Trk.pz(),vMuon1.E());  //only the direction of the 3-momentum changes
+	  new((*Reco_QQ_mumi_4mom)[Reco_QQ_size])TLorentzVector(mu2Trk.px(),mu2Trk.py(),mu2Trk.pz(),vMuon2.E());
+	} else if(_muonLessPrimaryVertex || _useGeTracks){
+	  iTrack_mupl = *(muon1->innerTrack());
+	  iTrack_mumi = *(muon2->innerTrack());
 	}
-
+	
       }
       else {
 
-	Reco_QQ_mupl_idx[Reco_QQ_size] = IndexOfThisMuon(&vMuon2);
+	Reco_QQ_mupl_idx[Reco_QQ_size] = IndexOfThisMuon(&vMuon2); //needs the non-flipped muon momentum
 	Reco_QQ_mumi_idx[Reco_QQ_size] = IndexOfThisMuon(&vMuon1);
 
 	if (TVector2::Phi_mpi_pi(vMuon2.Phi() - vMuon1.Phi()) > 0) Reco_QQ_isCowboy[Reco_QQ_size] = true;
 	else Reco_QQ_isCowboy[Reco_QQ_size] = false;
 
-	if(_muonLessPrimaryVertex || _useGeTracks){
-	  iTrack_mupl = muon2->innerTrack();
-	  iTrack_mumi = muon1->innerTrack();
+
+	if(_flipJpsiDirection>0){
+	  iTrack_mupl = mu2Trk;
+	  iTrack_mumi = mu1Trk;
+	  new((*Reco_QQ_mumi_4mom)[Reco_QQ_size])TLorentzVector(mu1Trk.px(),mu1Trk.py(),mu1Trk.pz(),vMuon1.E());  //only the direction of the 3-momentum changes
+	  new((*Reco_QQ_mupl_4mom)[Reco_QQ_size])TLorentzVector(mu2Trk.px(),mu2Trk.py(),mu2Trk.pz(),vMuon2.E());
+	} else if(_muonLessPrimaryVertex || _useGeTracks){
+	  iTrack_mupl = *(muon2->innerTrack());
+	  iTrack_mumi = *(muon1->innerTrack());
 	}
 
       }
 
-      if (!_theMinimumFlag && _muonLessPrimaryVertex) {
-	if(!iTrack_mupl.isNull() || !iTrack_mumi.isNull()){
-	  Reco_QQ_mupl_dxy[Reco_QQ_size] = iTrack_mupl->dxy(RefVtx);
-	  Reco_QQ_mumi_dxy[Reco_QQ_size] = iTrack_mumi->dxy(RefVtx);
-	  Reco_QQ_mupl_dz[Reco_QQ_size] = iTrack_mupl->dz(RefVtx);
-	  Reco_QQ_mumi_dz[Reco_QQ_size] = iTrack_mumi->dz(RefVtx);
-	} else{
-	  std::cout<<"ERROR: 'iTrack_mupl' or 'iTrack_mumi' pointer in fillTreeJpsi is NULL ! Return now"<<std::endl; return;
-        }
+      if ((!_theMinimumFlag && _muonLessPrimaryVertex) || (_flipJpsiDirection>0) ) {
+	Reco_QQ_mupl_dxy[Reco_QQ_size] = iTrack_mupl.dxy(RefVtx);
+	Reco_QQ_mumi_dxy[Reco_QQ_size] = iTrack_mumi.dxy(RefVtx);
+	Reco_QQ_mupl_dz[Reco_QQ_size] = iTrack_mupl.dz(RefVtx);
+	Reco_QQ_mumi_dz[Reco_QQ_size] = iTrack_mumi.dz(RefVtx);
       }
 
       TLorentzVector vJpsi = lorentzMomentum(aJpsiCand->p4());
@@ -1251,6 +1278,7 @@ HiOniaAnalyzer::fillTreeJpsi(int count) {
       Reco_QQ_NtrkPt03[Reco_QQ_size]=0;
       Reco_QQ_NtrkPt04[Reco_QQ_size]=0;
 
+      //--- counting tracks around Jpsi direction ---
       if (_useGeTracks && !_doDimuTrk && collTracks.isValid()) {
 	for(std::vector<reco::Track>::const_iterator it=collTracks->begin();
 	    it!=collTracks->end(); ++it) {
@@ -1275,17 +1303,17 @@ HiOniaAnalyzer::fillTreeJpsi(int count) {
 	      if (track->pt()>0.4) {
 		Reco_QQ_NtrkPt04[Reco_QQ_size]++;
 
-		if (iTrack_mupl->charge()==track->charge()) {
-		  double Reco_QQ_mupl_NtrkDeltaR = deltaR(iTrack_mupl->eta(), iTrack_mupl->phi(), track->eta(), track->phi());
-		  double Reco_QQ_mupl_RelDelPt = abs(1.0 - iTrack_mupl->pt()/track->pt());
+		if (iTrack_mupl.charge()==track->charge()) {
+		  double Reco_QQ_mupl_NtrkDeltaR = deltaR(iTrack_mupl.eta(), iTrack_mupl.phi(), track->eta(), track->phi());
+		  double Reco_QQ_mupl_RelDelPt = abs(1.0 - iTrack_mupl.pt()/track->pt());
 
 		  if ( Reco_QQ_mupl_NtrkDeltaR<0.001 &&
 		       Reco_QQ_mupl_RelDelPt<0.001 )
 		    continue;
 		}
 		else {
-		  double Reco_QQ_mumi_NtrkDeltaR = deltaR(iTrack_mumi->eta(), iTrack_mumi->phi(), track->eta(), track->phi());
-		  double Reco_QQ_mumi_RelDelPt = abs(1.0 - iTrack_mumi->pt()/track->pt());
+		  double Reco_QQ_mumi_NtrkDeltaR = deltaR(iTrack_mumi.eta(), iTrack_mumi.phi(), track->eta(), track->phi());
+		  double Reco_QQ_mumi_RelDelPt = abs(1.0 - iTrack_mumi.pt()/track->pt());
 		  if ( Reco_QQ_mumi_NtrkDeltaR<0.001 &&
 		       Reco_QQ_mumi_RelDelPt<0.001 ) 
 		    continue;
@@ -1336,70 +1364,98 @@ HiOniaAnalyzer::fillTreeBc(int count) {
     } else {
       
       int charge = muon1->charge() + muon2->charge() + muon3->charge(); 
-      
+
       TLorentzVector vMuon1 = lorentzMomentum(muon1->p4());
       TLorentzVector vMuon2 = lorentzMomentum(muon2->p4());
       TLorentzVector vMuon3 = lorentzMomentum(muon3->p4());
 
-      int mu1_idx = IndexOfThisMuon(&vMuon1);
+      int mu1_idx = IndexOfThisMuon(&vMuon1); //the muon list contains unchanged muons (even in jpsiFlipping case)
       int mu2_idx = IndexOfThisMuon(&vMuon2);
       int mu3_idx = IndexOfThisMuon(&vMuon3);
 
+      // if(_flipJpsiDirection>0 && aBcCand->hasUserData("muon1Track") && aBcCand->hasUserData("muon2Track")){
+      // 	reco::Track mu1Trk = aBcCand->userData<reco::Track>("muon1Track");
+      // 	reco::Track mu2Trk = aBcCand->userData<reco::Track>("muon2Track");
+      // 	vMuon1 = TLorentzVector(mu1Trk.px(),mu1Trk.py(),mu1Trk.pz(),vMuon1.E()); //only the direction of the 3-momentum changes
+      // 	vMuon2 = TLorentzVector(mu2Trk.px(),mu2Trk.py(),mu2Trk.pz(),vMuon2.E()); //only the direction of the 3-momentum changes
+      // }
+
+      int flipJ = 0;
+      if(aBcCand->hasUserInt("flipJpsi")) flipJ = aBcCand->userInt("flipJpsi");
+
       //One dimuon combination has to pass the Jpsi kinematic cuts
-      if (IndexOfThisJpsi(mu1_idx,mu2_idx)==-1 && IndexOfThisJpsi(mu2_idx,mu3_idx)==-1 && IndexOfThisJpsi(mu1_idx,mu3_idx)==-1) {return;}
-
-      TLorentzVector vBc = lorentzMomentum(aBcCand->p4());
-      new((*Reco_3mu_4mom)[Reco_3mu_size])TLorentzVector(vBc);
-
-      //If Bc charge is OK, write out the QQ indices for the two opposite-sign pairs 
-      if (fabs(charge) == 1){
-
-	int mu_loneCharge = mu1_idx; int mu_SameCharge1 = mu2_idx; int mu_SameCharge2 = mu3_idx;
-	//Look for the muon that has a different charge than the two others
-	if (Reco_mu_charge[mu1_idx]==Reco_mu_charge[mu2_idx]){
-	  mu_loneCharge = mu3_idx; mu_SameCharge2 = mu1_idx;
-	}
-	else if (Reco_mu_charge[mu1_idx]==Reco_mu_charge[mu3_idx]){
-	  mu_loneCharge = mu2_idx; mu_SameCharge1 = mu1_idx;
-	}
-
-	//Look for the Jpsi indices corresponding to two muons
-	Reco_3mu_QQ1_idx[Reco_3mu_size] = IndexOfThisJpsi(mu_loneCharge,mu_SameCharge1);
-	Reco_3mu_QQ2_idx[Reco_3mu_size] = IndexOfThisJpsi(mu_loneCharge,mu_SameCharge2);
-	if(Reco_3mu_QQ1_idx[Reco_3mu_size]==-1 && Reco_3mu_QQ2_idx[Reco_3mu_size]==-1) return; //need one OS pair to pass the dimuon selection
-	Reco_3mu_QQss_idx[Reco_3mu_size] = IndexOfThisJpsi(mu_SameCharge1,mu_SameCharge2);
-
-	//Split the muon types according to one valid QQ hypothesis among the two OS pairs
-	if(Reco_3mu_QQ1_idx[Reco_3mu_size]>-1){ //The second os pair could also pass
-	  Reco_3mu_mumi_idx[Reco_3mu_size] = (Reco_mu_charge[mu_loneCharge]==-1)?mu_loneCharge:mu_SameCharge1;
-	  Reco_3mu_mupl_idx[Reco_3mu_size] = (Reco_mu_charge[mu_SameCharge1]==1)?mu_SameCharge1:mu_loneCharge;
-	  Reco_3mu_muW_idx[Reco_3mu_size] = mu_SameCharge2;
-	}else{//Only the second pair is valid
-	  Reco_3mu_mumi_idx[Reco_3mu_size] = (Reco_mu_charge[mu_loneCharge]==-1)?mu_loneCharge:mu_SameCharge2;
-	  Reco_3mu_mupl_idx[Reco_3mu_size] = (Reco_mu_charge[mu_SameCharge2]==1)?mu_SameCharge2:mu_loneCharge;
-	  Reco_3mu_muW_idx[Reco_3mu_size] = mu_SameCharge1;
-	}
-	//pointing to the muW corresponding to the 2nd OS pair
-	Reco_3mu_muW2_idx[Reco_3mu_size] = mu_SameCharge1;
-	
-      }//end Jpsi attribution for good Bc charge 
-
-      //If charge of the Bc is wrong, simpler procedure : random attribution of the three same-sign pairs
-      else {    
-	Reco_3mu_QQ1_idx[Reco_3mu_size] = IndexOfThisJpsi(mu1_idx,mu2_idx);
-	Reco_3mu_QQ2_idx[Reco_3mu_size] = IndexOfThisJpsi(mu1_idx,mu3_idx);
-	Reco_3mu_QQss_idx[Reco_3mu_size] = IndexOfThisJpsi(mu2_idx,mu3_idx);
-
-	Reco_3mu_mumi_idx[Reco_3mu_size] = mu1_idx;      //Which muon is mumi or mupl is random
-	Reco_3mu_mupl_idx[Reco_3mu_size] = mu2_idx;
+      if (IndexOfThisJpsi(mu1_idx,mu2_idx,flipJ)==-1 && IndexOfThisJpsi(mu2_idx,mu3_idx,flipJ)==-1 && IndexOfThisJpsi(mu1_idx,mu3_idx,flipJ)==-1) {return;}
+      
+      if(_flipJpsiDirection>0){ //in case of Jpsi flipping, we know that mu1-mu2 is the chosen Jpsi OS dimuon
+	Reco_3mu_QQ1_idx[Reco_3mu_size] = IndexOfThisJpsi(mu1_idx,mu2_idx,flipJ);
 	Reco_3mu_muW_idx[Reco_3mu_size] = mu3_idx;
-	Reco_3mu_muW2_idx[Reco_3mu_size] = mu2_idx;
-      }
+	Reco_3mu_mumi_idx[Reco_3mu_size] = (Reco_mu_charge[mu1_idx]==-1)?mu1_idx:mu2_idx;
+	Reco_3mu_mupl_idx[Reco_3mu_size] = (Reco_mu_charge[mu1_idx]==1)?mu1_idx:mu2_idx;
+        
+	if(Reco_mu_charge[mu1_idx]==Reco_mu_charge[mu3_idx]){  //supposing mu1 and mu2 are precedently chosen as opposite-sign
+	  Reco_3mu_QQ2_idx[Reco_3mu_size] = IndexOfThisJpsi(mu3_idx,mu2_idx,flipJ);
+	  Reco_3mu_QQss_idx[Reco_3mu_size] = IndexOfThisJpsi(mu3_idx,mu1_idx,flipJ);
+	} else {
+	  Reco_3mu_QQ2_idx[Reco_3mu_size] = IndexOfThisJpsi(mu3_idx,mu1_idx,flipJ);
+	  Reco_3mu_QQss_idx[Reco_3mu_size] = IndexOfThisJpsi(mu3_idx,mu2_idx,flipJ);
+	}
+      }// end jpsi flipping case
 
+      else {
+	//If Bc charge is OK, write out the QQ indices for the two opposite-sign pairs 
+	if (fabs(charge) == 1){
+
+	  int mu_loneCharge = mu1_idx; int mu_SameCharge1 = mu2_idx; int mu_SameCharge2 = mu3_idx;
+	  //Look for the muon that has a different charge than the two others
+	  if (Reco_mu_charge[mu1_idx]==Reco_mu_charge[mu2_idx]){
+	    mu_loneCharge = mu3_idx; mu_SameCharge2 = mu1_idx;
+	  }
+	  else if (Reco_mu_charge[mu1_idx]==Reco_mu_charge[mu3_idx]){
+	    mu_loneCharge = mu2_idx; mu_SameCharge1 = mu1_idx;
+	  }
+
+	  //Look for the Jpsi indices corresponding to two muons
+	  Reco_3mu_QQ1_idx[Reco_3mu_size] = IndexOfThisJpsi(mu_loneCharge,mu_SameCharge1);
+	  Reco_3mu_QQ2_idx[Reco_3mu_size] = IndexOfThisJpsi(mu_loneCharge,mu_SameCharge2);
+	  if(Reco_3mu_QQ1_idx[Reco_3mu_size]==-1 && Reco_3mu_QQ2_idx[Reco_3mu_size]==-1) return; //need one OS pair to pass the dimuon selection
+	  Reco_3mu_QQss_idx[Reco_3mu_size] = IndexOfThisJpsi(mu_SameCharge1,mu_SameCharge2);
+
+	  //Split the muon types according to one valid QQ hypothesis among the two OS pairs
+	  if(Reco_3mu_QQ1_idx[Reco_3mu_size]>-1){ //The second os pair could also pass
+	    Reco_3mu_mumi_idx[Reco_3mu_size] = (Reco_mu_charge[mu_loneCharge]==-1)?mu_loneCharge:mu_SameCharge1;
+	    Reco_3mu_mupl_idx[Reco_3mu_size] = (Reco_mu_charge[mu_SameCharge1]==1)?mu_SameCharge1:mu_loneCharge;
+	    Reco_3mu_muW_idx[Reco_3mu_size] = mu_SameCharge2;
+	  }else{//Only the second pair is valid
+	    Reco_3mu_mumi_idx[Reco_3mu_size] = (Reco_mu_charge[mu_loneCharge]==-1)?mu_loneCharge:mu_SameCharge2;
+	    Reco_3mu_mupl_idx[Reco_3mu_size] = (Reco_mu_charge[mu_SameCharge2]==1)?mu_SameCharge2:mu_loneCharge;
+	    Reco_3mu_muW_idx[Reco_3mu_size] = mu_SameCharge1;
+	  }
+	  //pointing to the muW corresponding to the 2nd OS pair
+	  Reco_3mu_muW2_idx[Reco_3mu_size] = mu_SameCharge1;
+	
+	}//end Jpsi attribution for good Bc charge 
+
+	//If charge of the Bc is wrong, simpler procedure : random attribution of the three same-sign pairs
+	else {    
+	  Reco_3mu_QQ1_idx[Reco_3mu_size] = IndexOfThisJpsi(mu1_idx,mu2_idx);
+	  Reco_3mu_QQ2_idx[Reco_3mu_size] = IndexOfThisJpsi(mu1_idx,mu3_idx);
+	  Reco_3mu_QQss_idx[Reco_3mu_size] = IndexOfThisJpsi(mu2_idx,mu3_idx);
+
+	  Reco_3mu_mumi_idx[Reco_3mu_size] = mu1_idx;      //Which muon is mumi or mupl is random
+	  Reco_3mu_mupl_idx[Reco_3mu_size] = mu2_idx;
+	  Reco_3mu_muW_idx[Reco_3mu_size] = mu3_idx;
+	  Reco_3mu_muW2_idx[Reco_3mu_size] = mu2_idx;
+	}
+      } // end "no Jpsi flipping"
 
       //*********
       //Fill all remaining Bc variables 
       Reco_3mu_charge[Reco_3mu_size] = charge;
+      TLorentzVector vBc = lorentzMomentum(aBcCand->p4());
+      new((*Reco_3mu_4mom)[Reco_3mu_size])TLorentzVector(vBc);
+      // if(_flipJpsiDirection>0){
+      // 	cout<<"Bc mass, old vs new = "<< (vMuon1+vMuon2+vMuon3).M()<<" "<<vBc.M()<<endl;
+      // }
 
       if (!(_isHI) && _muonLessPrimaryVertex && aBcCand->hasUserData("muonlessPV")) {
 	RefVtx = (*aBcCand->userData<reco::Vertex>("muonlessPV")).position();
@@ -1420,48 +1476,58 @@ HiOniaAnalyzer::fillTreeBc(int count) {
 
       new((*Reco_3mu_vtx)[Reco_3mu_size])TVector3(RefVtx.X(),RefVtx.Y(),RefVtx.Z());
 
+      
+      reco::Track iTrack_mupl, iTrack_mumi, iTrack_muW, mu1Trk, mu2Trk;
+      if(_flipJpsiDirection>0 && aBcCand->hasUserData("muon1Track") && aBcCand->hasUserData("muon2Track")){
+      	mu1Trk = *(aBcCand->userData<reco::Track>("muon1Track"));
+      	mu2Trk = *(aBcCand->userData<reco::Track>("muon2Track"));
+      }
+
       //Long here but nothing much is happening -- just have to find back the mumi-pl-W indices
-      if (!_theMinimumFlag && _muonLessPrimaryVertex) {
-	if(Reco_3mu_muW_idx[Reco_3mu_size]==mu1_idx){
-	  Reco_3mu_muW_dxy[Reco_3mu_size] = muon1->innerTrack()->dxy(RefVtx);
-	  Reco_3mu_muW_dz[Reco_3mu_size] = muon1->innerTrack()->dz(RefVtx);
-	  if(Reco_3mu_mumi_idx[Reco_3mu_size]==mu2_idx){
-	    Reco_3mu_mumi_dxy[Reco_3mu_size] = muon2->innerTrack()->dxy(RefVtx);
-	    Reco_3mu_mumi_dz[Reco_3mu_size] = muon2->innerTrack()->dz(RefVtx);
-	    Reco_3mu_mupl_dxy[Reco_3mu_size] = muon3->innerTrack()->dxy(RefVtx);
-	    Reco_3mu_mupl_dz[Reco_3mu_size] = muon3->innerTrack()->dz(RefVtx);}
-	  else{
-	    Reco_3mu_mumi_dxy[Reco_3mu_size] = muon3->innerTrack()->dxy(RefVtx);
-	    Reco_3mu_mumi_dz[Reco_3mu_size] = muon3->innerTrack()->dz(RefVtx);
-	    Reco_3mu_mupl_dxy[Reco_3mu_size] = muon2->innerTrack()->dxy(RefVtx);
-	    Reco_3mu_mupl_dz[Reco_3mu_size] = muon2->innerTrack()->dz(RefVtx);}
-	}else if(Reco_3mu_muW_idx[Reco_3mu_size]==mu2_idx){
-	  Reco_3mu_muW_dxy[Reco_3mu_size] = muon2->innerTrack()->dxy(RefVtx);
-	  Reco_3mu_muW_dz[Reco_3mu_size] = muon2->innerTrack()->dz(RefVtx);
-	  if(Reco_3mu_mumi_idx[Reco_3mu_size]==mu1_idx){
-	    Reco_3mu_mumi_dxy[Reco_3mu_size] = muon1->innerTrack()->dxy(RefVtx);
-	    Reco_3mu_mumi_dz[Reco_3mu_size] = muon1->innerTrack()->dz(RefVtx);
-	    Reco_3mu_mupl_dxy[Reco_3mu_size] = muon3->innerTrack()->dxy(RefVtx);
-	    Reco_3mu_mupl_dz[Reco_3mu_size] = muon3->innerTrack()->dz(RefVtx);}
-	  else{
-	    Reco_3mu_mumi_dxy[Reco_3mu_size] = muon3->innerTrack()->dxy(RefVtx);
-	    Reco_3mu_mumi_dz[Reco_3mu_size] = muon3->innerTrack()->dz(RefVtx);
-	    Reco_3mu_mupl_dxy[Reco_3mu_size] = muon1->innerTrack()->dxy(RefVtx);
-	    Reco_3mu_mupl_dz[Reco_3mu_size] = muon1->innerTrack()->dz(RefVtx);}
-	}else if(Reco_3mu_muW_idx[Reco_3mu_size]==mu3_idx){
-	  Reco_3mu_muW_dxy[Reco_3mu_size] = muon3->innerTrack()->dxy(RefVtx);
-	  Reco_3mu_muW_dz[Reco_3mu_size] = muon3->innerTrack()->dz(RefVtx);
-	  if(Reco_3mu_mumi_idx[Reco_3mu_size]==mu1_idx){
-	    Reco_3mu_mumi_dxy[Reco_3mu_size] = muon1->innerTrack()->dxy(RefVtx);
-	    Reco_3mu_mumi_dz[Reco_3mu_size] = muon1->innerTrack()->dz(RefVtx);
-	    Reco_3mu_mupl_dxy[Reco_3mu_size] = muon2->innerTrack()->dxy(RefVtx);
-	    Reco_3mu_mupl_dz[Reco_3mu_size] = muon2->innerTrack()->dz(RefVtx);}
-	  else{
-	    Reco_3mu_mumi_dxy[Reco_3mu_size] = muon2->innerTrack()->dxy(RefVtx);
-	    Reco_3mu_mumi_dz[Reco_3mu_size] = muon2->innerTrack()->dz(RefVtx);
-	    Reco_3mu_mupl_dxy[Reco_3mu_size] = muon1->innerTrack()->dxy(RefVtx);
-	    Reco_3mu_mupl_dz[Reco_3mu_size] = muon1->innerTrack()->dz(RefVtx);}
+      if ((!_theMinimumFlag && _muonLessPrimaryVertex) || (_flipJpsiDirection>0) ) {
+
+	if(_flipJpsiDirection>0){
+	  iTrack_mupl = (muon1->charge()>0)?mu1Trk:mu2Trk;
+	  iTrack_mumi = (muon1->charge()>0)?mu2Trk:mu1Trk;
+	  iTrack_muW = *(muon3->innerTrack());
 	}
+
+	else{ //find indices of mumi-pl-W
+	  if(Reco_3mu_muW_idx[Reco_3mu_size]==mu1_idx){
+	    iTrack_muW = *(muon1->innerTrack());
+	    if(Reco_3mu_mumi_idx[Reco_3mu_size]==mu2_idx){
+	      iTrack_mumi = *(muon2->innerTrack());
+	      iTrack_mupl = *(muon3->innerTrack());}
+	    else{
+	      iTrack_mumi = *(muon3->innerTrack());
+	      iTrack_mupl = *(muon2->innerTrack());}	      
+	  }
+	  else if(Reco_3mu_muW_idx[Reco_3mu_size]==mu2_idx){
+	    iTrack_muW = *(muon2->innerTrack());
+	    if(Reco_3mu_mumi_idx[Reco_3mu_size]==mu1_idx){
+	      iTrack_mumi = *(muon1->innerTrack());
+	      iTrack_mupl = *(muon3->innerTrack());}
+	    else{
+	      iTrack_mumi = *(muon3->innerTrack());
+	      iTrack_mupl = *(muon1->innerTrack());}	      
+	  }
+	  else {
+	    iTrack_muW = *(muon3->innerTrack());
+	    if(Reco_3mu_mumi_idx[Reco_3mu_size]==mu2_idx){
+	      iTrack_mumi = *(muon2->innerTrack());
+	      iTrack_mupl = *(muon1->innerTrack());}
+	    else{
+	      iTrack_mumi = *(muon1->innerTrack());
+	      iTrack_mupl = *(muon2->innerTrack());}	      
+	  }
+	}
+
+	Reco_3mu_muW_dxy[Reco_3mu_size] = iTrack_muW.dxy(RefVtx);
+	Reco_3mu_muW_dz[Reco_3mu_size] = iTrack_muW.dz(RefVtx);
+	Reco_3mu_mumi_dxy[Reco_3mu_size] = iTrack_mumi.dxy(RefVtx);
+	Reco_3mu_mumi_dz[Reco_3mu_size] = iTrack_mumi.dz(RefVtx);
+	Reco_3mu_mupl_dxy[Reco_3mu_size] = iTrack_mupl.dxy(RefVtx);
+	Reco_3mu_mupl_dz[Reco_3mu_size] = iTrack_mupl.dz(RefVtx);
       }
 
       //*********
@@ -2410,6 +2476,8 @@ HiOniaAnalyzer::InitEvent()
   Reco_trk_size = 0;
 
   Reco_QQ_4mom->Clear();
+  Reco_QQ_mupl_4mom->Clear();
+  Reco_QQ_mumi_4mom->Clear();
   Reco_QQ_vtx->Clear();
   Reco_mu_4mom->Clear();
 
@@ -2479,11 +2547,13 @@ HiOniaAnalyzer::IndexOfThisTrack(TLorentzVector* v1, bool isGen){
 }
 
 int
-HiOniaAnalyzer::IndexOfThisJpsi(int mu1_idx, int mu2_idx){
+HiOniaAnalyzer::IndexOfThisJpsi(int mu1_idx, int mu2_idx, int flipJpsi){
   int GoodIndex = -1;
   for(int iJpsi=0; iJpsi<Reco_QQ_size; iJpsi++){
-    if((Reco_QQ_mumi_idx[iJpsi] == mu1_idx && Reco_QQ_mupl_idx[iJpsi] == mu2_idx) ||
-       (Reco_QQ_mumi_idx[iJpsi] == mu2_idx && Reco_QQ_mupl_idx[iJpsi] == mu1_idx)){
+    if(((Reco_QQ_mumi_idx[iJpsi] == mu1_idx && Reco_QQ_mupl_idx[iJpsi] == mu2_idx) ||
+	(Reco_QQ_mumi_idx[iJpsi] == mu2_idx && Reco_QQ_mupl_idx[iJpsi] == mu1_idx))
+       && flipJpsi == Reco_QQ_flipJpsi[iJpsi]
+       ){
       GoodIndex = iJpsi;
       break;
     }
@@ -3163,6 +3233,8 @@ HiOniaAnalyzer::InitTree()
 
   Reco_mu_4mom = new TClonesArray("TLorentzVector", Max_mu_size);
   Reco_QQ_4mom = new TClonesArray("TLorentzVector", Max_QQ_size);
+  Reco_QQ_mumi_4mom = new TClonesArray("TLorentzVector", Max_QQ_size);
+  Reco_QQ_mupl_4mom = new TClonesArray("TLorentzVector", Max_QQ_size);
   Reco_QQ_vtx = new TClonesArray("TVector3", Max_QQ_size);
 
   if (_useGeTracks && _fillRecoTracks) {
@@ -3268,7 +3340,7 @@ HiOniaAnalyzer::InitTree()
       myTree->Branch("Reco_3mu_KCctauErr3D", Reco_3mu_KCctauErr3D,   "Reco_3mu_KCctauErr3D[Reco_3mu_size]/F");
       myTree->Branch("Reco_3mu_KCcosAlpha3D", Reco_3mu_KCcosAlpha3D,   "Reco_3mu_KCcosAlpha3D[Reco_3mu_size]/F");
     }
-    if (!_theMinimumFlag && _muonLessPrimaryVertex) {
+    if ((!_theMinimumFlag && _muonLessPrimaryVertex) || (_flipJpsiDirection>0)) {
       myTree->Branch("Reco_3mu_muW_dxy_muonlessVtx",      Reco_3mu_muW_dxy,    "Reco_3mu_muW_dxy_muonlessVtx[Reco_3mu_size]/F");
       myTree->Branch("Reco_3mu_muW_dz_muonlessVtx",      Reco_3mu_muW_dz,    "Reco_3mu_muW_dz_muonlessVtx[Reco_3mu_size]/F");
       myTree->Branch("Reco_3mu_mumi_dxy_muonlessVtx",      Reco_3mu_mumi_dxy,    "Reco_3mu_mumi_dxy_muonlessVtx[Reco_3mu_size]/F");
@@ -3279,7 +3351,8 @@ HiOniaAnalyzer::InitTree()
 
     myTree->Branch("Reco_3mu_MassErr", Reco_3mu_MassErr,   "Reco_3mu_MassErr[Reco_3mu_size]/F");
     myTree->Branch("Reco_3mu_CorrM", Reco_3mu_CorrM,   "Reco_3mu_CorrM[Reco_3mu_size]/F");
-    myTree->Branch("Reco_3mu_NbMuInSameSV", Reco_3mu_NbMuInSameSV,   "Reco_3mu_NbMuInSameSV[Reco_3mu_size]/S");
+    if(SVs.isValid() && SVs->size()>0){
+      myTree->Branch("Reco_3mu_NbMuInSameSV", Reco_3mu_NbMuInSameSV,   "Reco_3mu_NbMuInSameSV[Reco_3mu_size]/S");}
     myTree->Branch("Reco_3mu_vtx", "TClonesArray", &Reco_3mu_vtx, 32000, 0);
   }
 
@@ -3307,11 +3380,16 @@ HiOniaAnalyzer::InitTree()
   myTree->Branch("Reco_QQ_MassErr", Reco_QQ_MassErr,   "Reco_QQ_MassErr[Reco_QQ_size]/F");
   myTree->Branch("Reco_QQ_vtx", "TClonesArray", &Reco_QQ_vtx, 32000, 0);
 
-  if (!_theMinimumFlag && _muonLessPrimaryVertex) {
+  if ((!_theMinimumFlag && _muonLessPrimaryVertex) || (_flipJpsiDirection>0)) {
     myTree->Branch("Reco_QQ_mupl_dxy_muonlessVtx",Reco_QQ_mupl_dxy, "Reco_QQ_mupl_dxy_muonlessVtx[Reco_QQ_size]/F");
     myTree->Branch("Reco_QQ_mumi_dxy_muonlessVtx",Reco_QQ_mumi_dxy, "Reco_QQ_mumi_dxy_muonlessVtx[Reco_QQ_size]/F");
     myTree->Branch("Reco_QQ_mupl_dz_muonlessVtx",Reco_QQ_mupl_dz, "Reco_QQ_mupl_dz_muonlessVtx[Reco_QQ_size]/F");
     myTree->Branch("Reco_QQ_mumi_dz_muonlessVtx",Reco_QQ_mumi_dz, "Reco_QQ_mumi_dz_muonlessVtx[Reco_QQ_size]/F");
+  }
+  if(_flipJpsiDirection>0){
+    myTree->Branch("Reco_QQ_flipJpsi",Reco_QQ_flipJpsi, "Reco_QQ_flipJpsi[Reco_QQ_size]/S");    
+    myTree->Branch("Reco_QQ_mumi_4mom", "TClonesArray", &Reco_QQ_mumi_4mom, 32000, 0);
+    myTree->Branch("Reco_QQ_mupl_4mom", "TClonesArray", &Reco_QQ_mupl_4mom, 32000, 0);
   }
 
   myTree->Branch("Reco_mu_size", &Reco_mu_size,  "Reco_mu_size/S");

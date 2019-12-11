@@ -20,7 +20,7 @@ OneMatchedHLTMu = 4   # Keep only di(tri)muons of which the one(two) muon(s) are
 muonLessPV     = True  # Recalculate the PV without the two muons from the selected dimuon
 #############################################################################
 keepExtraColl  = False # General Tracks + Stand Alone Muons + Converted Photon collections
-useSVfinder    = True # External SV finder to check if the muons are from a resolved SV
+useSVfinder    = False # External SV finder to check if the muons are from a resolved SV
 #saveHLTBit     = False # for trigger analysis
 #saveHLTobj     = False # For trigger analysis
 #----------------------------------------------------------------------------
@@ -56,7 +56,7 @@ options.inputFiles =[#'file:/home/llr/cms/falmagne/production/pp2017/BcTrimu/CMS
     #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/AC288DD0-552E-E811-A74F-3417EBE52915.root'
     #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/00000/E2A9F70B-8042-E811-9D04-FA163E74586C.root'
     ]
-options.maxEvents = 2000 # -1 means all events
+options.maxEvents = 100 # -1 means all events
 
 # Get and parse the command line arguments
 options.parseArguments()
@@ -190,11 +190,15 @@ if applyEventSel:
 
 if atLeastOneCand:
   if doTrimuons:
-      process.oniaTreeAna.replace(process.onia2MuMuPatGlbGlb, process.onia2MuMuPatGlbGlbFilter3mu * process.onia2MuMuPatGlbGlb * process.onia2MuMuPatGlbGlbFilterTrimu)
+      process.oniaTreeAna.replace(process.onia2MuMuPatGlbGlb, process.onia2MuMuPatGlbGlb * process.onia2MuMuPatGlbGlbFilterTrimu)
+      process.oniaTreeAna.replace(process.patMuonSequence, process.filter3mu * process.pseudoDimuonFilterSequence * process.patMuonSequence)
   elif doDimuonTrk:
       process.oniaTreeAna.replace(process.onia2MuMuPatGlbGlb, process.onia2MuMuPatGlbGlb * process.onia2MuMuPatGlbGlbFilterDimutrk)
+      process.oniaTreeAna.replace(process.patMuonSequence, process.pseudoDimuonFilterSequence * process.patMuonSequence)
   else:
       process.oniaTreeAna.replace(process.onia2MuMuPatGlbGlb, process.onia2MuMuPatGlbGlb * process.onia2MuMuPatGlbGlbFilter)
+      #BEWARE, pseudoDimuonFilterSequence asks for opposite-sign dimuon in given mass range. But saves a lot of time by filtering before running PAT muons
+      process.oniaTreeAna.replace(process.patMuonSequence, process.pseudoDimuonFilterSequence * process.patMuonSequence)
 
 
 if useSVfinder:

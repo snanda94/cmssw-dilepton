@@ -19,6 +19,7 @@ onia2MuMuPAT = cms.EDProducer('Onia2MuMuPAT',
   onlySoftMuons = cms.bool(True), ## Keep only the isSoftMuons (without highPurity) for the single muons + the di(tri)muon combinations
   doTrimuons = cms.bool(False), ## Make collections of trimuon candidates in addition to dimuons, and keep only events with >0 trimuons
   DimuonTrk  = cms.bool(False), ## Make collections of Jpsi+track candidates in addition to dimuons, and keep only events with >0 Jpsi+trk 
-  resolvePileUpAmbiguity = cms.bool(False)   ## Order PVs by their vicinity to the J/psi vertex, not by sumPt                            
+  flipJpsiDirection = cms.int32(0), ## flip the Jpsi direction, before combining it with a third muon
+  resolvePileUpAmbiguity = cms.bool(False),   ## Order PVs by their vicinity to the J/psi vertex, not by sumPt                            
   trackMass = cms.int32(0.13957018) ## mass assigned to the track to be combined with the dimuons
 )

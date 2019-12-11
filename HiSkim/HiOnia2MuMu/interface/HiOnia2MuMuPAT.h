@@ -51,6 +51,8 @@ class HiOnia2MuMuPAT : public edm::EDProducer {
     virtual void produce(edm::Event&, const edm::EventSetup&);
     virtual void endJob() ;
     bool isSoftMuon(const pat::Muon*);
+    const reco::TrackBase::Point rotatePoint(reco::TrackBase::Point PV, reco::TrackBase::Point TrkPoint, int flipJpsi);
+    const reco::TrackBase::Vector rotateMomentum(reco::Track trk, int flipJpsi);
     bool isAbHadron(int pdgID);
     bool isAMixedbHadron(int pdgID, int momPdgID);
     reco::GenParticleRef findMotherRef(reco::GenParticleRef GenParticle, int GenParticlePDG);
@@ -76,6 +78,7 @@ class HiOnia2MuMuPAT : public edm::EDProducer {
     bool onlySoftMuons_;
     bool doTrimuons_;
     bool DimuonTrk_;
+    int flipJpsiDirection_;
     converter::TrackToCandidate Converter_;
     //PdtEntry pdtentry_;
     int trackType_;

@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 from PhysicsTools.PatAlgos.tools.helpers import *
 
-def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stage2=False, doTrimuons=False, DimuonTrk=False):
+def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stage2=False, doTrimuons=False, DimuonTrk=False, flipJpsiDir=0):
     # Setup the process
     process.options = cms.untracked.PSet(
         wantSummary = cms.untracked.bool(True),
@@ -104,7 +104,8 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stag
         onlySoftMuons            = cms.bool(False), ## Keep only the isSoftMuons (without highPurity) for the single muons + the di(tri)muon combinations
         doTrimuons               = cms.bool(doTrimuons), ## Make collections of trimuon candidates in addition to dimuons, and keep only events with >0 trimuons
         DimuonTrk                = cms.bool(DimuonTrk), ## Make collections of Jpsi+track candidates in addition to dimuons, and keep only events with >0 Jpsi+trk
-        particleType             = cms.int32(211) ## pdgInt assigned to the track to be combined with the dimuons
+        flipJpsiDirection        = cms.int32(flipJpsiDir), ## flip the Jpsi direction, before combining it with a third muon
+        particleType             = cms.int32(211), ## pdgInt assigned to the track to be combined with the dimuons
         trackMass                = cms.double(0.13957018) ## mass assigned to the track to be combined with the dimuons
     )
 
@@ -121,11 +122,27 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stag
         src = cms.InputTag('onia2MuMuPatGlbGlb','trimuon'),
         minNumber = cms.uint32(1),
     )
-    process.onia2MuMuPatGlbGlbFilter3mu = cms.EDFilter("CandViewCountFilter",
-        src = cms.InputTag('patMuonsWithTrigger'),
+    #process.onia2MuMuPatGlbGlbFilter3mu = cms.EDFilter("CandViewCountFilter",
+    #    src = cms.InputTag('patMuonsWithTrigger'),
+    #    minNumber = cms.uint32(3),
+    #)
+    process.filter3mu = cms.EDFilter("CandViewCountFilter",
+        src = cms.InputTag('muons'),
         minNumber = cms.uint32(3),
     )
-        
+    process.pseudoDimuon = cms.EDProducer("CandViewShallowCloneCombiner",
+        decay = cms.string('muons@+ muons@-'),
+        cut = cms.string('2.4 < mass < 3.7'),
+    )
+    process.pseudoDimuonFilter = cms.EDFilter("CandViewCountFilter",
+        src = cms.InputTag('pseudoDimuon'),
+        minNumber = cms.uint32(1),
+    )
+    process.pseudoDimuonFilterSequence = cms.Sequence(
+        process.pseudoDimuon *
+        process.pseudoDimuonFilter
+    )
+
     # the onia2MuMu path
     process.Onia2MuMuPAT = cms.Path(
         process.patMuonSequence *

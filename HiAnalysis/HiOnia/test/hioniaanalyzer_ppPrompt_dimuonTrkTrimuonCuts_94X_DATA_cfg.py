@@ -51,7 +51,7 @@ options.secondaryOutputFile = "Jpsi_DataSet.root"
 options.inputFiles =[
     '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/00000/E2A9F70B-8042-E811-9D04-FA163E74586C.root'
     ]
-options.maxEvents = 3000 # -1 means all events
+options.maxEvents = -1 # -1 means all events
 
 # Get and parse the command line arguments
 options.parseArguments()
@@ -146,11 +146,11 @@ process.onia2MuMuPatGlbGlb.dimuonSelection       = cms.string("( ((daughter('muo
 #process.onia2MuMuPatGlbGlb.lowerPuritySelection  = cms.string("")
 #process.onia2MuMuPatGlbGlb.higherPuritySelection = cms.string("") ## No need to repeat lowerPuritySelection in there, already included 
 if applyCuts:
-    process.onia2MuMuPatGlbGlb.LateDimuonSel      = cms.string("userFloat(\"vProb\")>0.005")
-    process.onia2MuMuPatGlbGlb.LateDimuTrkSel     = cms.string("userFloat(\"vProb\")>0.01 && abs(userFloat(\"ppdlPV\")/userFloat(\"ppdlErrPV\"))>1.5 && userFloat(\"cosAlpha\")>0.7 && userFloat(\"cosAlpha3D\")>0.7")
+    process.onia2MuMuPatGlbGlb.LateDimuonSel      = cms.string("userFloat(\"vProb\")>0.002")
+    process.onia2MuMuPatGlbGlb.LateDimuTrkSel     = cms.string("userFloat(\"vProb\")>0.001 && abs(userFloat(\"ppdlPV\")/userFloat(\"ppdlErrPV\"))>1.5 && userFloat(\"cosAlpha\")>0.7 && userFloat(\"cosAlpha3D\")>0.7")
     #process.onia2MuMuPatGlbGlb.LateTrimuonSel     = cms.string("userFloat(\"vProb\")>0.005 && userFloat(\"ppdlPV3D\")>0 && userFloat(\"cosAlpha\")>0.2")
 process.onia2MuMuPatGlbGlb.onlySoftMuons         = cms.bool(OnlySoftMuons)
-process.onia2MuMuPatGlbGlb.trackMass                = cms.double(trackMass)
+process.onia2MuMuPatGlbGlb.trackMass                = cms.double(trkMass)
 process.onia2MuMuPatGlbGlb.particleType             = cms.int32(partType)
 
 #process.hionia.minimumFlag      = cms.bool(keepExtraColl)           #for Reco_trk_*
@@ -181,11 +181,15 @@ if applyEventSel:
 
 if atLeastOneCand:
     if doTrimuons:
-        process.oniaTreeAna.replace(process.onia2MuMuPatGlbGlb, process.onia2MuMuPatGlbGlbFilter3mu * process.onia2MuMuPatGlbGlb * process.onia2MuMuPatGlbGlbFilterTrimu)
+        process.oniaTreeAna.replace(process.onia2MuMuPatGlbGlb, process.onia2MuMuPatGlbGlb * process.onia2MuMuPatGlbGlbFilterTrimu)
+        process.oniaTreeAna.replace(process.patMuonSequence, process.filter3mu * process.pseudoDimuonFilterSequence * process.patMuonSequence)
     elif doDimuonTrk:
         process.oniaTreeAna.replace(process.onia2MuMuPatGlbGlb, process.onia2MuMuPatGlbGlb * process.onia2MuMuPatGlbGlbFilterDimutrk)
+        process.oniaTreeAna.replace(process.patMuonSequence, process.pseudoDimuonFilterSequence * process.patMuonSequence)
     else:
         process.oniaTreeAna.replace(process.onia2MuMuPatGlbGlb, process.onia2MuMuPatGlbGlb * process.onia2MuMuPatGlbGlbFilter)
+        #BEWARE, pseudoDimuonFilterSequence asks for opposite-sign dimuon in given mass range. But saves a lot of time by filtering before running PAT muons
+        process.oniaTreeAna.replace(process.patMuonSequence, process.pseudoDimuonFilterSequence * process.patMuonSequence) 
 
 #----------------------------------------------------------------------------
 '''

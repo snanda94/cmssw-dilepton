@@ -2,7 +2,7 @@ from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
 config.section_('General')
-config.General.requestName = 'BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_05082019_1_ONIATREE'#'BJPsiMM_TuneCUETP8M1_5p02TeV_pythia8_16052018_withLambdab_ptHatMin10_ONIATREE'#
+config.General.requestName = 'BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_RunIIpp5Spring18DR_21112019_ONIATREE'#'BJPsiMM_TuneCUETP8M1_5p02TeV_pythia8_16052018_withLambdab_ptHatMin10_ONIATREE'#
 config.General.workArea = 'crab_projects'
 config.General.transferOutputs = True
 config.General.transferLogs = True
@@ -15,9 +15,9 @@ config.JobType.maxMemoryMB = 2500
 config.JobType.maxJobRuntimeMin = 120
 
 config.section_('Data')
-config.Data.inputDataset = '/BcToJpsiMuNu/gfalmagn-BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts-f2dad0906efe35dd2b4ba4e0d7abc43c/USER'#'/BJpsiMM/gfalmagn-BJPsiMM_TuneCUETP8M1_5p02TeV_pythia8_16052018_withLambdab_ptHatMin10_reco-679d0c7a470a830e53fe749c4e83e359/USER'#'/BJpsiMM/gfalmagn-BJPsiMM_TuneCUETP8M1_5p02TeV_pythia8_16052018_withLambdab_ptHatMin10_reco-679d0c7a470a830e53fe749c4e83e359/USER'#
-config.Data.inputDBS = 'phys03'
-config.Data.unitsPerJob = 10
+config.Data.inputDataset = '/BcToJpsiMuNu_BCVEGPY_pythia8/RunIIpp5Spring18DR-94X_mc2017_realistic_forppRef5TeV_v1-v2/AODSIM'#'/BcToJpsiMuNu/gfalmagn-BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts-f2dad0906efe35dd2b4ba4e0d7abc43c/USER'#'/BJpsiMM/gfalmagn-BJPsiMM_TuneCUETP8M1_5p02TeV_pythia8_16052018_withLambdab_ptHatMin10_reco-679d0c7a470a830e53fe749c4e83e359/USER'#'/BJpsiMM/gfalmagn-BJPsiMM_TuneCUETP8M1_5p02TeV_pythia8_16052018_withLambdab_ptHatMin10_reco-679d0c7a470a830e53fe749c4e83e359/USER'#
+config.Data.inputDBS = 'global'#'phys03'
+config.Data.unitsPerJob = 1#10
 #config.Data.totalUnits = 50
 config.Data.splitting = 'FileBased'
 
