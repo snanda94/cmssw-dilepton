@@ -11,7 +11,7 @@
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
-#include "DataFormats/Math/interface/deltaPhi.h"
+
 
 class RecoTrackSelectorBase {
 public:
@@ -20,8 +20,6 @@ public:
     ptMin_(cfg.getParameter<double>("ptMin")),
     minRapidity_(cfg.getParameter<double>("minRapidity")),
     maxRapidity_(cfg.getParameter<double>("maxRapidity")),
-    meanPhi_((cfg.getParameter<double>("minPhi")+cfg.getParameter<double>("maxPhi"))/2.),
-    rangePhi_((cfg.getParameter<double>("maxPhi")-cfg.getParameter<double>("minPhi"))/2.),
     tip_(cfg.getParameter<double>("tip")),
     lip_(cfg.getParameter<double>("lip")),
     maxChi2_(cfg.getParameter<double>("maxChi2")),
@@ -31,18 +29,6 @@ public:
     min3DLayer_(cfg.getParameter<int>("min3DLayer")),
     usePV_(cfg.getParameter<bool>("usePV")),
     bsSrcToken_(iC.consumes<reco::BeamSpot>(cfg.getParameter<edm::InputTag>("beamSpot"))) {
-      const auto minPhi = cfg.getParameter<double>("minPhi");
-      const auto maxPhi = cfg.getParameter<double>("maxPhi");
-      if(minPhi >= maxPhi) {
-        throw cms::Exception("Configuration") << "RecoTrackSelectorPhase: minPhi (" << minPhi << ") must be smaller than maxPhi (" << maxPhi << "). The range is constructed from minPhi to maxPhi around their average.";
-      }
-      if(minPhi >= M_PI) {
-        throw cms::Exception("Configuration") << "RecoTrackSelectorPhase: minPhi (" << minPhi << ") must be smaller than PI. The range is constructed from minPhi to maxPhi around their average.";
-      }
-      if(maxPhi <= -M_PI) {
-        throw cms::Exception("Configuration") << "RecoTrackSelectorPhase: maxPhi (" << maxPhi << ") must be larger than -PI. The range is constructed from minPhi to maxPhi around their average.";
-      }
-
       if (usePV_)
         vertexToken_ = iC.consumes<reco::VertexCollection>(cfg.getParameter<edm::InputTag>("vertexTag"));
       for(const std::string& quality: cfg.getParameter<std::vector<std::string> >("quality"))
@@ -72,7 +58,7 @@ public:
 
   bool operator()( const reco::Track & t) const {
     bool quality_ok = true;
-    if (!quality_.empty()) {
+    if (quality_.size()!=0) {
       quality_ok = false;
       for (unsigned int i = 0; i<quality_.size();++i) {
 	if (t.quality(quality_[i])){
@@ -83,7 +69,7 @@ public:
     }
 
     bool algo_ok = true;
-    if (!algorithm_.empty()) {
+    if (algorithm_.size()!=0) {
       if (std::find(algorithm_.begin(),algorithm_.end(),t.algo())==algorithm_.end()) algo_ok = false;
     }
     if (!originalAlgorithm_.empty() && algo_ok) {
@@ -94,9 +80,6 @@ public:
             return t.algoMask()[algo];
           }) == algorithmMask_.end()) algo_ok = false;
     }
-
-    const auto dphi = deltaPhi(t.phi(), meanPhi_);
-
     return
       (
        (algo_ok & quality_ok) &&
@@ -107,7 +90,6 @@ public:
        t.hitPattern().numberOfValidStripLayersWithMonoAndStereo() >= min3DLayer_ &&
        fabs(t.pt()) >= ptMin_ &&
        t.eta() >= minRapidity_ && t.eta() <= maxRapidity_ &&
-       dphi >= -rangePhi_ && dphi <= rangePhi_ &&
        fabs(t.dxy(vertex_)) <= tip_ &&
        fabs(t.dsz(vertex_)) <= lip_  &&
        t.normalizedChi2()<=maxChi2_
@@ -119,8 +101,6 @@ private:
   double ptMin_;
   double minRapidity_;
   double maxRapidity_;
-  double meanPhi_;
-  double rangePhi_;
   double tip_;
   double lip_;
   double maxChi2_;

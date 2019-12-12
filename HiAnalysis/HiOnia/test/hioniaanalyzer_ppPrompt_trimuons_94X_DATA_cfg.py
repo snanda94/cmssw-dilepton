@@ -14,13 +14,11 @@ OnlySoftMuons  = True # Keep only isSoftMuon's (with highPurity because this is 
 applyCuts      = True # At HiAnalysis level, apply kinematic acceptance cuts + identification cuts (isSoftMuon or isTightMuon, depending on TightGlobalMuon flag) for muons from selected di(tri)muons + hard-coded cuts on the di(tri)muon that you would want to add (but recommended to add everything in LateDimuonSelection, applied at the end of HiSkim)
 SofterSgMuAcceptance = True # Whether to accept muons with a softer acceptance cuts than the usual (pt>3.5GeV at central eta, pt>1.8 at high |eta|). Applies when applyCuts=True
 doTrimuons     = True # Make collections of trimuon candidates in addition to dimuons, and keep only events with >0 trimuons
-doDimuonTrk    = False # Make collections of Jpsi+track candidates in addition to dimuons
 atLeastOneCand = True # Keep only events that have one selected dimuon (or at least one trimuon if doTrimuons = true). BEWARE this can cause trouble in .root output if no event is selected by onia2MuMuPatGlbGlbFilter!
-OneMatchedHLTMu = 4   # Keep only di(tri)muons of which the one(two) muon(s) are matched to the HLT Filter of this number. You can get the desired number in the output of oniaTree. Set to -1 for no matching. WARNING: it is the trigger bit+1 !
+OneMatchedHLTMu = 4   # Keep only di(tri)muons of which the one(two) muon(s) are matched to the HLT Filter of this number. You can get the desired number in the output of oniaTree. Set to -1 for no matching.
 muonLessPV     = True  # Recalculate the PV without the two muons from the selected dimuon
 #############################################################################
 keepExtraColl  = False # General Tracks + Stand Alone Muons + Converted Photon collections
-useSVfinder    = False # External SV finder to check if the muons are from a resolved SV
 #saveHLTBit     = False # for trigger analysis
 #saveHLTobj     = False # For trigger analysis
 #----------------------------------------------------------------------------
@@ -46,9 +44,8 @@ options = VarParsing.VarParsing ('analysis')
 # Input and Output File Names
 options.outputFile = "Oniatree.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
-options.inputFiles =[#'file:/home/llr/cms/falmagne/production/pp2017/BcTrimu/CMSSW_9_4_14/src/pp5TeV_TrimuonSkim.root',
-    '/store/user/gfalmagn/AOD/DoubleMu_Run2017G_AOD_Run_306546_306826_trimuonSkim_05082019/DoubleMuon/crab_DoubleMu_Run2017G_AOD_Run_306546_306826_trimuonSkim_05082019/190805_182650/0000/pp5TeV_TrimuonSkim_288.root',
-    #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/B6F95CE3-5B2E-E811-9F6F-A0369FD20D28.root',
+options.inputFiles =[
+    '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/B6F95CE3-5B2E-E811-9F6F-A0369FD20D28.root',
     #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/B68C2814-912D-E811-9A7E-A0369FC5252C.root',
     #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/B2518E21-2538-E811-B08A-0025905C9726.root',
     #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/B03BCD95-892E-E811-B8C5-A0369FC513DC.root',
@@ -56,7 +53,7 @@ options.inputFiles =[#'file:/home/llr/cms/falmagne/production/pp2017/BcTrimu/CMS
     #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/AC288DD0-552E-E811-A74F-3417EBE52915.root'
     #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/00000/E2A9F70B-8042-E811-9D04-FA163E74586C.root'
     ]
-options.maxEvents = 100 # -1 means all events
+options.maxEvents = -1 # -1 means all events
 
 # Get and parse the command line arguments
 options.parseArguments()
@@ -102,10 +99,6 @@ triggerList    = {
         "HLT_HIL3Mu12_v1",
         "HLT_HIL3Mu15_v1",
         "HLT_HIL3Mu20_v1",
-        "HLT_HIL2Mu3_NHitQ10_v1",
-        "HLT_HIL3Mu3_NHitQ10_v1",
-        "HLT_HIL2Mu5_NHitQ10_v1",
-        "HLT_HIL3Mu5_NHitQ10_v1",
         ),
     # Single Muon Filter List
     'SingleMuonFilter'  : cms.vstring(
@@ -121,10 +114,6 @@ triggerList    = {
         "hltL3fL1sSingleMu7L1f0L2f0L3Filtered12",
         "hltL3fL1sSingleMu7L1f0L2f0L3Filtered15",
         "hltL3fL1sSingleMu7L1f0L2f0L3Filtered20",
-        "hltL2fL1sSingleMu3L1f0L2NHitQ10L2Filtered3",
-        "hltL3fL1sSingleMu3L1f0L2f0L3NHitQ10L3Filtered3",
-        "hltL2fL1sSingleMu3OR5L1f0L2NHitQ10L2Filtered5",
-        "hltL3fL1sSingleMu3OR5L1f0L2f0L3NHitQ10L3Filtered5",
         )
 }
 
@@ -190,69 +179,9 @@ if applyEventSel:
 
 if atLeastOneCand:
   if doTrimuons:
-      process.oniaTreeAna.replace(process.onia2MuMuPatGlbGlb, process.onia2MuMuPatGlbGlb * process.onia2MuMuPatGlbGlbFilterTrimu)
-      process.oniaTreeAna.replace(process.patMuonSequence, process.filter3mu * process.pseudoDimuonFilterSequence * process.patMuonSequence)
-  elif doDimuonTrk:
-      process.oniaTreeAna.replace(process.onia2MuMuPatGlbGlb, process.onia2MuMuPatGlbGlb * process.onia2MuMuPatGlbGlbFilterDimutrk)
-      process.oniaTreeAna.replace(process.patMuonSequence, process.pseudoDimuonFilterSequence * process.patMuonSequence)
+      process.oniaTreeAna.replace(process.onia2MuMuPatGlbGlb, process.onia2MuMuPatGlbGlbFilter3mu * process.onia2MuMuPatGlbGlb * process.onia2MuMuPatGlbGlbFilterTrimu)
   else:
       process.oniaTreeAna.replace(process.onia2MuMuPatGlbGlb, process.onia2MuMuPatGlbGlb * process.onia2MuMuPatGlbGlbFilter)
-      #BEWARE, pseudoDimuonFilterSequence asks for opposite-sign dimuon in given mass range. But saves a lot of time by filtering before running PAT muons
-      process.oniaTreeAna.replace(process.patMuonSequence, process.pseudoDimuonFilterSequence * process.patMuonSequence)
-
-
-if useSVfinder:
-    from RecoVertex.AdaptiveVertexFinder.inclusiveVertexFinder_cfi import *
-    from RecoVertex.AdaptiveVertexFinder.vertexMerger_cfi import *
-    from RecoVertex.AdaptiveVertexFinder.trackVertexArbitrator_cfi import *
-    
-    process.inclusiveVertexFinderLoose = inclusiveVertexFinder.clone(
-        vertexMinDLen2DSig = 1.5,
-        vertexMinDLenSig = 1.25,
-        vertexMinAngleCosine = 0.001,
-        maximumLongitudinalImpactParameter = 0.6, #default = 0.3
-        maxNTracks = 10, #default = 30
-        minPt = 1.2, #following muon acceptance
-        #useVertexReco = False,
-        #fitterSigmacut = 3.,
-        clusterizer = cms.PSet(
-            seedMax3DIPSignificance = cms.double(9999.),#default
-            seedMax3DIPValue = cms.double(9999.),#default
-            seedMin3DIPSignificance = cms.double(1.6), # default=1.2
-            seedMin3DIPValue = cms.double(0.005), # default = 0.005
-            clusterMaxDistance = cms.double(0.05),#default = 0.05
-            clusterMaxSignificance = cms.double(3.),#default = 4.5
-            distanceRatio = cms.double(10.),#default = 20
-            clusterMinAngleCosine = cms.double(0.001), # default = 0.5
-            maxTimeSignificance = cms.double(3.5),#default
-        ),
-    )
-    
-    process.vertexMergerLoose = vertexMerger.clone(
-        secondaryVertices = "inclusiveVertexFinderLoose"
-    )
-    process.trackVertexArbitratorLoose = trackVertexArbitrator.clone(
-        secondaryVertices = cms.InputTag("vertexMergerLoose")
-    )
-    process.inclusiveSecondaryVerticesLoose = vertexMerger.clone(
-        secondaryVertices = "trackVertexArbitratorLoose",
-        maxFraction = 0.2, # default 0.7 - 0.2
-        minSignificance = 3. # default 2 - 10
-    )
-    process.inclusiveVertexingTask = cms.Task(
-        process.inclusiveVertexFinderLoose,
-        process.vertexMergerLoose,
-        process.trackVertexArbitratorLoose,
-        process.inclusiveSecondaryVerticesLoose
-    )
-    process.inclusiveVertexing = cms.Sequence(process.inclusiveVertexingTask)
-    process.oniaTreeAna.replace(process.hionia, process.inclusiveVertexing*process.hionia)
-    
-    from RecoBTag.SecondaryVertex.secondaryVertexTagInfos_cfi import *
-    inclusiveSecondaryVertexFinderLooseTagInfos = secondaryVertexTagInfos.clone()
-    # use external SV collection made from IVF
-    inclusiveSecondaryVertexFinderLooseTagInfos.extSVCollection     = cms.InputTag('inclusiveSecondaryVerticesLoose')
-    inclusiveSecondaryVertexFinderLooseTagInfos.useExternalSV = cms.bool(True)
 
 #----------------------------------------------------------------------------
 '''
