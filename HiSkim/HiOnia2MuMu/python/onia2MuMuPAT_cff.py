@@ -122,10 +122,6 @@ def onia2MuMuPAT(process, GlobalTag, MC=False, HLT='HLT', Filter=True, useL1Stag
         src = cms.InputTag('onia2MuMuPatGlbGlb','trimuon'),
         minNumber = cms.uint32(1),
     )
-    #process.onia2MuMuPatGlbGlbFilter3mu = cms.EDFilter("CandViewCountFilter",
-    #    src = cms.InputTag('patMuonsWithTrigger'),
-    #    minNumber = cms.uint32(3),
-    #)
     process.filter3mu = cms.EDFilter("CandViewCountFilter",
         src = cms.InputTag('muons'),
         minNumber = cms.uint32(3),

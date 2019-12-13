@@ -172,6 +172,7 @@ process.hionia.SofterSgMuAcceptance = cms.bool(SofterSgMuAcceptance)
 process.hionia.applyCuts        = cms.bool(applyCuts)
 process.hionia.AtLeastOneCand   = cms.bool(atLeastOneCand)
 process.hionia.OneMatchedHLTMu  = cms.int32(OneMatchedHLTMu)
+process.hionia.useSVfinder      = cms.bool(useSVfinder)
 
 process.NoScraping = cms.EDFilter("FilterOutScraping",
                           applyfilter = cms.untracked.bool(True),

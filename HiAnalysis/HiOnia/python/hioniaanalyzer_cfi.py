@@ -41,6 +41,7 @@ hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                         removeTrueMuons = cms.untracked.bool(False),
                         
                         muonLessPV = cms.bool(False),
+                        useSVfinder = cms.bool(False),
                         
                         #-- Gen Details
                         BcPDG = cms.int32(541),

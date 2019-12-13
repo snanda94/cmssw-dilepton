@@ -80,7 +80,6 @@ class HiOnia2MuMuPAT : public edm::EDProducer {
     bool DimuonTrk_;
     int flipJpsiDirection_;
     converter::TrackToCandidate Converter_;
-    //PdtEntry pdtentry_;
     int trackType_;
     double trackMass_;
     GreaterByPt<pat::CompositeCandidate> pTComparator_;
