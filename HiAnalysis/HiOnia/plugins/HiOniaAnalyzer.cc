@@ -467,6 +467,7 @@ private:
   int _oniaPDG;
   int _BcPDG;
   int _OneMatchedHLTMu;
+  bool           _checkTrigNames;
 
   std::vector<unsigned int>                     _thePassedCats;
   std::vector<const pat::CompositeCandidate*>   _thePassedCands;
@@ -596,6 +597,7 @@ HiOniaAnalyzer::HiOniaAnalyzer(const edm::ParameterSet& iConfig):
   _oniaPDG(iConfig.getParameter<int>("oniaPDG")),
   _BcPDG(iConfig.getParameter<int>("BcPDG")),
   _OneMatchedHLTMu(iConfig.getParameter<int>("OneMatchedHLTMu")),
+  _checkTrigNames(iConfig.getParameter<bool>("checkTrigNames")),
   hltPrescaleProvider(iConfig, consumesCollector(), *this),
   _iConfig(iConfig)
 {
@@ -744,7 +746,8 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     std::cout<<"ERROR: privtxs is NULL or not isValid ! Return now"<<std::endl; return;
   }
 
-  this->hltReport(iEvent, iSetup);
+  if(_checkTrigNames)
+    this->hltReport(iEvent, iSetup);
 
   for (unsigned int iTr = 1 ; iTr < theTriggerNames.size() ; iTr++) {
     if (mapTriggerNameToIntFired_[theTriggerNames.at(iTr)] == 3) {
@@ -2323,11 +2326,11 @@ HiOniaAnalyzer::isMuonInAccept(const pat::Muon* aMuon, const std::string muonTyp
              (1.2 <= fabs(aMuon->eta()) && fabs(aMuon->eta()) < 2.1 && aMuon->pt() >= 5.77-1.89*fabs(aMuon->eta())) ||
              (2.1 <= fabs(aMuon->eta()) && aMuon->pt() >= 1.8)));
   }
-  else if (muonType == (std::string)("TRK")) {
+  else if (muonType == (std::string)("TRK")) { //This is actually softer than the "TRKSOFT" acceptance
     return (fabs(aMuon->eta()) < 2.4 &&
-            ((fabs(aMuon->eta()) < 1. && aMuon->pt() >= 3.3) ||
-             (1. <= fabs(aMuon->eta()) && fabs(aMuon->eta()) < 2.2 && aMuon->p() >= 2.9) ||
-             (2.2 <= fabs(aMuon->eta()) && aMuon->pt() >= 0.8)));
+            ((fabs(aMuon->eta()) < 0.8 && aMuon->pt() >= 3.3) ||
+             (0.8 <= fabs(aMuon->eta()) && fabs(aMuon->eta()) < 2. && aMuon->p() >= 2.9) ||
+             (2. <= fabs(aMuon->eta()) && aMuon->pt() >= 0.8)));
   }
   else if (muonType == (std::string)("GLBSOFT")) {
     return (fabs(aMuon->eta()) < 2.4 &&
@@ -2352,8 +2355,8 @@ HiOniaAnalyzer::isMuonInAccept(const pat::Muon* aMuon, const std::string muonTyp
 bool
 HiOniaAnalyzer::isSoftMuon(const pat::Muon* aMuon) {
   return (aMuon->isTrackerMuon() &&
-          ( (!_isHI) || (muon::isGoodMuon(*aMuon, muon::TMOneStationTight) &&
-                         aMuon->innerTrack()->quality(reco::TrackBase::highPurity) ) ) &&
+          // ( _isHI || (muon::isGoodMuon(*aMuon, muon::TMOneStationTight) &&
+          //                aMuon->innerTrack()->quality(reco::TrackBase::highPurity) ) ) &&
           aMuon->innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5   &&
           aMuon->innerTrack()->hitPattern().pixelLayersWithMeasurement()   > 0   &&
           fabs(aMuon->innerTrack()->dxy(RefVtx)) < 0.3 &&
@@ -3570,12 +3573,10 @@ HiOniaAnalyzer::beginRun(const edm::Run& iRun, const edm::EventSetup& iSetup) {
 
   //bool init(const edm::Run& iRun, const edm::EventSetup& iSetup, const std::string& processName, bool& changed);
   bool changed = true;
-  hltConfigInit = false;
-  if( hltConfig.init(iRun, iSetup, pro, changed) ) hltConfigInit = true;
+  hltConfigInit = hltConfig.init(iRun, iSetup, pro, changed);
 
   changed = true;
-  hltPrescaleInit = false;
-  if( hltPrescaleProvider.init(iRun, iSetup, pro, changed) ) hltPrescaleInit = true;
+  hltPrescaleInit = hltPrescaleProvider.init(iRun, iSetup, pro, changed);
 
   return;
 }

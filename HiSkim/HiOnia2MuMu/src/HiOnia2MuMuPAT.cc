@@ -78,8 +78,8 @@ HiOnia2MuMuPAT::~HiOnia2MuMuPAT()
 
 bool
 HiOnia2MuMuPAT::isSoftMuon(const pat::Muon* aMuon) {
-  return (
-          muon::isGoodMuon(*aMuon, muon::TMOneStationTight) &&
+  return (aMuon->isTrackerMuon() &&
+          //muon::isGoodMuon(*aMuon, muon::TMOneStationTight) &&
           aMuon->innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5   &&
           aMuon->innerTrack()->hitPattern().pixelLayersWithMeasurement()   > 0   &&
           //aMuon->innerTrack()->quality(reco::TrackBase::highPurity) && 
@@ -224,7 +224,6 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	if ( track->qualityByName("highPurity") && track->eta()<2.4 && fabs(track->dxy(RefVtx))<0.3 && fabs(track->dz(RefVtx))<20) { 
 	  Ntrk++; 
 	  if (DimuonTrk_){ 
-	    track->setMass(0.13957018);//pion mass for all tracks
 	    ourTracks.push_back(track); }
 	}
       }
