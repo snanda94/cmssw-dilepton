@@ -173,8 +173,8 @@ private:
   // TFileService
   edm::Service<TFileService> fs;
 
-  // TFile
-  TFile* fOut;
+  // // TFile
+  // TFile* fOut;
 
   // TTree
   TTree* myTree;
@@ -351,30 +351,30 @@ private:
   int Reco_trk_nTrkWMea[Max_trk_size];
 
   // histos
-  TH1F* hGoodMuonsNoTrig;
-  TH1F* hGoodMuons;
-  TH1F* hL1DoubleMu0;
+  TH1F* hGoodMuonsNoTrig = NULL;
+  TH1F* hGoodMuons = NULL;
+  TH1F* hL1DoubleMu0 = NULL;
 
-  MyCommonHistoManager* myRecoMuonHistos;
-  MyCommonHistoManager* myRecoGlbMuonHistos;
-  MyCommonHistoManager* myRecoTrkMuonHistos;
+  MyCommonHistoManager* myRecoMuonHistos = NULL;
+  MyCommonHistoManager* myRecoGlbMuonHistos = NULL;
+  MyCommonHistoManager* myRecoTrkMuonHistos = NULL;
 
-  MyCommonHistoManager* myRecoJpsiHistos;
-  MyCommonHistoManager* myRecoJpsiGlbGlbHistos;
-  MyCommonHistoManager* myRecoJpsiGlbTrkHistos;
-  MyCommonHistoManager* myRecoJpsiTrkTrkHistos;
+  MyCommonHistoManager* myRecoJpsiHistos = NULL;
+  MyCommonHistoManager* myRecoJpsiGlbGlbHistos = NULL;
+  MyCommonHistoManager* myRecoJpsiGlbTrkHistos = NULL;
+  MyCommonHistoManager* myRecoJpsiTrkTrkHistos = NULL;
 
   // event counters
-  TH1F* hStats;
+  TH1F* hStats = NULL;
 
   // centrality
-  TH1F *hCent;
+  TH1F *hCent = NULL;
 
   // number of primary vertices
-  TH1F* hPileUp;
+  TH1F* hPileUp = NULL;
 
   // z vertex distribution
-  TH1F* hZVtx;
+  TH1F* hZVtx = NULL;
 
   // centrality
   int centBin;
@@ -386,7 +386,7 @@ private:
 
   // Event Plane variables
   int nEP;   // number of event planes
-  float *hiEvtPlane;
+  //float *hiEvtPlane;
   float rpAng[50];
   float rpCos[50];
   float rpSin[50];
@@ -694,9 +694,49 @@ HiOniaAnalyzer::HiOniaAnalyzer(const edm::ParameterSet& iConfig):
 HiOniaAnalyzer::~HiOniaAnalyzer()
 {
  
-   // do anything here that needs to be done at desctruction time
-   // (e.g. close files, deallocate resources etc.)
+  // do anything here that needs to be done at desctruction time
+  // (e.g. close files, deallocate resources etc.)
+  Reco_mu_4mom->Delete();
+  Reco_QQ_4mom->Delete();
+  Reco_QQ_mumi_4mom->Delete();
+  Reco_QQ_mupl_4mom->Delete();
+  Reco_QQ_vtx->Delete();
+  if (_useGeTracks && _fillRecoTracks) {
+    Reco_trk_4mom->Delete();
+    Reco_trk_vtx->Delete();
+  }
+  if(_doTrimuons || _doDimuTrk){
+    Reco_3mu_4mom->Delete();
+    Reco_3mu_vtx->Delete();
+    if(_isMC){
+      Gen_Bc_4mom->Delete();
+      Gen_Bc_nuW_4mom->Delete();
+      Gen_3mu_4mom->Delete();
+    }
+  }
+  if(_isMC){
+    Gen_mu_4mom->Delete();
+    Gen_QQ_4mom->Delete();
+  }
+  myTree->Delete();
 
+  delete hGoodMuonsNoTrig;
+  delete hGoodMuons;
+  delete hL1DoubleMu0;
+
+  delete myRecoMuonHistos;
+  delete myRecoGlbMuonHistos;
+  delete myRecoTrkMuonHistos;
+
+  delete myRecoJpsiHistos;
+  delete myRecoJpsiGlbGlbHistos;
+  delete myRecoJpsiGlbTrkHistos;
+  delete myRecoJpsiTrkTrkHistos;
+
+  delete hStats;
+  delete hCent;
+  delete hPileUp;
+  delete hZVtx;
 }
 
 
@@ -1888,6 +1928,7 @@ HiOniaAnalyzer::fillRecoJpsi(int count, std::string trigName, std::string centNa
   }
   this->fillHistosAndDS(_thePassedCats.at(count), aJpsiCand); 
 
+  delete aJpsiCand;
   return;
 }
 

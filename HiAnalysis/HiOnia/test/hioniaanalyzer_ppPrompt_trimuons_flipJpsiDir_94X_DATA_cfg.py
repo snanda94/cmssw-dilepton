@@ -49,15 +49,16 @@ options.outputFile = "Oniatree.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
 options.inputFiles =[#'file:/home/llr/cms/falmagne/production/pp2017/BcTrimu/CMSSW_9_4_14/src/pp5TeV_TrimuonSkim.root',
     #'/store/user/gfalmagn/AOD/DoubleMu_Run2017G_AOD_Run_306546_306826_trimuonSkim_05082019/DoubleMuon/crab_DoubleMu_Run2017G_AOD_Run_306546_306826_trimuonSkim_05082019/190805_182650/0000/pp5TeV_TrimuonSkim_288.root',
+    'file:B6F95CE3-5B2E-E811-9F6F-A0369FD20D28.root',
     #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/B6F95CE3-5B2E-E811-9F6F-A0369FD20D28.root',
-    '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/B68C2814-912D-E811-9A7E-A0369FC5252C.root',
-    '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/B2518E21-2538-E811-B08A-0025905C9726.root',
-    '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/B03BCD95-892E-E811-B8C5-A0369FC513DC.root',
-    '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/AC904279-852E-E811-AD85-5C260AFFFC17.root',
-    '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/AC288DD0-552E-E811-A74F-3417EBE52915.root'
-    '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/00000/E2A9F70B-8042-E811-9D04-FA163E74586C.root'
+    #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/B68C2814-912D-E811-9A7E-A0369FC5252C.root',
+    #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/B2518E21-2538-E811-B08A-0025905C9726.root',
+    #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/B03BCD95-892E-E811-B8C5-A0369FC513DC.root',
+    #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/AC904279-852E-E811-AD85-5C260AFFFC17.root',
+    #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/AC288DD0-552E-E811-A74F-3417EBE52915.root'
+    #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/00000/E2A9F70B-8042-E811-9D04-FA163E74586C.root'
     ]
-options.maxEvents = -1 # -1 means all events
+options.maxEvents = 10000 # -1 means all events
 
 # Get and parse the command line arguments
 options.parseArguments()
@@ -173,6 +174,7 @@ process.hionia.SofterSgMuAcceptance = cms.bool(SofterSgMuAcceptance)
 process.hionia.applyCuts        = cms.bool(applyCuts)
 process.hionia.AtLeastOneCand   = cms.bool(atLeastOneCand)
 process.hionia.OneMatchedHLTMu  = cms.int32(OneMatchedHLTMu)
+process.hionia.useSVfinder      = cms.bool(useSVfinder)
 
 process.NoScraping = cms.EDFilter("FilterOutScraping",
                           applyfilter = cms.untracked.bool(True),
