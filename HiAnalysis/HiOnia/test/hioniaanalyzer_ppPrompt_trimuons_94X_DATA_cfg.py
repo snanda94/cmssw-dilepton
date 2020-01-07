@@ -56,7 +56,7 @@ options.inputFiles =[#'file:/home/llr/cms/falmagne/production/pp2017/BcTrimu/CMS
     #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/AC288DD0-552E-E811-A74F-3417EBE52915.root'
     #'/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/00000/E2A9F70B-8042-E811-9D04-FA163E74586C.root'
     ]
-options.maxEvents = 100 # -1 means all events
+options.maxEvents = 1000 # -1 means all events
 
 # Get and parse the command line arguments
 options.parseArguments()

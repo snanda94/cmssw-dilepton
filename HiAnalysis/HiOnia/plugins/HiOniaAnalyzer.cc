@@ -718,25 +718,6 @@ HiOniaAnalyzer::~HiOniaAnalyzer()
     Gen_mu_4mom->Delete();
     Gen_QQ_4mom->Delete();
   }
-  myTree->Delete();
-
-  delete hGoodMuonsNoTrig;
-  delete hGoodMuons;
-  delete hL1DoubleMu0;
-
-  delete myRecoMuonHistos;
-  delete myRecoGlbMuonHistos;
-  delete myRecoTrkMuonHistos;
-
-  delete myRecoJpsiHistos;
-  delete myRecoJpsiGlbGlbHistos;
-  delete myRecoJpsiGlbTrkHistos;
-  delete myRecoJpsiTrkTrkHistos;
-
-  delete hStats;
-  delete hCent;
-  delete hPileUp;
-  delete hZVtx;
 }
 
 
@@ -756,7 +737,7 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   runNb = iEvent.id().run();
   eventNb = iEvent.id().event();
   lumiSection = iEvent.luminosityBlock();
-  
+
   edm::Handle<reco::VertexCollection> privtxs;
   iEvent.getByToken(_thePVsToken, privtxs); 
   reco::VertexCollection::const_iterator privtx;
@@ -1994,6 +1975,7 @@ HiOniaAnalyzer::makeCuts(bool keepSameSign) {
   math::XYZPoint RefVtx_tmp = RefVtx;
 
   if (collJpsi.isValid()) {
+
     for(std::vector<pat::CompositeCandidate>::const_iterator it=collJpsi->begin();
         it!=collJpsi->end(); ++it) {
       
@@ -2084,7 +2066,7 @@ HiOniaAnalyzer::makeBcCuts(bool keepWrongSign) {
   math::XYZPoint RefVtx_tmp = RefVtx;
 
   if (collTrimuon.isValid()) {
-    
+
     for(std::vector<pat::CompositeCandidate>::const_iterator it=collTrimuon->begin();
         it!=collTrimuon->end(); ++it) {
 

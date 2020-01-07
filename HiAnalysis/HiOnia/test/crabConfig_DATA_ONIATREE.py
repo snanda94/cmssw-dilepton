@@ -3,24 +3,24 @@ from WMCore.Configuration import Configuration
 config = Configuration()
 
 config.section_("General")
-config.General.requestName = "DoubleMu_Run2017G_AOD_Run_306546_306826_OniaTree_TripleMuBc_flippedJpsi_13112019" #change lumi range
+config.General.requestName = "DoubleMu_Run2017G_AOD_Run_306546_306826_OniaTree_27122019" #change lumi range
 config.General.workArea = 'crab_projects'
 config.General.transferOutputs = True
 config.General.transferLogs = True
 
 config.section_("JobType")
 config.JobType.pluginName = "Analysis"
-config.JobType.psetName = "HiAnalysis/HiOnia/test/hioniaanalyzer_ppPrompt_trimuons_flipJpsiDir_94X_DATA_cfg.py"
-config.JobType.maxMemoryMB = 2500         # request high memory machines.
-config.JobType.maxJobRuntimeMin = 600
+config.JobType.psetName = "HiAnalysis/HiOnia/test/hioniaanalyzer_ppPrompt_94X_DATA_cfg.py"
+#config.JobType.maxMemoryMB = 2500         # request high memory machines.
+config.JobType.maxJobRuntimeMin = 800
 
 config.section_("Data")
 config.Data.inputDataset = '/DoubleMuon/Run2017G-17Nov2017-v1/AOD'#'/DoubleMuon/gfalmagn-crab_DoubleMu_Run2017G_AOD_Run_306546_306826_trimuonSkim_05082019-85855fac0c6c80518ea9ff4269debc56/USER'#'/DoubleMuon/Run2017G-17Nov2017-v1/AOD'
 config.Data.inputDBS = 'global'#'phys03'
-config.Data.unitsPerJob = 40#3
+config.Data.unitsPerJob = 50#3
 #config.Data.totalUnits = -1
 config.Data.splitting = 'LumiBased'#'FileBased'
-config.Data.outLFNDirBase = '/store/user/gfalmagn/PromptAOD/%s' % (config.General.requestName)
+config.Data.outLFNDirBase = '/store/user/gfalmagn/AOD/%s' % (config.General.requestName)
 #config.Data.outLFNDirBase = '/store/group/phys_heavyions/dileptons/Data2018/PbPb502TeV/TTrees/PromptAOD'
 config.Data.publication = False
 config.Data.runRange = '306546-306826'
