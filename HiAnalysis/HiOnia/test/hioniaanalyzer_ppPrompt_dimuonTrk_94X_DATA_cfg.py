@@ -16,12 +16,14 @@ SofterSgMuAcceptance = False # Whether to accept muons with a softer acceptance 
 doTrimuons     = False # Make collections of trimuon candidates in addition to dimuons, and keep only events with >0 trimuons
 doDimuonTrk    = True # Make collections of Jpsi+track candidates in addition to dimuons 
 atLeastOneCand = True # Keep only events that have one selected dimuon (or at least one trimuon if doTrimuons = true). BEWARE this can cause trouble in .root output if no event is selected by onia2MuMuPatGlbGlbFilter!
-OneMatchedHLTMu = -1   # Keep only di(tri)muons of which the one(two) muon(s) are matched to the HLT Filter of this number. You can get the desired number in the output of oniaTree. Set to -1 for no matching.
-muonLessPV     = False  # Recalculate the PV without the two muons from the selected dimuon
+OneMatchedHLTMu = 4  # Keep only di(tri)muons of which the one(two) muon(s) are matched to the HLT Filter of this number. You can get the desired number in the output of oniaTree. Set to -1 for no matching.
+muonLessPV     = True  # Recalculate the PV without the two muons from the selected dimuon
 #############################################################################
 keepExtraColl  = True # General Tracks + Stand Alone Muons + Converted Photon collections
 #saveHLTBit     = False # for trigger analysis
 #saveHLTobj     = False # For trigger analysis
+trkMass = 0.13957018 #0.13957018 for a pion, 0.1056583715 for a muon
+partType = 211 #13 for muon, 211 for pion
 #----------------------------------------------------------------------------
 
 # Print Onia Tree settings:
@@ -47,9 +49,11 @@ options = VarParsing.VarParsing ('analysis')
 options.outputFile = "Oniatree.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
 options.inputFiles =[
-    '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/00000/E2A9F70B-8042-E811-9D04-FA163E74586C.root'
+    '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/00000/E2A9F70B-8042-E811-9D04-FA163E74586C.root',
+    '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/30001/44A074A7-132F-E811-A2BC-001517FAD934.root',
+    '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/30001/3875B53C-1A2F-E811-A40B-008CFAE45448.root'
     ]
-options.maxEvents = 1000 # -1 means all events
+options.maxEvents = -1 # -1 means all events
 
 # Get and parse the command line arguments
 options.parseArguments()
@@ -138,15 +142,17 @@ oniaTreeAnalyzer(process,
                  muonSelection=muonSelection, isMC=isMC, outputFileName=options.outputFile, muonlessPV=muonLessPV, doTrimu=doTrimuons, doDimuTrk=doDimuonTrk)
 process.oniaTreeAna = cms.Path(process.oniaTreeAna)
 
-#process.onia2MuMuPatGlbGlb.DimuTrkSelection      = cms.string("4.8 < mass && mass < 6.9 && abs(daughter('muon1').innerTrack.dz - daughter('track').track.dz) < 0.7 && daughter('track').pt > 0.3")#delete this abs(daughter('track').track.dxy/daughter('track').track.dxyError)>1.3 cut : not efficient
-#process.onia2MuMuPatGlbGlb.dimuonSelection       = cms.string("( ((daughter('muon1').charge + daughter('muon2').charge == 0) && 2.6 < mass && mass < 3.6) || ((daughter('muon1').charge + daughter('muon2').charge != 0) && 2.9 < mass && mass < 3.3)) && abs(daughter('muon1').innerTrack.dz - daughter('muon2').innerTrack.dz) < 3")
+process.onia2MuMuPatGlbGlb.DimuTrkSelection      = cms.string("4.8 < mass && mass < 6.9 && abs(daughter('muon1').innerTrack.dz - daughter('track').track.dz) < 0.5 && daughter('track').pt > 0.3")#delete this abs(daughter('track').track.dxy/daughter('track').track.dxyError)>1.3 cut : not efficient
+process.onia2MuMuPatGlbGlb.dimuonSelection       = cms.string("(daughter('muon1').charge + daughter('muon2').charge == 0) && 2.6 < mass && mass < 3.6 && abs(daughter('muon1').innerTrack.dz - daughter('muon2').innerTrack.dz) < 3")#"( ((daughter('muon1').charge + daughter('muon2').charge == 0) && 2.6 < mass && mass < 3.6) || ((daughter('muon1').charge + daughter('muon2').charge != 0) && 2.9 < mass && mass < 3.3)) && abs(daughter('muon1').innerTrack.dz - daughter('muon2').innerTrack.dz) < 3")
 #process.onia2MuMuPatGlbGlb.lowerPuritySelection  = cms.string("")
 #process.onia2MuMuPatGlbGlb.higherPuritySelection = cms.string("") ## No need to repeat lowerPuritySelection in there, already included 
 if applyCuts:
     process.onia2MuMuPatGlbGlb.LateDimuonSel      = cms.string("userFloat(\"vProb\")>0.005")
-    process.onia2MuMuPatGlbGlb.LateDimuTrkSel     = cms.string("userFloat(\"vProb\")>0.01 && abs(userFloat(\"ppdlPV\")/userFloat(\"ppdlErrPV\"))>2 && userFloat(\"cosAlpha\")>0.6")
+    process.onia2MuMuPatGlbGlb.LateDimuTrkSel     = cms.string("userFloat(\"vProb\")>0.01 && abs(userFloat(\"ppdlPV\")/userFloat(\"ppdlErrPV\"))>1.5 && userFloat(\"cosAlpha\")>0.6")
     #process.onia2MuMuPatGlbGlb.LateTrimuonSel     = cms.string("userFloat(\"vProb\")>0.005 && userFloat(\"ppdlPV3D\")>0 && userFloat(\"cosAlpha\")>0.2")
 process.onia2MuMuPatGlbGlb.onlySoftMuons         = cms.bool(OnlySoftMuons)
+process.onia2MuMuPatGlbGlb.trackMass              = cms.double(trkMass)
+process.onia2MuMuPatGlbGlb.particleType           = cms.int32(partType)
 
 #process.hionia.minimumFlag      = cms.bool(keepExtraColl)           #for Reco_trk_*
 process.hionia.useGeTracks      = cms.untracked.bool(keepExtraColl) #for Reco_trk_*
@@ -158,6 +164,7 @@ process.hionia.SofterSgMuAcceptance = cms.bool(SofterSgMuAcceptance)
 process.hionia.applyCuts        = cms.bool(applyCuts)
 process.hionia.AtLeastOneCand   = cms.bool(atLeastOneCand)
 process.hionia.OneMatchedHLTMu  = cms.int32(OneMatchedHLTMu)
+process.hionia.trkType          = cms.int32(partType)
 
 process.NoScraping = cms.EDFilter("FilterOutScraping",
                           applyfilter = cms.untracked.bool(True),

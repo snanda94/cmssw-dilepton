@@ -199,8 +199,6 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   KalmanVertexFitter vtxFitter(true);
 
   //For kinematic constrained fit
-  edm::ESHandle<MagneticField> bField;
-  iSetup.get<IdealMagneticFieldRecord>().get(bField);
   KinematicParticleFactoryFromTransientTrack pFactory;
   ParticleMass muon_mass = 0.1056583;
   float muon_sigma = 0.0000000001;
@@ -378,9 +376,10 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	    }
 	  } else {
 	    if ( muonLess.size()==thePrimaryV.tracksSize() ){
-	      //edm::LogWarning("HiOnia2MuMuPAT_muonLessSizeORpvTrkSize") << 
-	      //"Still have the original PV: the refit was not done 'cose it is already muonless" << "\n";
-	    } else if ( muonLess.size()<=1 ){
+	      cout<<"";//   edm::LogWarning("HiOnia2MuMuPAT_muonLessSizeORpvTrkSize") << 
+	    //   "Still have the original PV: the refit was not done 'cose it is already muonless" << "\n";
+	    } else 
+	    if ( muonLess.size()<=1 ){
 	      edm::LogWarning("HiOnia2MuMuPAT_muonLessSizeORpvTrkSize") << 
 		"Still have the original PV: the refit was not done 'cose there are not enough tracks to do the refit without the muon tracks" << "\n";
 	    } else {
@@ -755,9 +754,10 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		}
 	      } else {
 		if ( muonLess.size()==thePrimaryV.tracksSize() ){
-		  edm::LogWarning("HiOnia2MuMuPAT_muonLessSizeORpvTrkSize") << 
-		    "Still have the original PV: the refit was not done 'cose it is already muonless" << "\n";
-		} else if ( muonLess.size()<=1 ){
+		  cout<<"";//   edm::LogWarning("HiOnia2MuMuPAT_muonLessSizeORpvTrkSize") << 
+		//     //"Still have the original PV: the refit was not done 'cose it is already muonless" << "\n";
+		} else 
+		if ( muonLess.size()<=1 ){
 		  // edm::LogWarning("HiOnia2MuMuPAT_muonLessSizeORpvTrkSize") << 
 		  //  "Still have the original PV: the refit was not done 'cose there are not enough tracks to do the refit without the muon tracks" << "\n";
 		} else {
@@ -843,15 +843,15 @@ HiOnia2MuMuPAT::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  bool KCvtxNotFound=true;
 	  /////////////////Begin Kinematic Constrained Vertex Fit
 	  std::vector<RefCountedKinematicParticle> BcDaughters;
-	  reco::TransientTrack muon1TT(it.track(), &(*bField) );
-	  reco::TransientTrack muon2TT(it2.track(), &(*bField) );
-	  reco::TransientTrack pion3TT(piCand3.track(), &(*bField) );
+	  reco::TransientTrack muon1TT(it.track(), &(*magneticField) );
+	  reco::TransientTrack muon2TT(it2.track(), &(*magneticField) );
+	  reco::TransientTrack pion3TT(piCand3.track(), &(*magneticField) );
 
 	  if(muon1TT.isValid() && muon2TT.isValid() && pion3TT.isValid()) {
 	    float chi = 0.;	float ndf = 0.;
 	    BcDaughters.push_back(pFactory.particle(muon1TT,muon_mass,chi,ndf,muon_sigma));
 	    BcDaughters.push_back(pFactory.particle(muon2TT,muon_mass,chi,ndf,muon_sigma));
-	    BcDaughters.push_back(pFactory.particle(pion3TT,pion_mass,chi,ndf,pion_sigma));
+	    BcDaughters.push_back(pFactory.particle(pion3TT,(trackType_==13)?muon_mass:pion_mass,chi,ndf,pion_sigma));
 
 	    RefCountedKinematicTree BcTree = KCfitter.fit(BcDaughters, jpsi_c);   
 	    if(BcTree->isValid()){

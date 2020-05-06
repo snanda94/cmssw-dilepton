@@ -40,9 +40,11 @@ hionia = cms.EDAnalyzer('HiOniaAnalyzer',
                         removeSignalEvents = cms.untracked.bool(False),
                         removeTrueMuons = cms.untracked.bool(False),
                         checkTrigNames     = cms.bool(True),  # Whether to names of the triggers given in the config
+                        genOnly     = cms.bool(False),  # fill only generated info
                         
                         muonLessPV = cms.bool(False),
                         useSVfinder = cms.bool(False),
+                        trkType = cms.int32(13),
                         
                         #-- Gen Details
                         BcPDG = cms.int32(541),
