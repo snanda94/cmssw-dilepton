@@ -2495,6 +2495,8 @@ HiOniaAnalyzer::InitEvent()
 
     Gen_weight = -1.;
     Gen_pthat = -1.;
+
+    mapGenMuonMomToIndex_.clear();
   }
 
   if(_doTrimuons || _doDimuTrk){
@@ -2512,6 +2514,8 @@ HiOniaAnalyzer::InitEvent()
     }
   }
 
+  mapMuonMomToIndex_.clear();
+  mapTrkMomToIndex_.clear();
   for(std::map< std::string, int >::iterator clearIt= mapTriggerNameToIntFired_.begin(); clearIt != mapTriggerNameToIntFired_.end(); clearIt++){
     clearIt->second=0;
   }
@@ -3257,7 +3261,7 @@ HiOniaAnalyzer::InitTree()
   myTree->Branch("Ntracks", &Ntracks, "Ntracks/S");
 
   //myTree->Branch("nTrig", &nTrig, "nTrig/I");
-  myTree->Branch("trigPrescale", trigPrescale, "trigPrescale[nTrig]/I");
+  myTree->Branch("trigPrescale", trigPrescale, Form("trigPrescale[%d]/I",nTrig));
   myTree->Branch("HLTriggers", &HLTriggers, "HLTriggers/l");
 
   if ((_isHI || _isPA) && _SumETvariables){
