@@ -2311,10 +2311,10 @@ HiOniaAnalyzer::isTrkInMuonAccept(TLorentzVector trk4mom, std::string muonType){
              (2.1 <= fabs(trk4mom.Eta()) && trk4mom.Pt() >= 1.5)));
   }
   else if (muonType == (std::string)("TRK")) {
-    return (fabs(trk4mom.Eta()) < 2.4 &&
-            ((fabs(trk4mom.Eta()) < 1. && trk4mom.Pt() >= 3.3) ||
-             (1. <= fabs(trk4mom.Eta()) && fabs(trk4mom.Eta()) < 2.2 && trk4mom.P() >= 2.9) ||
-             (2.2 <= fabs(trk4mom.Eta()) && trk4mom.Pt() >= 0.8)));
+    return (fabs(aMuon->eta()) < 2.4 &&
+            ((fabs(aMuon->eta()) < 1.1 && aMuon->pt() >= 3.3) ||
+             (1.1 <= fabs(aMuon->eta()) && fabs(aMuon->eta()) < 1.3 && aMuon->pt() >= 13.2-9.0*fabs(aMuon->eta()) ) ||
+             (1.3 <= fabs(aMuon->eta()) && aMuon->pt() >= 0.8 && aMuon->pt() >= 3.02-1.17*fabs(aMuon->eta()) )));
   }
   else if (muonType == (std::string)("GLBSOFT")) {
     return (fabs(trk4mom.Eta()) < 2.4 &&
@@ -2362,9 +2362,9 @@ HiOniaAnalyzer::isMuonInAccept(const pat::Muon* aMuon, const std::string muonTyp
   }
   else if (muonType == (std::string)("TRKSOFT")) {
     return (fabs(aMuon->eta()) < 2.4 &&
-            ((fabs(aMuon->eta()) < 0.8 && aMuon->pt() >= 3.3) ||
-             (0.8 <= fabs(aMuon->eta()) && fabs(aMuon->eta()) < 1.5 && aMuon->pt() >= 5.81-3.14*fabs(aMuon->eta()) ) ||
-             (1.5 <= fabs(aMuon->eta()) && aMuon->pt() >= 0.8 && aMuon->pt() >= 1.89-0.526*fabs(aMuon->eta()) )));
+            ((fabs(aMuon->eta()) < 1.1 && aMuon->pt() >= 3.3) ||
+             (1.1 <= fabs(aMuon->eta()) && fabs(aMuon->eta()) < 1.3 && aMuon->pt() >= 13.2-9.0*fabs(aMuon->eta()) ) ||
+             (1.3 <= fabs(aMuon->eta()) && aMuon->pt() >= 0.8 && aMuon->pt() >= 3.02-1.17*fabs(aMuon->eta()) )));
   }
   else  std::cout << "ERROR: Incorrect Muon Type" << std::endl;
   
