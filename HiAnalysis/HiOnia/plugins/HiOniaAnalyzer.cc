@@ -2604,7 +2604,6 @@ HiOniaAnalyzer::findDaughterRef(reco::GenParticleRef GenParticleDaughter, int Ge
 	  {
 	    foundFirstDaughter = true;
 	    GenParticlePDG = GenParticleTmp->pdgId();
-	    break;
 	  } 
       }
     else break;
