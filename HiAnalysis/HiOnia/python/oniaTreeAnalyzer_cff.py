@@ -187,6 +187,7 @@ def oniaTreeAnalyzer(process, muonTriggerList=[[],[],[],[]], HLTProName='HLT', m
                                     useEvtPlane = cms.untracked.bool(False),
                                     useGeTracks = cms.untracked.bool(False),
                                     runVersionChange = cms.untracked.uint32(182133),
+                                    genOnly = cms.bool(False),
                                     
                                     #-- Histogram configuration
                                     combineCategories = cms.bool(False),

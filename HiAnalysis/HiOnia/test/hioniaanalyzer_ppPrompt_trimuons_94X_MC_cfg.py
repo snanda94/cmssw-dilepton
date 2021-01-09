@@ -47,7 +47,8 @@ options = VarParsing.VarParsing ('analysis')
 # Input and Output File Names
 options.outputFile = "Oniatree_MC_trimuons.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
-options.inputFiles =['file:/home/llr/cms/falmagne/production/BcGenOnly/CMSSW_9_4_17/src/Bc_hadronized.root'
+options.inputFiles =[#'file:/home/llr/cms/falmagne/production/BcGenOnly/CMSSW_9_4_17/src/Bc_hadronized.root'
+    '/store/himc/RunIIpp5Spring18DR/BcToJpsiMuNu_BCVEGPY_TuneCP5_Pythia8-EvtGen/AODSIM/94X_mc2017_realistic_forppRef5TeV_v1-v2/110000/7A2FDC29-C1ED-EA11-93E6-008CFA0A5808.root',
     #'/store/himc/RunIIpp5Spring18DR/BcToJpsiMuNu_BCVEGPY_pythia8/AODSIM/94X_mc2017_realistic_forppRef5TeV_v1-v2/240000/FA7C2307-1CED-E911-9C60-141877411D83.root'
     #'/store/himc/RunIIpp5Spring18DR/BJPsiMM_TuneCUETP8M1_5p02TeV_pythia8/AODSIM/94X_mc2017_realistic_forppRef5TeV_v1_ext1-v1/30000/FE62BDED-09A4-E911-97B3-1418774124DE.root',
     #'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_pp5TeV_22012019_1_reco_NoCuts/190124_094746/0000/Bc_reconstructed_10.root',
@@ -180,6 +181,7 @@ process.hionia.applyCuts        = cms.bool(applyCuts)
 process.hionia.AtLeastOneCand   = cms.bool(atLeastOneCand)
 process.hionia.OneMatchedHLTMu  = cms.int32(OneMatchedHLTMu)
 process.hionia.genealogyInfo    = cms.bool(True)
+process.hionia.fillSingleMuons  = cms.bool(True) #set False for Jpsi MC
 process.hionia.isHI             = cms.untracked.bool(False)
 
 process.NoScraping = cms.EDFilter("FilterOutScraping",

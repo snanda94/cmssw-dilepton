@@ -907,7 +907,7 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   if(_doDimuTrk)
     this->makeDimutrkCuts(_storeSs);
 
-  if(!_doTrimuons || !_isMC || _thePassedBcCands.size()>0){ //not storing the mu reconstructed info if we do a trimuon MC and there is no reco trimuon
+  if(_fillSingleMuons || !_AtLeastOneCand || !_doTrimuons || !_isMC || _thePassedBcCands.size()>0){ //not storing the mu reconstructed info if we do a trimuon MC and there is no reco trimuon (and if _fillSingleMuons==false)
     //_fillSingleMuons is checked within the fillRecoMuons function: the info on the wanted muons was stored in the makeCuts function
     this->fillRecoMuons(theCentralityBin);
 
@@ -2379,9 +2379,9 @@ HiOniaAnalyzer::isMuonInAccept(const pat::Muon* aMuon, const std::string muonTyp
   }
   else if (muonType == (std::string)("TRKSOFT")) {
     return (fabs(aMuon->eta()) < 2.4 &&
-            ((fabs(aMuon->eta()) < 0.8 && aMuon->pt() >= 3.3) ||
-             (0.8 <= fabs(aMuon->eta()) && fabs(aMuon->eta()) < 1.5 && aMuon->pt() >= 5.81-3.14*fabs(aMuon->eta()) ) ||
-             (1.5 <= fabs(aMuon->eta()) && aMuon->pt() >= 0.8 && aMuon->pt() >= 1.89-0.526*fabs(aMuon->eta()) )));
+            ((fabs(aMuon->eta()) < 1.1 && aMuon->pt() >= 3.3) ||
+             (1.1 <= fabs(aMuon->eta()) && fabs(aMuon->eta()) < 1.3 && aMuon->pt() >= 13.2-9.0*fabs(aMuon->eta()) ) ||
+             (1.3 <= fabs(aMuon->eta()) && aMuon->pt() >= 0.8 && aMuon->pt() >= 3.02-1.17*fabs(aMuon->eta()) )));
   }
   else  std::cout << "ERROR: Incorrect Muon Type" << std::endl;
   
@@ -2515,6 +2515,9 @@ HiOniaAnalyzer::InitEvent()
 
     Gen_weight = -1.;
     Gen_pthat = -1.;
+
+    mapGenMuonMomToIndex_.clear();
+    mapGenPiMomToIndex_.clear();
   }
 
   if(_doTrimuons || _doDimuTrk){
@@ -2532,6 +2535,8 @@ HiOniaAnalyzer::InitEvent()
     }
   }
 
+  mapMuonMomToIndex_.clear();
+  mapTrkMomToIndex_.clear();
   for(std::map< std::string, int >::iterator clearIt= mapTriggerNameToIntFired_.begin(); clearIt != mapTriggerNameToIntFired_.end(); clearIt++){
     clearIt->second=0;
   }
@@ -2620,7 +2625,6 @@ HiOniaAnalyzer::findDaughterRef(reco::GenParticleRef GenParticleDaughter, int Ge
 	  {
 	    foundFirstDaughter = true;
 	    GenParticlePDG = GenParticleTmp->pdgId();
-	    break;
 	  } 
       }
     else break;
@@ -2816,7 +2820,7 @@ HiOniaAnalyzer::fillGenInfo()
 		//Fill info for Bc and its mu,nu daughters
 		if(goodDaughters && (genmuW->charge() == genBc->charge()) 
 		   && ( genmuW->status() == 1 ) ){
-	
+
 		  Gen_QQ_Bc_idx[Gen_QQ_size] = Gen_Bc_size;
 		  Gen_Bc_QQ_idx[Gen_Bc_size] = Gen_QQ_size;
 
@@ -2829,7 +2833,7 @@ HiOniaAnalyzer::fillGenInfo()
 
 		  TLorentzVector vmuW = lorentzMomentum(genmuW->p4());
 		  Gen_Bc_muW_idx[Gen_Bc_size] = IndexOfThisMuon(&vmuW, true);
-	      
+
 		  TLorentzVector vnuW = lorentzMomentum(gennuW->p4());
 		  new((*Gen_Bc_nuW_4mom)[Gen_Bc_size])TLorentzVector(vnuW);
 	    
@@ -2839,7 +2843,7 @@ HiOniaAnalyzer::fillGenInfo()
 	      }
 
 	      //Gen Bc in the Jpsi+pi decay
-	      else if(genBc->numberOfDaughters() >= 2){
+	      else if(_doDimuTrk && genBc->numberOfDaughters() >= 2){
 		reco::GenParticleRef genDau1 = findDaughterRef(genBc->daughterRef(0), genBc->pdgId());
 		reco::GenParticleRef genDau2 = findDaughterRef(genBc->daughterRef(1), genBc->pdgId());
 
@@ -3044,7 +3048,7 @@ HiOniaAnalyzer::fillBcMatchingInfo(){
       TLorentzVector gen_3mu_4mom = *((TLorentzVector*)Gen_QQ_4mom->ConstructedAt(Gen_Bc_QQ_idx[igen]))
 	+ *((TLorentzVector*)Gen_mu_4mom->ConstructedAt(Gen_Bc_muW_idx[igen]));
       new((*Gen_3mu_4mom)[igen])TLorentzVector(gen_3mu_4mom);
-
+      
       //Look for index of reconstructed muon
       int Reco_muW_idx = Gen_mu_whichRec[Gen_Bc_muW_idx[igen]]; //index of the reconstructed muW associated to the generated muW of Bc
       int Reco_mupl_idx = Gen_mu_whichRec[Gen_QQ_mupl_idx[Gen_Bc_QQ_idx[igen]]]; //index of the reconstructed mupl associated to the generated mupl of Jpsi
