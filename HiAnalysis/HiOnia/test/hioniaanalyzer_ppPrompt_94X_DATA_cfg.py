@@ -15,7 +15,7 @@ applyCuts      = True # At HiAnalysis level, apply kinematic acceptance cuts + i
 SofterSgMuAcceptance = True # Whether to accept muons with a softer acceptance cuts than the usual (pt>3.5GeV at central eta, pt>1.8 at high |eta|). Applies when applyCuts=True
 doTrimuons     = False # Make collections of trimuon candidates in addition to dimuons, and keep only events with >0 trimuons
 doDimuonTrk    = False # Make collections of Jpsi+track candidates in addition to dimuons
-atLeastOneCand = True # Keep only events that have one selected dimuon (or at least one trimuon if doTrimuons = true). BEWARE this can cause trouble in .root output if no event is selected by onia2MuMuPatGlbGlbFilter!
+atLeastOneCand = False # Keep only events that have one selected dimuon (or at least one trimuon if doTrimuons = true). BEWARE this can cause trouble in .root output if no event is selected by onia2MuMuPatGlbGlbFilter!
 OneMatchedHLTMu = 4 # Keep only di(tri)muons of which the one(two) muon(s) are matched to the HLT Filter of this number. You can get the desired number in the output of oniaTree. Set to -1 for no matching.
 muonLessPV     = True  # Recalculate the PV without the two muons from the selected dimuon
 #############################################################################
@@ -49,7 +49,7 @@ options.secondaryOutputFile = "Jpsi_DataSet.root"
 options.inputFiles =[#'file:edmFile_pp5TeV.root'
                      '/store/data/Run2017G/DoubleMuon/AOD/17Nov2017-v1/90000/6AB94440-E52D-E811-818F-A0369FD1EEA8.root'
     ]
-options.maxEvents = 3000 # -1 means all events
+options.maxEvents = 100 # -1 means all events
 
 # Get and parse the command line arguments
 options.parseArguments()
@@ -165,7 +165,7 @@ process.hionia.applyCuts        = cms.bool(applyCuts)
 process.hionia.AtLeastOneCand   = cms.bool(atLeastOneCand)
 process.hionia.OneMatchedHLTMu  = cms.int32(OneMatchedHLTMu)
 process.hionia.useSVfinder      = cms.bool(useSVfinder)
-process.hionia.isHI             = cms.bool(False)
+process.hionia.isHI             = cms.untracked.bool(False)
 
 process.NoScraping = cms.EDFilter("FilterOutScraping",
                           applyfilter = cms.untracked.bool(True),
