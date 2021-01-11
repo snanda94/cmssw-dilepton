@@ -43,7 +43,7 @@ process = cms.Process("HIOnia")
 options = VarParsing.VarParsing ('analysis')
 
 # Input and Output File Names
-options.outputFile = "Oniatree.root"
+options.outputFile = "Oniatree_MC.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
 options.inputFiles =['/store/himc/HINPbPbAutumn18DR/JPsi_pThat-2_TuneCP5_HydjetDrumMB_5p02TeV_Pythia8/AODSIM/mva98_103X_upgrade2018_realistic_HI_v11-v1/60000/FD1FE6A7-C77C-964E-B94E-7CBCEA7CB0CE.root'
 #'file:/home/llr/cms/falmagne/production/PbPb2018/BcTrimu/genMC/CMSSW_10_3_2/src/Bc_reco.root'
