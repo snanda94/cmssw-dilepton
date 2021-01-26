@@ -46,11 +46,11 @@ options = VarParsing.VarParsing ('analysis')
 options.outputFile = "Oniatree.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
 options.inputFiles =[
-  'file:657ECBA9-4E31-0448-B23A-980CF9137A25.root',
+  'file:/home/llr/cms/falmagne/production/PbPb2018/BcTrimu/CMSSW_10_3_4/src/D993B187-FDC6-CB44-991F-CA023BDEEC00.root',
   #'/store/hidata/HIRun2018A/HIDoubleMuon/AOD/04Apr2019-v1/310001/FED19720-0CE4-5B4D-91E0-DB230A5046EB.root'
   #'/store/hidata/HIRun2018A/HIDoubleMuon/AOD/PromptReco-v1/000/326/859/00000/9D9FEF75-B31A-9645-9090-0F99D895AED9.root'
 ]
-options.maxEvents = 1000 # -1 means all events
+options.maxEvents = 100 # -1 means all events
 
 # Get and parse the command line arguments
 options.parseArguments()
@@ -150,7 +150,7 @@ triggerList    = {
 if isMC:
   globalTag = '103X_upgrade2018_realistic_HI_v11'
 else:
-  globalTag = '103X_dataRun2_Prompt_v3'
+  globalTag = '103X_dataRun2_v6'
 
 #----------------------------------------------------------------------------
 

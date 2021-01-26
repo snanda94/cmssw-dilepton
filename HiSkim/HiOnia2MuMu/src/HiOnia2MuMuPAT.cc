@@ -60,6 +60,11 @@ HiOnia2MuMuPAT::HiOnia2MuMuPAT(const edm::ParameterSet& iConfig):
   produces<pat::CompositeCandidateCollection>("");
   produces<pat::CompositeCandidateCollection>("trimuon");
   produces<pat::CompositeCandidateCollection>("dimutrk");
+
+  if(flipJpsiDirection_>0){
+    phiFlip_ = std::vector<float> {0, 0, TMath::Pi()/4, -TMath::Pi()/4, TMath::Pi()/2, -TMath::Pi()/2, 3*TMath::Pi()/4, -3*TMath::Pi()/4, TMath::Pi(), TMath::Pi()/2, -TMath::Pi()/2, 3*TMath::Pi()/4, -3*TMath::Pi()/4, TMath::Pi()};
+    if((int)phiFlip_.size()!=flipJpsiDirection_+1) std::cout<<"WARNING !! Problem in phi definition of flipping angles, change number of rotation of phi instantiation! "<<std::endl;
+  }
 }
 
 
@@ -87,32 +92,15 @@ HiOnia2MuMuPAT::isSoftMuonBase(const pat::Muon* aMuon) {
           );
 }
 
-//1: $z -> -z$ and $\phi -> \phi+\pi$ (mirror)
-//2: $z -> -z$ and $\phi -> \phi+\pi/2$
-//3: $z -> -z$
-//4: $z -> -z$ and $\phi -> \phi-\pi/2$
-//5: $\phi -> \phi+\pi/2$
-//6: $\phi -> \phi+\pi$
-//7: $\phi -> \phi-\pi/2$
 const reco::TrackBase::Point
 HiOnia2MuMuPAT::rotatePoint(reco::TrackBase::Point PV, reco::TrackBase::Point TrkPoint, int flipJpsi){
   float x=TrkPoint.x(), y=TrkPoint.y(), z=TrkPoint.z();
 
-  if(flipJpsi<=4){z = 2*PV.z() - TrkPoint.z();}
+  if(flipJpsi<=8){z = 2*PV.z() - TrkPoint.z();} //change frame of reference to place the origin at the PV, rotate, then come back to (0,0,0) origin
 
-  switch(flipJpsi) {
-  case 1: case 6:
-    x = 2*PV.x() - TrkPoint.x(); //change frame of reference to place the origin at the PV, rotate, then come back to (0,0,0) origin
-    y = 2*PV.y() - TrkPoint.y();
-    break;
-  case 2: case 5:
-    x = PV.x() -(TrkPoint.y() - PV.y());
-    y = PV.y() + TrkPoint.x() - PV.x();
-    break;
-  case 4: case 7:
-    x = PV.x() + TrkPoint.y() - PV.y();
-    y = PV.y() -(TrkPoint.x() - PV.x());
-  }
+  float phi = phiFlip_[flipJpsi];
+  x = PV.x() + TMath::Cos(phi) * (TrkPoint.x() - PV.x()) - TMath::Sin(phi) * (TrkPoint.y() - PV.y());
+  y = PV.y() + TMath::Sin(phi) * (TrkPoint.x() - PV.x()) + TMath::Cos(phi) * (TrkPoint.y() - PV.y());
 
   return reco::TrackBase::Point( x,y,z );
 }
@@ -121,21 +109,11 @@ const reco::TrackBase::Vector
 HiOnia2MuMuPAT::rotateMomentum(reco::Track trk, int flipJpsi){
   float px=trk.px(), py=trk.py(), pz=trk.pz();
 
-  if(flipJpsi<=4){ pz = - trk.pz(); }
+  if(flipJpsi<=8){ pz = - trk.pz(); }
 
-  switch(flipJpsi) {
-  case 1: case 6:
-    px = - trk.px();
-    py = - trk.py();
-    break;
-  case 2: case 5:
-    px = - trk.py();
-    py = trk.px();
-    break;
-  case 4: case 7:
-    px = trk.py();
-    py = - trk.px();
-  }
+  float phi = phiFlip_[flipJpsi];
+  px = TMath::Cos(phi) * trk.px() - TMath::Sin(phi) * trk.py();
+  py = TMath::Sin(phi) * trk.px() + TMath::Cos(phi) * trk.py();
 
   return reco::TrackBase::Vector( px,py,pz );
 }

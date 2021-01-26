@@ -12,7 +12,7 @@ muonSelection  = "TwoGlbAmongThree" # Single muon selection: Glb(isGlobal), GlbT
 applyEventSel  = True # Only apply Event Selection if the required collections are present
 OnlySoftMuons  = True # Keep only isSoftMuon's (with highPurity because this is pp config) from the beginning of HiSkim. In any case, if applyCuts=True, isSoftMuon is required at HiAnalysis level for muons of selected dimuons.
 applyCuts      = False # At HiAnalysis level, apply kinematic acceptance cuts + identification cuts (isSoftMuon or isTightMuon, depending on TightGlobalMuon flag) for muons from selected di(tri)muons + hard-coded cuts on the di(tri)muon that you would want to add (but recommended to add everything in LateDimuonSelection, applied at the end of HiSkim)
-SumETvariables = False  # Whether to write out SumET-related variables
+SumETvariables = True  # Whether to write out SumET-related variables
 SofterSgMuAcceptance = True # Whether to accept muons with a softer acceptance cuts than the usual (pt>3.5GeV at central eta, pt>1.8 at high |eta|). Applies when applyCuts=True
 doTrimuons     = True # Make collections of trimuon candidates in addition to dimuons, and keep only events with >0 trimuons
 doDimuonTrk    = False # Make collections of Jpsi+track candidates in addition to dimuons
@@ -47,13 +47,16 @@ options = VarParsing.VarParsing ('analysis')
 # Input and Output File Names
 options.outputFile = "Oniatree_MC.root"
 options.secondaryOutputFile = "Jpsi_DataSet.root"
-options.inputFiles =['/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_2018PbPb5TeV_18072019_2_reco/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_2018PbPb5TeV_18072019_2_reco/190722_175113/0000/Bc_reco_123.root'
+options.inputFiles =[
+#'/store/himc/HINPbPbAutumn18DR/JPsi_pThat-2_TuneCP5_HydjetDrumMB_5p02TeV_Pythia8/AODSIM/mva98_103X_upgrade2018_realistic_HI_v11-v1/120000/00004340-2236-EB40-8E63-BF5F66A147DC.root',
+#'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_2018PbPb5TeV_18072019_2_reco/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_2018PbPb5TeV_18072019_2_reco/190722_175113/0000/Bc_reco_123.root'
 #'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_2018PbPb5TeV_18072019_2_reco/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_2018PbPb5TeV_18072019_2_reco/190722_175113/0000/Bc_reco_1.root'
 #'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_2018PbPb5TeV_18072019_2_reco/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_2018PbPb5TeV_18072019_2_reco/190722_175113/0000/Bc_reco_123.root'
+'/store/himc/HINPbPbAutumn18DR/BToJpsi_pThat-2_TuneCP5-EvtGen_HydjetDrumMB_5p02TeV_pythia8/AODSIM/mva98_103X_upgrade2018_realistic_HI_v11-v1/250000/585FCD0B-75C2-BE47-BB43-127CFA5D0BE9.root',
 #'/store/himc/HINPbPbAutumn18DR/BToJpsi_pThat-2_TuneCP5-EvtGen_HydjetDrumMB_5p02TeV_pythia8/AODSIM/mva98_103X_upgrade2018_realistic_HI_v11-v1/260000/E3D89BFC-9594-5545-9A27-194298ADB540.root',
 #'/store/user/gfalmagn/Bc_analysis/MC/BcToJpsiMuNu_BCVEGPY_PYTHIA8_2018PbPb5TeV_18072019_2_reco/BcToJpsiMuNu/BcToJpsiMuNu_BCVEGPY_PYTHIA8_2018PbPb5TeV_18072019_2_reco/190722_175113/0000/Bc_reco_99.root'
 ]
-options.maxEvents = 2000 # -1 means all events
+options.maxEvents = 500 # -1 means all events
 
 # Get and parse the command line arguments
 options.parseArguments()
