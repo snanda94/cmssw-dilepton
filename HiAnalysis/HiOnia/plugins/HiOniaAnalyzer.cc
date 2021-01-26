@@ -84,7 +84,7 @@ private:
   bool checkBcCuts(const pat::CompositeCandidate* cand, const pat::Muon* muon1,  const pat::Muon* muon2, const pat::Muon* muon3, bool(HiOniaAnalyzer::* callFunc1)(const pat::Muon*), bool(HiOniaAnalyzer::* callFunc2)(const pat::Muon*), bool(HiOniaAnalyzer::* callFunc3)(const pat::Muon*));
   bool checkDimuTrkCuts(const pat::CompositeCandidate* cand, const pat::Muon* muon1, const pat::Muon* muon2, const reco::RecoChargedCandidate* trk, bool(HiOniaAnalyzer::* callFunc1)(const pat::Muon*), bool(HiOniaAnalyzer::* callFunc2)(const pat::Muon*), bool(HiOniaAnalyzer::* callFunc3)(const reco::TrackRef));
 
-  reco::GenParticleRef findDaughterRef(reco::GenParticleRef GenParticleDaughter, int GenParticlePDG);
+  reco::GenParticleRef findDaughterRef(reco::GenParticleRef GenParticleDaughter, int GenParticlePDG, int verbose);
   bool isSameLorentzV(TLorentzVector* v1, TLorentzVector* v2);
   int IndexOfThisMuon(TLorentzVector* v1, bool isGen=false);
   int IndexOfThisTrack(TLorentzVector* v1, bool isGen=false);
@@ -99,7 +99,7 @@ private:
   bool isAMixedbHadron(int pdgID, int momPdgID);
   std::pair<bool, reco::GenParticleRef> findBcMotherRef(reco::GenParticleRef GenParticleMother,int GenParticlePDG);
   bool isChargedTrack(int pdgId);
-  std::vector<reco::GenParticleRef> GenBrothers(reco::GenParticleRef GenParticleMother, int GenJpsiPDG);
+  std::vector<reco::GenParticleRef> GenBrothers(reco::GenParticleRef GenParticleMother, int GenJpsiPDG, int verbose);
   reco::GenParticleRef findMotherRef(reco::GenParticleRef GenParticleMother, int GenParticlePDG);
   std::pair<std::vector<reco::GenParticleRef> , std::pair<float, float> >  findGenMCInfo(const reco::GenParticle *genJpsi);
   std::pair<int, std::pair<float, float> >  findGenBcInfo(reco::GenParticleRef genBc, const reco::GenParticle *genJpsi);
@@ -2621,33 +2621,38 @@ HiOniaAnalyzer::MuInSV(TLorentzVector v1, TLorentzVector v2, TLorentzVector v3) 
   return nMuInSV;
 }
 
-reco::GenParticleRef  
-HiOniaAnalyzer::findDaughterRef(reco::GenParticleRef GenParticleDaughter, int GenParticlePDG) {
+reco::GenParticleRef
+HiOniaAnalyzer::findDaughterRef(reco::GenParticleRef GenParticleDaughter, int GenParticlePDG, int verbose=0) {
 
   reco::GenParticleRef GenParticleTmp = GenParticleDaughter;
   bool foundFirstDaughter = false;
+  if(verbose>0) cout<<"findDaughterRef(GenParticleDaughter_pdg="<<GenParticleDaughter->pdgId()<<", GenParticlePDG="<<GenParticlePDG<<")"<<endl;
 
   for(int j=0; j<1000; ++j) {
-    //cout<<""; // trick to prevent rare segfault errors with the GenParticleTmp
-    
-    if ( GenParticleTmp.isNonnull() && GenParticleTmp->status()>0 && GenParticleTmp->status()<1000 && GenParticleTmp->numberOfDaughters()>0 ) 
+    if(verbose>0 && GenParticleTmp.isNonnull()) cout<<"j, GenParticleTmp->status(), GenParticleTmp->numberOfDaughters() = "<<j<<" "<<GenParticleTmp->status()<<" "<<GenParticleTmp->numberOfDaughters()<<endl;
+    if ( GenParticleTmp.isNonnull() && GenParticleTmp->status()>0 && GenParticleTmp->status()<1000 && GenParticleTmp->numberOfDaughters()>0 )
       {
-	if ( GenParticleTmp->pdgId()==GenParticlePDG || GenParticleTmp->daughterRef(0)->pdgId()==GenParticlePDG ) //if oscillating B, can take two decays to return to pdgID(B parent)
-	  {
-	    GenParticleTmp = GenParticleTmp->daughterRef(0); 
-	  }
-	else if ( !foundFirstDaughter ) //if Tmp is not a Bc, it means Tmp is a true daughter
-	  {
-	    foundFirstDaughter = true;
-	    GenParticlePDG = GenParticleTmp->pdgId();
-	  } 
+        if ( GenParticleTmp->pdgId()==GenParticlePDG || GenParticleTmp->daughterRef(0)->pdgId()==GenParticlePDG ) //if oscillating B, can take two decays to return to pdgID(B parent)
+          {
+            if ( !foundFirstDaughter || GenParticleTmp->daughterRef(0)->pdgId() == GenParticleTmp->pdgId() ) // !foundFirstDaughter means that GenParticlePDG is still the pdgid of the mother
+              GenParticleTmp = GenParticleTmp->daughterRef(0);
+            else break; //foundFirstDaughter && daughterPDGID != TmpPDGID
+            if(verbose>0) cout<<"now, GenParticleTmp->pdgId() = "<<GenParticleTmp->pdgId()<<endl;
+          }
+        else if ( !foundFirstDaughter ) //if Tmp is not a Bc, it means Tmp is a true daughter
+          {
+            foundFirstDaughter = true;
+            GenParticlePDG = GenParticleTmp->pdgId();
+            if(verbose>0) cout<<"found1stDaughter, GenParticleTmp->pdgId() = "<<GenParticleTmp->pdgId()<<endl;
+          }
       }
     else break;
   }
-  if (GenParticleTmp.isNonnull() && GenParticleTmp->status()>0 && GenParticleTmp->status()<1000 && foundFirstDaughter){ //(GenParticleTmp->pdgId()==GenParticlePDG)) {
+  if (GenParticleTmp.isNonnull() && GenParticleTmp->status()>0 && GenParticleTmp->status()<1000 && foundFirstDaughter){  
     GenParticleDaughter = GenParticleTmp;
   }
 
+  if(verbose>0) cout<<"final GenParticleDaughter->pdgId() = "<<GenParticleDaughter->pdgId()<<endl;
   return GenParticleDaughter;
 
 }
@@ -3954,73 +3959,73 @@ HiOniaAnalyzer::findMotherRef(reco::GenParticleRef GenParticleMother, int GenPar
 bool HiOniaAnalyzer::isChargedTrack(int pdgId){
   return ((fabs(pdgId) == 211) || (fabs(pdgId) == 321) || (fabs(pdgId) == 2212) || (fabs(pdgId) == 11) || (fabs(pdgId) == 13));
 }
-
-std::vector<reco::GenParticleRef> HiOniaAnalyzer::GenBrothers(reco::GenParticleRef GenParticleMother, int GenJpsiPDG){
+std::vector<reco::GenParticleRef> HiOniaAnalyzer::GenBrothers(reco::GenParticleRef GenParticleMother, int GenJpsiPDG, int verbose=0){
   bool foundJpsi = false;
   std::vector<reco::GenParticleRef> res;
 
   if(!GenParticleMother.isNonnull()) return res;
-  //if(Reco_3mu_size>0) cout<<"\nScanning daughters of Jpsi "<<GenJpsiPDG<<" mother, pdg = "<<GenParticleMother->pdgId()<<endl; 
-  for(int i=0;i<(int)GenParticleMother->numberOfDaughters();i++){    
-    reco::GenParticleRef dau = findDaughterRef(GenParticleMother->daughterRef(i), GenParticleMother->pdgId());
+  if(verbose>0 && Reco_3mu_size>0) cout<<"\nScanning daughters of Jpsi "<<GenJpsiPDG<<" mother, pdg = "<<GenParticleMother->pdgId()<<endl;
+  for(int i=0;i<(int)GenParticleMother->numberOfDaughters();i++){
+    reco::GenParticleRef dau = findDaughterRef(GenParticleMother->daughterRef(i), GenParticleMother->pdgId(),verbose);
     for(int l=0;l<100;l++){ //avoid having a daughter of same pdgId
       if(!(dau.isNonnull() && dau->status()>0 && dau->status()<1000)) break;
       if(dau->pdgId()==GenParticleMother->pdgId() && dau->numberOfDaughters()==1)
-	dau = findDaughterRef(dau->daughterRef(0), dau->pdgId());
+        dau = findDaughterRef(dau->daughterRef(0), dau->pdgId(),verbose);
       else break;
     }
 
     if(!(dau.isNonnull() && dau->status()>0 && dau->status()<1000) ) continue;
-    //if(Reco_3mu_size>0) cout<<"Daughter #"<<i<<" pdg = "<< dau->pdgId()<<" pt,eta = "<<dau->pt()<<" "<<dau->eta()<<endl;
+    if(verbose>0 && Reco_3mu_size>0) cout<<"Daughter #"<<i<<" pdg = "<< dau->pdgId()<<" pt,eta = "<<dau->pt()<<" "<<dau->eta()<<endl;
     if(isChargedTrack(dau->pdgId())){
       res.push_back(dau);}
     if(dau->pdgId()==GenJpsiPDG) {
-      foundJpsi = true; //continue;
+      foundJpsi = true; //continue; 
     }
 
     for(int j=0;j<(int)dau->numberOfDaughters();j++){
-      reco::GenParticleRef grandDau = findDaughterRef(dau->daughterRef(j), dau->pdgId());
-      for(int l=0;l<100;l++){ //avoid having a daughter of same pdgId
-	if(!(grandDau.isNonnull() && grandDau->status()>0 && grandDau->status()<1000)) break;
-	if(grandDau->pdgId()==dau->pdgId() && grandDau->numberOfDaughters()==1)
-	  grandDau = findDaughterRef(grandDau->daughterRef(0), grandDau->pdgId());
-	else break;
+      reco::GenParticleRef grandDau = findDaughterRef(dau->daughterRef(j), dau->pdgId(),verbose);
+      for(int l=0;l<100;l++){ //avoid having a daughter of same pdgId 
+        if(!(grandDau.isNonnull() && grandDau->status()>0 && grandDau->status()<1000)) break;
+        if(grandDau->pdgId()==dau->pdgId() && grandDau->numberOfDaughters()==1)
+          grandDau = findDaughterRef(grandDau->daughterRef(0), grandDau->pdgId(),verbose);
+        else break;
       }
 
       if(!(grandDau.isNonnull() && grandDau->status()>0 && grandDau->status()<1000)) continue;
-      //if(Reco_3mu_size>0) cout<<"    grand-daughter #"<<j<<" pdg = "<< grandDau->pdgId()<<" pt,eta = "<<grandDau->pt()<<" "<<grandDau->eta()<<endl;
+      if(verbose>0 && Reco_3mu_size>0) cout<<"    grand-daughter #"<<j<<" pdg = "<< grandDau->pdgId()<<" pt,eta = "<<grandDau->pt()<<" "<<grandDau->eta()<<endl;
       if(isChargedTrack(grandDau->pdgId())){
-	res.push_back(grandDau);}
+        res.push_back(grandDau);}
       if(grandDau->pdgId()==GenJpsiPDG) {
-	foundJpsi = true; //continue;
+        foundJpsi = true; //continue;
       }
 
       for(int k=0;k<(int)grandDau->numberOfDaughters();k++){
-	reco::GenParticleRef ggrandDau = findDaughterRef(grandDau->daughterRef(k), grandDau->pdgId());
-	for(int l=0;l<100;l++){ //avoid having a daughter of same pdgId
-	  if(!(ggrandDau.isNonnull() && ggrandDau->status()>0 && ggrandDau->status()<1000)) break;
-	  if(ggrandDau->pdgId()==grandDau->pdgId() && ggrandDau->numberOfDaughters()==1)
-	    ggrandDau = findDaughterRef(ggrandDau->daughterRef(0), ggrandDau->pdgId());
-	  else break;
-	}
+	reco::GenParticleRef ggrandDau = findDaughterRef(grandDau->daughterRef(k), grandDau->pdgId(),verbose);
+        for(int l=0;l<100;l++){ //avoid having a daughter of same pdgId                                                                                                                                                                       
+          if(!(ggrandDau.isNonnull() && ggrandDau->status()>0 && ggrandDau->status()<1000)) break;
+          if(ggrandDau->pdgId()==grandDau->pdgId() && ggrandDau->numberOfDaughters()==1)
+            ggrandDau = findDaughterRef(ggrandDau->daughterRef(0), ggrandDau->pdgId(),verbose);
+          else break;
+        }
 
-	if(!(ggrandDau.isNonnull() && ggrandDau->status()>0 && ggrandDau->status()<1000)) continue;
-	//if(Reco_3mu_size>0) cout<<"        grand-grand-daughter #"<<k<<" pdg = "<< ggrandDau->pdgId()<<" pt,eta = "<<ggrandDau->pt()<<" "<<ggrandDau->eta()<<endl;
-	if(isChargedTrack(ggrandDau->pdgId())){
-	  res.push_back(ggrandDau);}
-	if(ggrandDau->pdgId()==GenJpsiPDG) {
-	  foundJpsi = true; //continue;
-	}
+        if(!(ggrandDau.isNonnull() && ggrandDau->status()>0 && ggrandDau->status()<1000)) continue;
+        if(verbose>0 && Reco_3mu_size>0) cout<<"        grand-grand-daughter #"<<k<<" pdg = "<< ggrandDau->pdgId()<<" pt,eta = "<<ggrandDau->pt()<<" "<<ggrandDau->eta()<<endl;
+        if(isChargedTrack(ggrandDau->pdgId())){
+          res.push_back(ggrandDau);}
+        if(ggrandDau->pdgId()==GenJpsiPDG) {
+          foundJpsi = true; //continue; 
+        }
       }
     }
   }
 
   if(!foundJpsi){
     cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!! Incoherence in genealogy: Jpsi not found in the daughters!\n"<<endl;
+    if(verbose==0) GenBrothers(GenParticleMother, GenJpsiPDG, 1);
   }
   // if(!isAbHadron(GenParticleMother->pdgId())){
   //   cout<<"\n!!!!!!!!!!!!!!!!!!!!!!!!!!!! Jpsi ancestor is not a b-hadron! pdgID(mother of this ancestor) = "<<findMotherRef(GenParticleMother->motherRef() , GenParticleMother->pdgId())->pdgId()<<endl;
-  // }  
+  // }
 
   return res;
 }

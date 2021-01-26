@@ -14,7 +14,7 @@ OnlySoftMuons  = True # Keep only isSoftMuon's (with highPurity because this is 
 applyCuts      = True # At HiAnalysis level, apply kinematic acceptance cuts + identification cuts (isSoftMuon or isTightMuon, depending on TightGlobalMuon flag) for muons from selected di(tri)muons + hard-coded cuts on the di(tri)muon that you would want to add (but recommended to add everything in LateDimuonSelection, applied at the end of HiSkim)
 SofterSgMuAcceptance = True # Whether to accept muons with a softer acceptance cuts than the usual (pt>3.5GeV at central eta, pt>1.8 at high |eta|). Applies when applyCuts=True
 doTrimuons     = True # Make collections of trimuon candidates in addition to dimuons, and keep only events with >0 trimuons
-flipJpsiDirection = 7 # (number of) Flip direction of Jpsi momentum and PV-SV, before combining it with a third muon
+flipJpsiDirection = 13 # (number of) Flip direction of Jpsi momentum and PV-SV, before combining it with a third muon
 doDimuonTrk    = False # Make collections of Jpsi+track candidates in addition to dimuons
 atLeastOneCand = True # Keep only events that have one selected dimuon (or at least one trimuon if doTrimuons = true). BEWARE this can cause trouble in .root output if no event is selected by onia2MuMuPatGlbGlbFilter!
 OneMatchedHLTMu = 4   # Keep only di(tri)muons of which the one(two) muon(s) are matched to the HLT Filter of this number. You can get the desired number in the output of oniaTree. Set to -1 for no matching. WARNING: it is the trigger bit+1 !
@@ -155,9 +155,9 @@ oniaTreeAnalyzer(process,
                  muonSelection=muonSelection, isMC=isMC, outputFileName=options.outputFile, muonlessPV=muonLessPV, doTrimu=doTrimuons, doDimuTrk=doDimuonTrk, flipJpsiDir=flipJpsiDirection)
 process.oniaTreeAna = cms.Path(process.oniaTreeAna)
 
-process.onia2MuMuPatGlbGlb.dimuonSelection       = cms.string("charge==0 && 2.5 < mass && mass < 3.6 && abs(daughter('muon1').innerTrack.dz - daughter('muon2').innerTrack.dz) < 25")
-process.onia2MuMuPatGlbGlb.trimuonSelection      = cms.string("abs(charge)==1 && 2.9 < mass && mass < 8.3 && abs(daughter('muon1').innerTrack.dz - daughter('muon2').innerTrack.dz) < 25")
-#process.onia2MuMuPatGlbGlb.lowerPuritySelection  = cms.string("")
+process.onia2MuMuPatGlbGlb.dimuonSelection       = cms.string("charge==0 && 2.58 < mass && mass < 3.6 && abs(daughter('muon1').innerTrack.dz - daughter('muon2').innerTrack.dz) < 25")
+process.onia2MuMuPatGlbGlb.trimuonSelection      = cms.string("abs(charge)==1 && 3.0 < mass && mass < 8.3 && abs(daughter('muon1').innerTrack.dz - daughter('muon2').innerTrack.dz) < 25")
+process.onia2MuMuPatGlbGlb.lowerPuritySelection  = cms.string("(isGlobalMuon || isTrackerMuon || genParticleRef(0).isNonnull) && abs(innerTrack.dxy)<4 && abs(innerTrack.dz)<25 && abs(eta) < 2.4 && ((abs(eta) < 1. && pt >= 3.3) || (1. <= abs(eta) && abs(eta) < 2. && p >= 2.9) || (2. <= abs(eta) && pt >= 0.8))")
 #process.onia2MuMuPatGlbGlb.higherPuritySelection = cms.string("") ## No need to repeat lowerPuritySelection in there, already included 
 if applyCuts:
     process.onia2MuMuPatGlbGlb.LateDimuonSel     = cms.string("userFloat(\"vProb\")>0.002")

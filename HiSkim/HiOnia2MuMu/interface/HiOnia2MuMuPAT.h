@@ -45,6 +45,7 @@ class HiOnia2MuMuPAT : public edm::EDProducer {
   public:
     explicit HiOnia2MuMuPAT(const edm::ParameterSet&);
     ~HiOnia2MuMuPAT();
+    std::vector<float> phiFlip_;
 
   private:
     virtual void beginJob() ;
