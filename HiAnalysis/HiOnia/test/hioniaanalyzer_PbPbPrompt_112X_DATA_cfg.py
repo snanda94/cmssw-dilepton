@@ -261,5 +261,3 @@ process.options   = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 
 process.schedule  = cms.Schedule( process.oniaTreeAna )
 
-process.load('HiAnalysis.HiOnia.unpackedMuonsWithTrigger_cfi')
-process.patMuonSequence.insert(2, process.unpackedMuonsWithTrigger)
