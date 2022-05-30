@@ -319,6 +319,10 @@ private:
   bool Reco_mu_TrkMuArb[Max_mu_size];      // Vector of TrackerMuonArbitrated
   bool Reco_mu_TMOneStaTight[Max_mu_size]; // Vector of TMOneStationTight
   bool Reco_mu_isPF[Max_mu_size]; // Vector of isParticleFlow muon
+  bool Reco_mu_isTracker[Max_mu_size];
+  bool Reco_mu_isGlobal[Max_mu_size];
+  bool Reco_mu_isSoft[Max_mu_size];
+  bool Reco_mu_isHybridSoft[Max_mu_size];
   Short_t Reco_mu_candType[Max_mu_size]; // candidate type of muon. 0 (or not present): muon collection, 1: packedPFCandidate, 2: lostTrack collection
   bool Reco_mu_InTightAcc[Max_mu_size];  // Is in the tight acceptance for global muons
   bool Reco_mu_InLooseAcc[Max_mu_size];  // Is in the loose acceptance for global muons
@@ -360,32 +364,6 @@ private:
   int Reco_trk_nPixWMea[Max_trk_size];
   int Reco_trk_nTrkWMea[Max_trk_size];
 
-  // histos
-  TH1F* hGoodMuonsNoTrig = NULL;
-  TH1F* hGoodMuons = NULL;
-  TH1F* hL1DoubleMu0 = NULL;
-
-  MyCommonHistoManager* myRecoMuonHistos = NULL;
-  MyCommonHistoManager* myRecoGlbMuonHistos = NULL;
-  MyCommonHistoManager* myRecoTrkMuonHistos = NULL;
-
-  MyCommonHistoManager* myRecoJpsiHistos = NULL;
-  MyCommonHistoManager* myRecoJpsiGlbGlbHistos = NULL;
-  MyCommonHistoManager* myRecoJpsiGlbTrkHistos = NULL;
-  MyCommonHistoManager* myRecoJpsiTrkTrkHistos = NULL;
-
-  // event counters
-  TH1F* hStats = NULL;
-
-  // centrality
-  TH1F *hCent = NULL;
-
-  // number of primary vertices
-  TH1F* hPileUp = NULL;
-
-  // z vertex distribution
-  TH1F* hZVtx = NULL;
-
   // centrality
   int centBin;
   int theCentralityBin;
@@ -394,12 +372,6 @@ private:
   int NtracksPtCut, NtracksEtaCut, NtracksEtaPtCut;
   float SumET_HF, SumET_HFplus, SumET_HFminus, SumET_HFplusEta4, SumET_HFminusEta4,SumET_HFhit, SumET_HFhitPlus, SumET_HFhitMinus, SumET_EB, SumET_ET, SumET_EE, SumET_EEplus, SumET_EEminus, SumET_ZDC, SumET_ZDCplus, SumET_ZDCminus;
 
-  // Event Plane variables
-  int nEP;   // number of event planes
-  //float *hiEvtPlane;
-  float rpAng[50];
-  float rpCos[50];
-  float rpSin[50];
 
   // handles
   edm::Handle<pat::CompositeCandidateCollection> collJpsi;
@@ -871,21 +843,6 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     SumET_ET = 0;
   }
 
-  if ((_isHI || _isPA) && _useEvtPlane) {
-    nEP = 0; 
-    edm::Handle<reco::EvtPlaneCollection> flatEvtPlanes;
-    iEvent.getByToken(_evtPlaneTagToken,flatEvtPlanes);
-    if(flatEvtPlanes.isValid()) {
-      for (reco::EvtPlaneCollection::const_iterator rp = flatEvtPlanes->begin(); rp!=flatEvtPlanes->end(); rp++) {
-        rpAng[nEP] = rp->angle(2);   // Using Event Plane Level 2 -> Includes recentering and flattening. 
-        rpSin[nEP] = rp->sumSin(2);  // Using Event Plane Level 2 -> Includes recentering and flattening. 
-        rpCos[nEP] = rp->sumCos(2);  // Using Event Plane Level 2 -> Includes recentering and flattening. 
-        nEP++;
-      }
-    } else if (!_isMC) {
-      std::cout << "Warning! Can't get flattened hiEvtPlane product!" << std::endl;
-    }
-  }
 
   iEvent.getByToken(_patJpsiToken,collJpsi); 
   if(_doTrimuons)
@@ -968,49 +925,6 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   return;
 }
 
-void
-HiOniaAnalyzer::fillRecoHistos() {
-
-  if(!_doTrimuons || !_isMC || _thePassedBcCands.size()>0){ //not storing the mu and QQ reconstructed info if we do a trimuon MC and there is no reco trimuon
-    // BEST J/PSI? 
-    if (_onlythebest) {  // yes, fill simply the best (possibly same-sign)
-
-      pair< unsigned int, const pat::CompositeCandidate* > theBest = theBestQQ();
-      if (theBest.first < 10) this->fillHistosAndDS(theBest.first, theBest.second);
-    
-    } else {   // no, fill all candidates passing cuts (possibly same-sign)
-   
-      for( unsigned int count = 0; count < _thePassedCands.size(); count++) { 
-	const pat::CompositeCandidate* aJpsiCand = _thePassedCands.at(count); 
-      
-	this->checkTriggers(aJpsiCand);
-	if (_fillTree)
-	  this->fillTreeJpsi(count);
-      
-	for (unsigned int iTr=0; iTr<NTRIGGERS; ++iTr) {
-	  if (isTriggerMatched[iTr]) {
-	    this->fillRecoJpsi(count,theTriggerNames.at(iTr), theCentralities.at(theCentralityBin));
-	  }
-	}
-      }
-    }
-  }
-
-  //Fill Bc (trimuon) 
-  if (_fillTree && _doTrimuons){
-    for( unsigned int count = 0; count < _thePassedBcCands.size(); count++) {
-      this->fillTreeBc(count);
-    }
-  }
-  //Fill Bc (dimuon+track) 
-  if (_fillTree && _doDimuTrk){
-    for( unsigned int count = 0; count < _thePassedBcCands.size(); count++) {
-      this->fillTreeDimuTrk(count);
-    }
-  }
-
-  return;
-}
 
 void
 HiOniaAnalyzer::fillTreeMuon(const pat::Muon* muon, int iType, ULong64_t trigBits) {
@@ -1049,8 +963,15 @@ HiOniaAnalyzer::fillTreeMuon(const pat::Muon* muon, int iType, ULong64_t trigBit
       Reco_mu_InLooseAcc[Reco_mu_size] = isMuonInAccept(muon,"GLBSOFT");
       Reco_mu_SelectionType[Reco_mu_size] = muonIDmask(muon);
       Reco_mu_StationsMatched[Reco_mu_size] = muon->numberOfMatchedStations();
+      Reco_mu_isTracker[Reco_mu_size] = muon->isTrackerMuon();
+      Reco_mu_isGlobal[Reco_mu_size] = muon->isGlobalMuon();
       Reco_mu_isPF[Reco_mu_size] = muon->isPFMuon();
+      Reco_mu_isSoft[Reco_mu_size] = isSoftMuon(muon);
+      Reco_mu_isHybridSoft[Reco_mu_size] = isHybridSoftMuon(muon);
       Reco_mu_candType[Reco_mu_size] = (Short_t)(muon->hasUserInt("candType"))?(muon->userInt("candType")):(-1);
+
+      Reco_mu_TMOneStaTight[Reco_mu_size] = muon::isGoodMuon(*muon, muon::TMOneStationTight);
+
      
       if (!iTrack.isNull()){
 	Reco_mu_highPurity[Reco_mu_size] = iTrack->quality(reco::TrackBase::highPurity);
@@ -3199,34 +3120,6 @@ HiOniaAnalyzer::fillRecoMuons(int iCent)
 	if ( fabs(muon->eta() < 1.2) ) isBarrel = true;
 	std::string theLabel = theTriggerNames.at(0) + "_" + theCentralities.at(iCent);
 
-	if (_fillHistos) {
-	  if (_combineCategories) {
-	    if ( selGlobalMuon(muon) || selTrackerMuon(muon) ) {
-	      myRecoMuonHistos->Fill(muon, "All_"+theLabel);
-	      if (isBarrel)
-		myRecoMuonHistos->Fill(muon, "Barrel_"+theLabel);
-	      else
-		myRecoMuonHistos->Fill(muon, "EndCap_"+theLabel);
-	    }
-	  }
-	  else {
-	    if (selGlobalMuon(muon)) {
-          
-	      myRecoGlbMuonHistos->Fill(muon, "All_"+theLabel);
-	      if (isBarrel)
-		myRecoGlbMuonHistos->Fill(muon, "Barrel_"+theLabel);
-	      else
-		myRecoGlbMuonHistos->Fill(muon, "EndCap_"+theLabel);
-	    }
-	    else if (selTrackerMuon(muon)) {
-	      myRecoTrkMuonHistos->Fill(muon, "All_"+theLabel);
-	      if (isBarrel)
-		myRecoTrkMuonHistos->Fill(muon, "Barrel_"+theLabel);
-	      else
-		myRecoTrkMuonHistos->Fill(muon, "EndCap_"+theLabel);
-	    }
-	  }
-	}
       
 	muType = -99;
         if ( _muonSel==(std::string)("Glb")      && selGlobalMuon(muon)  ) muType = Glb;
@@ -3247,29 +3140,7 @@ HiOniaAnalyzer::fillRecoMuons(int iCent)
 	    if ( muHLTMatchesFilter.size() > 0 ) {
 	      std::string theLabel = theTriggerNames.at(iTr) + "_" + theCentralities.at(iCent);
             
-	      if (_fillHistos) {
-		if (_combineCategories) {
-		  myRecoMuonHistos->Fill(muon, "All_"+theLabel);
-		  if (isBarrel)
-		    myRecoMuonHistos->Fill(muon, "Barrel_"+theLabel);
-		  else
-		    myRecoMuonHistos->Fill(muon, "EndCap_"+theLabel);
-		}
-		else if ( muType==Glb || muType==GlbTrk ) {
-		  myRecoGlbMuonHistos->Fill(muon, "All_"+theLabel);
-		  if (isBarrel)
-		    myRecoGlbMuonHistos->Fill(muon, "Barrel_"+theLabel);
-		  else
-		    myRecoGlbMuonHistos->Fill(muon, "EndCap_"+theLabel);
-		}
-		else if ( muType==Trk || muType==GlbOrTrk || muType==All ) {
-		  myRecoTrkMuonHistos->Fill(muon, "All_"+theLabel);
-		  if (isBarrel)
-		    myRecoTrkMuonHistos->Fill(muon, "Barrel_"+theLabel);
-		  else
-		    myRecoTrkMuonHistos->Fill(muon, "EndCap_"+theLabel);
-		}
-	      }
+	     
 
 	      trigBits += pow(2,iTr-1);
 
@@ -3358,12 +3229,6 @@ HiOniaAnalyzer::InitTree()
     myTree->Branch("SumET_ZDCminus",&SumET_ZDCminus,"SumET_ZDCminus/F");
   }
 
-  if ((_isHI || _isPA) && _useEvtPlane) {
-    myTree->Branch("nEP", &nEP, "nEP/I");
-    myTree->Branch("rpAng", &rpAng, "rpAng[nEP]/F");
-    myTree->Branch("rpSin", &rpSin, "rpSin[nEP]/F");
-    myTree->Branch("rpCos", &rpCos, "rpCos[nEP]/F");
-  }
 
   if(!_onlySingleMuons){
     if(_doTrimuons || _doDimuTrk){
@@ -3474,7 +3339,13 @@ HiOniaAnalyzer::InitTree()
     myTree->Branch("Reco_mu_InLooseAcc",Reco_mu_InLooseAcc, "Reco_mu_InLooseAcc[Reco_mu_size]/O");
     myTree->Branch("Reco_mu_highPurity", Reco_mu_highPurity,   "Reco_mu_highPurity[Reco_mu_size]/O");
     // myTree->Branch("Reco_mu_TrkMuArb", Reco_mu_TrkMuArb,   "Reco_mu_TrkMuArb[Reco_mu_size]/O");
+    myTree->Branch("Reco_mu_TMOneStaTight", Reco_mu_TMOneStaTight, "Reco_mu_TMOneStaTight[Reco_mu_size]/O");
+
     myTree->Branch("Reco_mu_isPF", Reco_mu_isPF, "Reco_mu_isPF[Reco_mu_size]/O");
+    myTree->Branch("Reco_mu_isTracker", Reco_mu_isTracker, "Reco_mu_isTracker[Reco_mu_size]/O");
+    myTree->Branch("Reco_mu_isGlobal", Reco_mu_isGlobal, "Reco_mu_isGlobal[Reco_mu_size]/O");
+    myTree->Branch("Reco_mu_isSoft", Reco_mu_isSoft, "Reco_mu_isSoft[Reco_mu_size]/O");
+    myTree->Branch("Reco_mu_isHybridSoft", Reco_mu_isHybridSoft, "Reco_mu_isHybridSoft[Reco_mu_size]/O");
     myTree->Branch("Reco_mu_candType", Reco_mu_candType, "Reco_mu_candType[Reco_mu_size]/S");
     myTree->Branch("Reco_mu_nPixValHits", Reco_mu_nPixValHits,   "Reco_mu_nPixValHits[Reco_mu_size]/I");
     myTree->Branch("Reco_mu_nMuValHits", Reco_mu_nMuValHits,   "Reco_mu_nMuValHits[Reco_mu_size]/I");
@@ -3586,87 +3457,6 @@ HiOniaAnalyzer::beginJob()
   hGoodMuons->Sumw2();
   hL1DoubleMu0->Sumw2();
 
-  // muons
-  if (_combineCategories) 
-    myRecoMuonHistos = new MyCommonHistoManager("RecoMuon");
-  else {
-    myRecoGlbMuonHistos = new MyCommonHistoManager("GlobalMuon");
-    myRecoTrkMuonHistos = new MyCommonHistoManager("TrackerMuon");
-  }
-
-  // J/psi
-  if (_combineCategories)
-    myRecoJpsiHistos = new MyCommonHistoManager("RecoJpsi");
-  else {
-    myRecoJpsiGlbGlbHistos = new MyCommonHistoManager("GlbGlbJpsi");
-    myRecoJpsiGlbTrkHistos = new MyCommonHistoManager("GlbTrkJpsi");
-    myRecoJpsiTrkTrkHistos = new MyCommonHistoManager("TrkTrkJpsi");
-  }
-  
-  for (unsigned int i=0; i<theRegions.size(); ++i) {
-    for (unsigned int j=0; j<NTRIGGERS; ++j) {
-      for (unsigned int k=0; k<theCentralities.size(); ++k) {
-
-        std::string theAppendix = theRegions.at(i) ;
-        theAppendix += "_" + theTriggerNames.at(j);
-        theAppendix += "_" + theCentralities.at(k);
-
-        // muons
-        if (_combineCategories) {
-          myRecoMuonHistos->Add(theAppendix);
-          myRecoMuonHistos->GetHistograms(theAppendix)->SetMassBinning(1,0.10,0.11);
-          myRecoMuonHistos->GetHistograms(theAppendix)->SetPtBinning(200,0.0,100.0);
-        }
-        else {
-          myRecoGlbMuonHistos->Add(theAppendix);
-          myRecoTrkMuonHistos->Add(theAppendix);
-          
-          myRecoGlbMuonHistos->GetHistograms(theAppendix)->SetMassBinning(1,0.10,0.11);
-          myRecoGlbMuonHistos->GetHistograms(theAppendix)->SetPtBinning(200,0.0,100.0);
-          
-          myRecoTrkMuonHistos->GetHistograms(theAppendix)->SetMassBinning(1,0.10,0.11);
-          myRecoTrkMuonHistos->GetHistograms(theAppendix)->SetPtBinning(200,0.0,100.0);
-        }
-
-        for (unsigned int l=0; l<theSign.size(); ++l) {
-          // J/psi
-          if (_combineCategories)
-            myRecoJpsiHistos->Add(theAppendix + "_" + theSign.at(l));
-          else {
-            myRecoJpsiGlbGlbHistos->Add(theAppendix + "_" + theSign.at(l));
-            myRecoJpsiGlbTrkHistos->Add(theAppendix + "_" + theSign.at(l));
-            myRecoJpsiTrkTrkHistos->Add(theAppendix + "_" + theSign.at(l));
-          }
-        }
-      }
-    }
-  }
-  /*
-  if (_combineCategories)
-    myRecoMuonHistos->Print();
-  else
-    myRecoGlbMuonHistos->Print();
-  */
-  //hStats = new TH1F("hStats","hStats;;Number of Events",2*NTRIGGERS+1,0,2*NTRIGGERS+1);
-  hStats = fs->make<TH1F>("hStats","hStats;;Number of Events",2*NTRIGGERS+1,0,2*NTRIGGERS+1);
-  hStats->GetXaxis()->SetBinLabel(1,"All");
-  for (int i=2; i< (int) theTriggerNames.size()+1; ++i) {
-    hStats->GetXaxis()->SetBinLabel(i,theTriggerNames.at(i-1).c_str()); // event info
-    hStats->GetXaxis()->SetBinLabel(i+NTRIGGERS,theTriggerNames.at(i-1).c_str()); // muon pair info
-  }
-  hStats->Sumw2();
-
-  //hCent = new TH1F("hCent","hCent;centrality bin;Number of Events",200,0,200);
-  hCent = fs->make<TH1F>("hCent","hCent;centrality bin;Number of Events",200,0,200);
-  hCent->Sumw2();
-
-  //hPileUp = new TH1F("hPileUp","Number of Primary Vertices;n_{PV};counts", 50, 0, 50);
-  hPileUp = fs->make<TH1F>("hPileUp","Number of Primary Vertices;n_{PV};counts", 50, 0, 50);
-  hPileUp->Sumw2();
-
-  //hZVtx = new TH1F("hZVtx","Primary z-vertex distribution;z_{vtx} [cm];counts", 120, -30, 30);
-  hZVtx = fs->make<TH1F>("hZVtx","Primary z-vertex distribution;z_{vtx} [cm];counts", 120, -30, 30);
-  hZVtx->Sumw2();
 
   return;
 }
