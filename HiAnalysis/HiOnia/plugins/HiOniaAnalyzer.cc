@@ -720,7 +720,6 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   //   using namespace edm;
   InitEvent();
   nEvents++;
-  hStats->Fill(BIN_nEvents);
    
   runNb = iEvent.id().run();
   eventNb = iEvent.id().event();
@@ -748,8 +747,6 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     zVtx = RefVtx.Z();
 
-    hZVtx->Fill(zVtx);
-    hPileUp->Fill(nPV);
   }
   else {
     std::cout<<"ERROR: privtxs is NULL or not isValid ! Return now"<<std::endl; return;
@@ -760,7 +757,6 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   for (unsigned int iTr = 1 ; iTr < theTriggerNames.size() ; iTr++) {
     if (mapTriggerNameToIntFired_[theTriggerNames.at(iTr)] == 3) {
       HLTriggers += pow(2,iTr-1);
-      hStats->Fill(iTr); // event info
     }
     trigPrescale[iTr-1] = mapTriggerNameToPrescaleFac_[theTriggerNames.at(iTr)];
   }
@@ -773,7 +769,6 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
   if (centrality.isValid() && cbin_.isValid()) {
     centBin = *cbin_;
-    hCent->Fill(centBin);
     
     for (unsigned int iCent=0; iCent<_centralityranges.size(); ++iCent) {
       if ( (_isHI && centBin<_centralityranges.at(iCent)/0.5) ||
@@ -880,8 +875,6 @@ HiOniaAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         else this->fillRecoTracks();}
     }
   }
-
-  if(!_onlySingleMuons) this->fillRecoHistos();
 
   //for pp, record Ntracks as well
   if(!(_isHI) && !(_isPA)){
@@ -1806,9 +1799,6 @@ HiOniaAnalyzer::fillRecoJpsi(int count, std::string trigName, std::string centNa
 
       std::string theLabel =  trigName + "_" + centName + "_" + theSign.at(iSign);
 
-      bool isBarrel = false;
-      if ( fabs(aJpsiCand->rapidity()) < 1.2) isBarrel = true;
-
       if (iSign==0 &&
 	  aJpsiCand->mass() >= JpsiMassMin && aJpsiCand->mass() < JpsiMassMax &&  
 	  aJpsiCand->pt() >= JpsiPtMin && aJpsiCand->pt() < JpsiPtMax && 
@@ -1816,42 +1806,6 @@ HiOniaAnalyzer::fillRecoJpsi(int count, std::string trigName, std::string centNa
 	passedCandidates++;
       }
 
-      if (_fillHistos) {
-	if (_combineCategories && _thePassedCats.at(count)<=Trk_Trk) { // for the moment consider Glb+Glb, GlbTrk+GlbTrk, Trk+Trk
-	  myRecoJpsiHistos->Fill(aJpsiCand, "All_"+ theLabel);
-	  if (isBarrel)
-	    myRecoJpsiHistos->Fill(aJpsiCand, "Barrel_"+ theLabel);
-	  else
-	    myRecoJpsiHistos->Fill(aJpsiCand, "EndCap_"+ theLabel);
-	}
-	else {
-	  switch (_thePassedCats.at(count)) {
-	  case Glb_Glb:
-	    myRecoJpsiGlbGlbHistos->Fill(aJpsiCand, "All_"+ theLabel);
-	    if (isBarrel)
-	      myRecoJpsiGlbGlbHistos->Fill(aJpsiCand, "Barrel_"+ theLabel);
-	    else
-	      myRecoJpsiGlbGlbHistos->Fill(aJpsiCand, "EndCap_"+ theLabel);
-	    break;
-	  case GlbTrk_GlbTrk:
-	    myRecoJpsiGlbTrkHistos->Fill(aJpsiCand, "All_"+ theLabel);
-	    if (isBarrel)
-	      myRecoJpsiGlbTrkHistos->Fill(aJpsiCand, "Barrel_"+ theLabel);
-	    else
-	      myRecoJpsiGlbTrkHistos->Fill(aJpsiCand, "EndCap_"+ theLabel);
-	    break;
-	  case Trk_Trk:
-	    myRecoJpsiTrkTrkHistos->Fill(aJpsiCand, "All_"+ theLabel);
-	    if (isBarrel)
-	      myRecoJpsiTrkTrkHistos->Fill(aJpsiCand, "Barrel_"+ theLabel);
-	    else
-	      myRecoJpsiTrkTrkHistos->Fill(aJpsiCand, "EndCap_"+ theLabel);
-	    break;
-	  default:
-	    break;
-	  }
-	}
-      }
     }
   }
   this->fillHistosAndDS(_thePassedCats.at(count), aJpsiCand); 
@@ -1901,14 +1855,6 @@ HiOniaAnalyzer::checkTriggers(const pat::CompositeCandidate* aJpsiCand) {
 	  isTriggerMatched[iTr] = pass1 || pass2;
 	} else {        // double triggers here
 	  isTriggerMatched[iTr] = pass1 && pass2;
-	}
-      }
-
-      for (unsigned int iTr=1;iTr<NTRIGGERS;++iTr) {
-	if (isTriggerMatched[iTr]) {
-	  // since we have bins for event info, let's try to fill here the trigger info for each pair
-	  // also if there are several pairs matched to the same kind of trigger
-	  hStats->Fill(iTr+NTRIGGERS); // pair info
 	}
       }
     }
@@ -2440,7 +2386,7 @@ HiOniaAnalyzer::selAllMuon(const pat::Muon* aMuon) {
 
 bool
 HiOniaAnalyzer::PassMiniAODcut(const pat::Muon* aMuon) {
-  return aMuon->pt() > 5 || aMuon->isPFMuon() || (aMuon->pt()>1.2 && (aMuon->isGlobalMuon() || aMuon->isStandAloneMuon())) || (aMuon->isTrackerMuon() && aMuon->innerTrack()->quality(reco::TrackBase::highPurity));
+  return aMuon->pt() > 5 || aMuon->isPFMuon() || (aMuon->pt()>1. && (aMuon->isGlobalMuon() || aMuon->isStandAloneMuon())) || (aMuon->isTrackerMuon() && aMuon->innerTrack()->quality(reco::TrackBase::highPurity));
 }
 
 bool
@@ -2464,7 +2410,6 @@ HiOniaAnalyzer::InitEvent()
     alreadyFilled[iTr]=false;
   }
   HLTriggers = 0;
-  nEP = 0;
 
   _thePassedCats.clear();      _thePassedCands.clear();
 
@@ -3116,8 +3061,6 @@ HiOniaAnalyzer::fillRecoMuons(int iCent)
 	  if (!WantedMuon) continue;
 	}
       
-	bool isBarrel = false;
-	if ( fabs(muon->eta() < 1.2) ) isBarrel = true;
 	std::string theLabel = theTriggerNames.at(0) + "_" + theCentralities.at(iCent);
 
       
@@ -3154,9 +3097,6 @@ HiOniaAnalyzer::fillRecoMuons(int iCent)
     }
   }
   
-  hGoodMuonsNoTrig->Fill(nGoodMuonsNoTrig);
-  hGoodMuons->Fill(nGoodMuons);
-  hL1DoubleMu0->Fill(nL1DoubleMu0Muons);
 
   return;
 }
@@ -3444,18 +3384,6 @@ HiOniaAnalyzer::beginJob()
 {
   //fOut = new TFile(_histfilename.c_str(), "RECREATE");
   InitTree();
-
-  // book histos
-  //hGoodMuonsNoTrig = new TH1F("hGoodMuonsNoTrig","hGoodMuonsNoTrig",10,0,10);
-  hGoodMuonsNoTrig = fs->make<TH1F>("hGoodMuonsNoTrig","hGoodMuonsNoTrig",10,0,10);
-  //hGoodMuons = new TH1F("hGoodMuons","hGoodMuons",10,0,10);
-  hGoodMuons = fs->make<TH1F>("hGoodMuons","hGoodMuons",10,0,10);
-  //hL1DoubleMu0 = new TH1F("hL1DoubleMu0","hL1DoubleMu0",10,0,10);
-  hL1DoubleMu0 = fs->make<TH1F>("hL1DoubleMu0","hL1DoubleMu0",10,0,10);
-  
-  hGoodMuonsNoTrig->Sumw2();
-  hGoodMuons->Sumw2();
-  hL1DoubleMu0->Sumw2();
 
 
   return;
