@@ -57,7 +57,7 @@ options.secondaryOutputFile = "Jpsi_DataSet.root"
 options.inputFiles =[
   #'/store/himc/HINPbPbAutumn18DR/JPsi_pThat-2_TuneCP5_HydjetDrumMB_5p02TeV_Pythia8/AODSIM/mva98_103X_upgrade2018_realistic_HI_v11-v1/120000/06BA15D4-3041-D54E-AB6D-F32A05C95948.root'
   #'file:/afs/cern.ch/user/s/soohwan/public/step3_RAW2DIGI_L1Reco_RECO_PAT_VALIDATION_DQM_Simu_3_100.root'
-  '/store/user/soohwan/RECO_MC_SingleMuEMBPt_3_100_CMSSW_12_3_0_220529_v2/SingleMuEMBPt_3_100_pythia8_CMSSW_12_3_0/RECO_MC_SingleMuEMBPt_3_100_CMSSW_12_3_0_220529_v2/220529_074441/0000/step3_RAW2DIGI_L1Reco_RECO_PAT_SimuEMB_3_100_10.root'
+  '/store/user/soohwan/RECO_MC_SingleMuEMBPt_0p5_3_CMSSW_12_3_0_220529_v2/SingleMuEMBPt_0p5_3_pythia8_CMSSW_12_3_0/RECO_MC_SingleMuEMBPt_0p5_3_CMSSW_12_3_0_220529_v2/220529_074601/0000/step3_RAW2DIGI_L1Reco_RECO_PAT_SimuEMB_0p5_3_10.root'
 ]
 options.maxEvents = -1 # -1 means all events
 
