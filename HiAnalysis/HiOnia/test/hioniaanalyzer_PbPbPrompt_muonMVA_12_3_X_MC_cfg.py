@@ -58,7 +58,7 @@ options.inputFiles =[
   #'/store/himc/HINPbPbAutumn18DR/JPsi_pThat-2_TuneCP5_HydjetDrumMB_5p02TeV_Pythia8/AODSIM/mva98_103X_upgrade2018_realistic_HI_v11-v1/120000/06BA15D4-3041-D54E-AB6D-F32A05C95948.root'
   '/store/himc/HINPbPbSpring21MiniAOD/JPsi_pThat-2_TuneCP5_HydjetDrumMB_5p02TeV_Pythia8/MINIAODSIM/mva98_112X_upgrade2018_realistic_HI_v9-v1/100000/016a5b9f-1cd9-442b-a856-c16a8a89e41a.root'
 ]
-options.maxEvents = 100 # -1 means all events
+options.maxEvents = -1 # -1 means all events
 
 # Get and parse the command line arguments
 options.parseArguments()
